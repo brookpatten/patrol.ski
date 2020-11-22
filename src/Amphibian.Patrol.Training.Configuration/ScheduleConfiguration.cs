@@ -10,6 +10,12 @@ namespace Amphibian.Patrol.Training.Configuration
         public DatabaseConfiguration Database { get; set; }
         public TestConfiguration Test { get; set; }
 
+        public ScheduleConfiguration()
+        {
+            Database = new DatabaseConfiguration();
+            Test = new TestConfiguration();
+        }
+
         public static ScheduleConfiguration LoadFromJsonConfig(string configBasePath=null,string environmentName=null)
         {
             if(string.IsNullOrEmpty(environmentName))
