@@ -71,7 +71,7 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
                                 //make a token and put it in the response header?
                                 
                                 var token = await _authenticationService.CreateNewTokenForUser(user);
-                                Logger.LogInformation("Authenticated User via email/password OK", new { user, token });
+                                Logger.LogInformation("Authenticated User {@email} via email/password, created token {@token}", user.Email, token );
                                 Response.Headers.Add("Authorization", "Token " + token.TokenGuid);
                             }
                         }
@@ -86,6 +86,7 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
                                 Logger.LogError("Invalid Bearer Token");
                                 return AuthenticateResult.Fail("Invalid Authorization Header");
                             }
+                            Logger.LogInformation("Authenticated User {@email} via bearer token {@tokenGuid}", user.Email, tokenGuid );
                         }
                     }
                     else
@@ -104,7 +105,7 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
             }
             catch(Exception ex)
             {
-                Logger.LogError(ex,"Invalid Authorization Header");
+                Logger.LogError("Exception in Authorization {@ex}",ex);
                 //some exception we weren't ready for, likely a malformed header
                 return AuthenticateResult.Fail("Invalid Authorization Header");
             }

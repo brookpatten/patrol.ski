@@ -73,6 +73,7 @@ namespace Amphibian.Patrol.Training.Api
                     Scheme="bearer",
                     BearerFormat="JWT",
                     In = ParameterLocation.Header,
+
                 });
 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement()
@@ -80,6 +81,22 @@ namespace Amphibian.Patrol.Training.Api
                     {
                         new OpenApiSecurityScheme
                         {
+                            //Type = SecuritySchemeType.Http,
+                            //Flows = new OpenApiOAuthFlows()
+                            //{
+                            //    ClientCredentials = new OpenApiOAuthFlow(){
+                            //        AuthorizationUrl = new Uri("/user/authenticate", UriKind.Relative),
+                            //        TokenUrl = new Uri("/user/authenticate", UriKind.Relative),
+                            //        Scopes = new Dictionary<string, string>
+                            //        {
+                            //            { "readAccess", "Access read operations" },
+                            //            { "writeAccess", "Access write operations" }
+                            //        },
+                                    
+                            //    }
+                            //},
+                            //Scheme = "Bearer",
+                            //In = ParameterLocation.Header,
                             Reference = new OpenApiReference {
                                 Type = ReferenceType.SecurityScheme,
                                 Id = "Authorization"
