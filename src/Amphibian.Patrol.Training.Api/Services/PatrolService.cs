@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Amphibian.Patrol.Training.Api.Services
 {
-    public class PatrolService
+    public class PatrolService:IPatrolService
     {
         private IPatrolRepository _patrolRepository;
         public PatrolService(IPatrolRepository patrolRepository)

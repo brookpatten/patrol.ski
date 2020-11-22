@@ -178,6 +178,9 @@ export default {
   computed: {
     selectedPatrolId: function () {
       return this.$store.state.selectedPatrolId;
+    },
+    selectedPatrol: function (){
+        return this.$store.getters.selectedPatrol;
     }
   },
   watch: {

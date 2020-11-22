@@ -130,6 +130,7 @@ namespace Amphibian.Patrol.Training.Api
             services.AddScoped<IPlanService, PlanService>();
             services.AddScoped<IAssignmentService, AssignmentService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IPatrolService, PatrolService>();
 
         }
 

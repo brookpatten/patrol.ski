@@ -1,8 +1,11 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from 'axios'
+import lodash from 'lodash'
+import VueLodash from 'vue-lodash'
 
 Vue.use(Vuex)
+Vue.use(VueLodash, lodash)
 
 const state = {
   sidebarShow: 'responsive',
@@ -11,7 +14,7 @@ const state = {
   token: localStorage.getItem('token') || '',
   user: {},
   patrols: localStorage.getItem('patrols')!=null ? (JSON.parse(localStorage.getItem('patrols'))) : [],
-  selectedPatrolId: localStorage.getItem('selectedPatrolId') !=null ? parseInt(localStorage.getItem('selectedPatrolId')) : 0
+  selectedPatrolId: localStorage.getItem('selectedPatrolId') !=null ? parseInt(localStorage.getItem('selectedPatrolId')) : 0,
 }
 
 const mutations = {
@@ -124,6 +127,7 @@ export default new Vuex.Store({
   },
   getters: {
     isLoggedIn: state => !!state.token,
-    authStatus: state => state.status
+    authStatus: state => state.status,
+    selectedPatrol: state => _.find(state.patrols,{id:state.selectedPatrolId})
   }
 })
