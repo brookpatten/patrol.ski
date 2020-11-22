@@ -2,7 +2,6 @@
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
 using System.IO;
-using System.Runtime.CompilerServices;
 
 namespace Amphibian.Patrol.Training.Configuration
 {
@@ -21,41 +20,36 @@ namespace Amphibian.Patrol.Training.Configuration
             App = new AppConfiguration();
         }
 
-        public static PatrolTrainingApiConfiguration LoadFromJsonConfig(IConfigurationBuilder builder, string configBasePath=null,string environmentName=null)
+        public static PatrolTrainingApiConfiguration LoadFromJsonConfig(string configBasePath=null,string environmentName=null)
         {
-            AddSettings(builder, configBasePath, environmentName);
+            if(string.IsNullOrEmpty(environmentName))
+            {
+                environmentName = Environment.GetEnvironmentVariable("ENVIRONMENT");
+                if(string.IsNullOrEmpty(environmentName))
+                {
+                    environmentName = "Local";
+                }
+            }
+
+            if(string.IsNullOrEmpty(configBasePath))
+            {
+                configBasePath = Directory.GetCurrentDirectory();
+            }
+
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(configBasePath)
+                .AddJsonFile("appsettings.json", false, true);
+
+            if (File.Exists(Path.Combine(configBasePath, $"appsettings.{environmentName}.json")))
+            {
+                builder = builder.AddJsonFile($"appsettings.{environmentName}.json",false,true);
+            }
 
             IConfiguration config = builder.Build();
 
             var serviceConfiguration = config.Get<PatrolTrainingApiConfiguration>();
 
             return serviceConfiguration;
-        }
-
-        public static void AddSettings(IConfigurationBuilder builder,string configBasePath=null, string environmentName=null)
-        {
-            if (string.IsNullOrEmpty(environmentName))
-            {
-                environmentName = Environment.GetEnvironmentVariable("ENVIRONMENT");
-                if (string.IsNullOrEmpty(environmentName))
-                {
-                    environmentName = "Local";
-                }
-            }
-
-            if (string.IsNullOrEmpty(configBasePath))
-            {
-                configBasePath = Directory.GetCurrentDirectory();
-            }
-
-            builder = builder
-                .SetBasePath(configBasePath)
-                .AddJsonFile("appsettings.json", false, true);
-
-            if (File.Exists(Path.Combine(configBasePath, $"appsettings.{environmentName}.json")))
-            {
-                builder = builder.AddJsonFile($"appsettings.{environmentName}.json", false, true);
-            }
         }
     }
 

@@ -11,7 +11,6 @@ using Amphibian.Patrol.Training.Configuration;
 using Dapper;
 using Amphibian.Patrol.Training.Persistence.Migrations;
 using System.Data;
-using Microsoft.Extensions.Configuration;
 
 namespace Amphibian.Patrol.Training.Tests.Repositories
 {
@@ -30,7 +29,7 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         public void BaseOneTimeSetUp()
         {
             //find the config for the app
-            _configuration = PatrolTrainingApiConfiguration.LoadFromJsonConfig(new ConfigurationBuilder(),Path.Combine(Directory.GetCurrentDirectory(), "../../../../Amphibian.Patrol.Training.Api"));
+            _configuration = PatrolTrainingApiConfiguration.LoadFromJsonConfig(Path.Combine(Directory.GetCurrentDirectory(), "../../../../Amphibian.Patrol.Training.Api"));
 
             //reformat the existing connection string to connect to the master db (not strictly necassary, but mast always exists, the app db doesn't)
             _connectionStringBuilder = new SqlConnectionStringBuilder(_configuration.Database.ConnectionString);

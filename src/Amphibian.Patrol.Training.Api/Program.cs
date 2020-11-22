@@ -11,7 +11,6 @@ using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.AspNetCore;
 using Serilog.Events;
-using Amphibian.Patrol.Training.Configuration;
 
 namespace Amphibian.Patrol.Training.Api
 {
@@ -24,20 +23,41 @@ namespace Amphibian.Patrol.Training.Api
 
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
+            var environment = Environment.GetEnvironmentVariable("ENVIRONMENT");
+            if(string.IsNullOrEmpty(environment))
+            {
+                environment = "Local";
+            }
+
             var builder = Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, config) =>
                 {
-                    PatrolTrainingApiConfiguration.AddSettings(config, null, null);
-                })
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                })
-                .UseSerilog((hostingContext, loggerConfiguration) =>
-                {
-                    loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration)
-                    .Enrich.FromLogContext();
+                    config.AddJsonFile("appsettings.json");
                 });
+
+
+            if (!string.IsNullOrEmpty(environment))
+            {
+                var envSpecificConfig = $"appsettings.{environment}.json";
+                if (File.Exists(envSpecificConfig))
+                {
+                    builder = builder.ConfigureAppConfiguration((hostingContext, config) =>
+                    {
+                        config.AddJsonFile("appsettings.json");
+                        config.AddJsonFile(envSpecificConfig);
+                    });
+                }
+            }
+
+            builder = builder.ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+            })
+            .UseSerilog((hostingContext, loggerConfiguration) =>
+            {
+                loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration)
+                .Enrich.FromLogContext();
+            });
 
             return builder;
         }

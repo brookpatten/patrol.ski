@@ -13,7 +13,7 @@ ALTER TABLE dbo.Groups ADD CONSTRAINT
 
 GO
 ALTER TABLE dbo.Groups ADD CONSTRAINT
-	FK_Plans_Patrols FOREIGN KEY
+	FK_Groups_Patrols FOREIGN KEY
 	(
 	PatrolId
 	) REFERENCES dbo.Patrols
