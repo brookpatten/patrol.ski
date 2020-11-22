@@ -89,9 +89,16 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         {
             if (UseThrowawayDb)
             {
-                _connection.Close();
-                _connection.Dispose();
-                _throwaway.Dispose();
+                if (_connection != null)
+                {
+                    _connection.Close();
+                    _connection.Dispose();
+                }
+                if (_throwaway != null)
+                {
+                    _throwaway.Dispose();
+                    _throwaway = null;
+                }
             }
             else
             {
