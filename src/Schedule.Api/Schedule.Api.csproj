@@ -7,6 +7,8 @@
     <Authors>Brook Patten</Authors>
     <Company>Amphibian Software</Company>
     <IsPackable>true</IsPackable>
+    <PackageDescription>Training Organizer Deployable Application API</PackageDescription>
+    <RepositoryUrl>https://github.com/brookpatten/oet-schedule</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
