@@ -5,7 +5,7 @@
         <CCol md="6">
           <CCard class="mx-4 mb-0">
             <CCardBody class="p-4">
-              
+              This is the landing page
             </CCardBody>
           </CCard>
         </CCol>
@@ -16,6 +16,6 @@
 
 <script>
 export default {
-  name: 'Register'
+  name: 'Landing'
 }
 </script>

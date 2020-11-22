@@ -6,7 +6,7 @@
           <CCard class="p-4">
             <CCardBody>
               <CForm @submit.prevent="login">
-                <h1>Login</h1>
+                <h1>Patrol.Ski</h1>
                 <p class="text-muted">Sign In to your account</p>
                 <CInput
                   placeholder="Email"
@@ -95,7 +95,7 @@ export default {
         .then(()=>{
           //if they have any patrols go there, otherwise create a new patrol
           if(this.$store.getters.patrols.length>0){
-            this.$router.push('/')
+            this.$router.push({name:'Home'})
           }
           else{
             this.$router.push({name:'NewPatrol'});
