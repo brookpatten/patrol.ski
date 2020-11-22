@@ -24,6 +24,12 @@
     <CDropdownItem>
       <CIcon name="cil-lock-locked" /> Logout
     </CDropdownItem>
+    <CDropdownHeader tag="div" class="text-center" color="light" v-if="patrols && patrols.length>1">
+      <strong>Patrols</strong>
+    </CDropdownHeader>
+    <CDropdownItem v-for="patrol in patrols" :key="patrol.id" v-on:click="selectPatrol(patrol.id)">
+      <CIcon name="cil-check-circle" v-if="patrol.id===selectedPatrolId"/><CIcon name="cil-circle" v-if="patrol.id!=selectedPatrolId"/> {{patrol.name}}
+    </CDropdownItem>
     <CDropdownHeader
       tag="div"
       class="text-center"
@@ -44,6 +50,21 @@ export default {
   data () {
     return { 
       itemsCount: 42
+    }
+  },
+  computed: {
+    patrols: function () {
+      return this.$store.state.patrols;
+    },
+    selectedPatrolId: function () {
+      return this.$store.state.selectedPatrolId;
+    }
+  },
+  methods: {
+    selectPatrol: function(id){
+      this.$store.dispatch('change_patrol',id)
+        .then(()=>this.$router.push(''))
+        .catch(err => console.log(err));
     }
   }
 }
