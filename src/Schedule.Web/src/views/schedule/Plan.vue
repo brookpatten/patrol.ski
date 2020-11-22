@@ -1,6 +1,11 @@
 <template>
     <div>
         <CCard>
+            <GoogleLogin :params="googleParams" :onSuccess="onSuccess" :onFailure="onFailure">Login</GoogleLogin>
+        </CCard>
+        <CCard>
+        </CCard>
+        <CCard>
             <CCardHeader>
             <slot name="header">
                 <CIcon name="cil-grid"/> {{caption}}
@@ -31,14 +36,18 @@
 </template>
 
 <script>
-
+import GoogleLogin from 'vue-google-login';
 export default {
   name: 'Plan',
   components: {
+      GoogleLogin
   },
   data () {
     return {
-      plan: {
+        googleParams:{
+            client_id: ''
+        },
+        plan: {
           skills: [
               {id:1, name: 'Gliding Wedge'},
               {id:2, name: 'Hockey Stop'},
@@ -63,7 +72,22 @@ export default {
     }
   },
   methods: {
-    
+        onSuccess(googleUser) {
+            console.log(googleUser);
+ 
+            // This only gets the user information: id, name, imageUrl and email
+            console.log(googleUser.getBasicProfile());
+
+            this.$http.get('authentication/google/test')
+                .then(response => {
+                    console.log(response);
+                }).catch(response => {
+                    console.log(response);
+                })
+        },
+        onFailure(err) {
+            console.log(err);
+        }
   }
 }
 </script>

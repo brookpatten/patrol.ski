@@ -6,8 +6,17 @@ import CoreuiVue from '@coreui/vue'
 import { iconsSet as icons } from './assets/icons/icons.js'
 import store from './store'
 
+import VueAxios from 'vue-axios'
+import Axios from 'axios'
+import lodash from 'lodash'
+import VueLodash from 'vue-lodash'
+import VueBlockUI from 'vue-blockui'
+
 Vue.config.performance = true
 Vue.use(CoreuiVue)
+Vue.use(VueLodash, lodash)
+Vue.use(VueBlockUI)
+Vue.use(VueAxios, Axios)
 
 new Vue({
   el: '#app',

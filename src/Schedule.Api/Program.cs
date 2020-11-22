@@ -32,13 +32,14 @@ namespace Schedule.Api
                 });
 
 
-            if (string.IsNullOrEmpty(environment))
+            if (!string.IsNullOrEmpty(environment))
             {
                 var envSpecificConfig = $"appsettings.{environment}.json";
                 if (File.Exists(envSpecificConfig))
                 {
                     builder = builder.ConfigureAppConfiguration((hostingContext, config) =>
                     {
+                        config.AddJsonFile("appsettings.json");
                         config.AddJsonFile(envSpecificConfig);
                     });
                 }

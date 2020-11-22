@@ -17,6 +17,11 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 
 using Schedule.Configuration;
+using Microsoft.AspNetCore.Authentication;
+using System.Security.Claims;
+using Schedule.Api.Repositories;
+using System.Data;
+using Microsoft.Data.SqlClient;
 
 namespace Schedule.Api
 {
@@ -45,6 +50,16 @@ namespace Schedule.Api
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
             });
+
+            services.AddAuthentication()
+                .AddCookie("PatrolTraining");
+
+            services.AddScoped<IDbConnection,SqlConnection>(sp=>
+            {
+                return new SqlConnection(serviceConfiguration.Database.ConnectionString);
+            });
+            services.AddScoped<UserRepository,UserRepository>();
+            services.AddScoped<Schedule.Api.Services.AuthenticationService, Schedule.Api.Services.AuthenticationService>(sp=>new Schedule.Api.Services.AuthenticationService(5));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -77,7 +92,13 @@ namespace Schedule.Api
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
+
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
