@@ -9,7 +9,9 @@ const state = {
   sidebarMinimize: false,
   status: '',
   token: localStorage.getItem('token') || '',
-  user: {}
+  user: {},
+  patrols: [],
+  selectedPatrolId: 0
 }
 
 const mutations = {
@@ -27,10 +29,14 @@ const mutations = {
   auth_request(state){
     state.status = 'loading';
   },
-  auth_success(state, token, user){
+  auth_success(state, data){
     state.status = 'success';
-    state.token = token;
-    state.user = user;
+    state.token = data.token;
+    state.user = data.user;
+    state.patrols = data.patrols;
+    if(data.patrols && data.patrols.length>0){
+      state.selectedPatrolId = data.patrols[0].id;
+    }
   },
   auth_error(state){
     state.status = 'error';
@@ -38,6 +44,9 @@ const mutations = {
   logout(state){
     state.status = '';
     state.token = '';
+  },
+  change_patrol(state,data){
+    state.selectedPatrolId = data;
   }
 }
 
@@ -51,10 +60,9 @@ export default new Vuex.Store({
         axios.post('user/authenticate',user)
         .then(resp => {
           const token = resp.data.token;
-          const user = resp.data;
           localStorage.setItem('token', token);
           axios.defaults.headers.common['Authorization'] = 'Token ' + token;
-          commit('auth_success', token, user);
+          commit('auth_success', resp.data);
           resolve(resp);
         })
         .catch(err => {
@@ -62,6 +70,11 @@ export default new Vuex.Store({
           localStorage.removeItem('token');
           reject(err);
         });
+      });
+    },
+    change_patrol({commit}, patrolId){
+      return new Promise((resolve, reject) => {
+        commit('change_patrol', patrolId);
       });
     },
     register({commit}, user){
@@ -73,10 +86,9 @@ export default new Vuex.Store({
         .then(resp => {
           console.log('auth success',resp);
           const token = resp.data.token;
-          const user = resp.data;
           localStorage.setItem('token', token);
           axios.defaults.headers.common['Authorization'] = 'Token ' + token;
-          commit('auth_success', token, user);
+          commit('auth_success', resp.data);
           resolve(resp);
         })
         .catch(err => {
@@ -98,6 +110,6 @@ export default new Vuex.Store({
   },
   getters: {
     isLoggedIn: state => !!state.token,
-    authStatus: state => state.status,
+    authStatus: state => state.status
   }
 })

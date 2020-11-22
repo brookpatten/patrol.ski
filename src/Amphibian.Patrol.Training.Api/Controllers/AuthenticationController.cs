@@ -46,12 +46,12 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             if(user!=null)
             {
                 var token = await _authenticationService.CreateNewTokenForUser(user);
+                var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
                 return Ok(new
                 {
-                    Email = user.Email,
-                    First = user.FirstName,
-                    Last = user.LastName,
-                    Token = token.TokenGuid
+                    User = (UserIdentifiers)user,
+                    Token = token.TokenGuid,
+                    Patrols = patrols
                 });
             }
             else
@@ -89,13 +89,13 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             {
                 user = await _authenticationService.RegisterUser(registration.Email, registration.First, registration.Last, registration.Password);
                 var token = await _authenticationService.CreateNewTokenForUser(user);
+                var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
 
                 return Ok(new
                 {
-                    Email = user.Email,
-                    First = user.FirstName,
-                    Last = user.LastName,
-                    Token = token.TokenGuid
+                    User = (UserIdentifiers)user,
+                    Token = token.TokenGuid,
+                    Patrols = patrols
                 });
             }
         }
