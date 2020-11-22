@@ -11,6 +11,7 @@ using Amphibian.Patrol.Training.Configuration;
 using Dapper;
 using Amphibian.Patrol.Training.Persistence.Migrations;
 using System.Data;
+using Microsoft.Extensions.Configuration;
 
 namespace Amphibian.Patrol.Training.Tests.Repositories
 {

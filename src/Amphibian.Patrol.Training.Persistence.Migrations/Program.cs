@@ -6,6 +6,7 @@ using DbUp;
 using DbUp.SqlServer;
 
 using Amphibian.Patrol.Training.Configuration;
+using Microsoft.Extensions.Configuration;
 
 namespace Amphibian.Patrol.Training.Persistence.Migrations
 {
