@@ -29,7 +29,7 @@ namespace Schedule.Tests
         private const string _dbOpsDb = "master";
 
         [OneTimeSetUp]
-        public void OneTimeSetUp()
+        public void BaseOneTimeSetUp()
         {
             //find the config for the app
             string configPath = Path.Combine(Directory.GetCurrentDirectory(), "../../../../Schedule.Api");
@@ -44,7 +44,7 @@ namespace Schedule.Tests
         }
 
         [SetUp]
-        public void SetUp()
+        public void BaseSetUp()
         {
             //create a connection string to a database we know exists, but is not the db we intend to create/drop
             _connectionStringBuilder.InitialCatalog = _dbOpsDb;
@@ -79,7 +79,7 @@ namespace Schedule.Tests
         }
 
         [TearDown]
-        public void TearDown()
+        public void BaseTearDown()
         {
             _connection.Close();
             _connection.Dispose();
