@@ -15,6 +15,8 @@ jobs:
           lfs: true
       - name: run tests
         run: dotnet test ./src --verbosity normal
+        env:
+          ASPNETCORE_ENVIRONMENT: ci
         #--filter TestCategory!=persistence
         
   build_frontend:
