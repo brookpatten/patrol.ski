@@ -1,4 +1,6 @@
-﻿using Amphibian.Patrol.Training.Api.Dtos;
+﻿using System;
+
+using Amphibian.Patrol.Training.Api.Dtos;
 using Amphibian.Patrol.Training.Api.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,5 +20,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         Task<IEnumerable<AssignmentHeaderDto>> GetIncompleteAssignments(int patrolId);
         Task<IEnumerable<AssignmentHeaderDto>> GetIncompleteAssignments(int patrolId, int userId);
         Task InsertAssignment(Assignment assignment);
+        Task<IEnumerable<AssignmentCountByPlanByDayDto>> GetAssignmentCountsByDay(int patrolId, DateTime start, DateTime end);
+        Task<IEnumerable<AssignmentProgressByDayDto>> GetAssignmentProgressByDay(int patrolId, DateTime start, DateTime end, int? planId, int? userId);
     }
 }

@@ -49,7 +49,8 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                 @"select 
                     s.id
                     ,s.name
-                    ,s.patrolid 
+                    ,s.patrolid
+                    ,s.color
                 from sections s 
                 inner join plansections ps on 
                     ps.sectionid=s.id and ps.planid=@planId", new { planId }).ConfigureAwait(false);

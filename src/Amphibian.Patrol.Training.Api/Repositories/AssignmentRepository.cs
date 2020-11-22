@@ -246,5 +246,98 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         {
             assignment.Id = (int)await _connection.InsertAsync(assignment);
         }
+
+        public async Task<IEnumerable<AssignmentCountByPlanByDayDto>> GetAssignmentCountsByDay(int patrolId, DateTime start, DateTime end)
+        {
+            var rows = await _connection.QueryAsync<AssignmentCountByDayDto>(@"
+            CREATE TABLE #days (
+                startsAt datetime,
+                endsAt datetime
+            );
+
+            declare @DatePeriod datetime = @start
+            while (@DatePeriod <= @end)
+            begin
+                insert into #days (startsAt,endsAt) values (@DatePeriod,dateadd(millisecond,999,dateadd(second,59,dateadd(minute,59,dateadd(hour,23,@DatePeriod)))));
+                set @DatePeriod = DATEADD(day, 1,@DatePeriod);
+            end
+
+            select 
+            d.startsAt day,
+            p.id planid,
+            p.name planname,
+            (select top 1 color from sections s inner join plansections ps on ps.planid=p.id and ps.sectionid=s.id order by s.id desc) plancolor,
+            count(a.id) as OpenAssignmentCount
+            from #days d
+            left join plans p on p.patrolid=@patrolId
+            left join assignments a on 
+            a.planid=p.id
+            and a.AssignedAt <= d.startsAt
+            and (a.CompletedAt is null or a.CompletedAt >= d.endsAt)
+            group by d.startsAt,p.id,p.name
+            order by d.startsAt,p.name
+
+            drop table #days;", new { patrolId, start, end });
+
+            var resultGroups = rows.GroupBy(x => x.PlanId).Select(x => new AssignmentCountByPlanByDayDto() { PlanId = x.First().PlanId, PlanName = x.First().PlanName, PlanColor = x.First().PlanColor, CountsByDay = x.ToList() });
+            return resultGroups;
+        }
+
+        public async Task<IEnumerable<AssignmentProgressByDayDto>> GetAssignmentProgressByDay(int patrolId, DateTime start, DateTime end, int? planId, int? userId)
+        {
+            var rows = await _connection.QueryAsync<AssignmentProgressByDayDto>(@"
+            CREATE TABLE #days (
+                startsAt datetime,
+                endsAt datetime
+            );
+
+            declare @DatePeriod datetime = @start
+            while (@DatePeriod <= @end)
+            begin
+                insert into #days (startsAt,endsAt) values (@DatePeriod,dateadd(hour,24,@DatePeriod));
+                set @DatePeriod = DATEADD(day, 1,@DatePeriod)
+            end
+            ;
+            with _plan_signature_counts (id,signatures) as
+            (
+	            select 
+	            p.id,
+	            count(p.id)
+	            from plans p 
+	            inner join plansections ps on ps.planid=p.id
+	            inner join sectionskills ss on ss.sectionid=ps.sectionid
+	            inner join sectionlevels sl on sl.sectionid=ps.sectionid
+	            where p.patrolid=@patrolid
+	            group by p.id
+            )
+            select 
+            d.startsAt day,
+            p.id planId,
+            p.name planName,
+            psc.signatures requiredsignatures,
+            a.id assignmentid,
+            u.lastname userlastname,
+            u.firstname userfirstname,
+            u.email useremail,
+            a.completedat,
+            (select count(s.id) from signatures s where s.assignmentid=a.id and s.SignedAt<=d.endsAt) completedsignatures
+            from #days d
+            left join plans p on 
+	            p.patrolid=@patrolId
+	            and (@planId is null or @planId=p.id)
+            left join assignments a on 
+	            a.planid=p.id
+	            and a.assignedat < @end
+	            and (a.CompletedAt is null or a.CompletedAt > @start)
+	            and (@userId is null or @userId=a.userid)
+            left join users u on u.id=a.userid
+            left join _plan_signature_counts psc on psc.id=p.id
+            order by d.startsAt,p.name,u.lastname
+
+            drop table #days;
+
+            ", new { patrolId, start,end, planId, userId});
+            return rows;
+        }
     }
 }

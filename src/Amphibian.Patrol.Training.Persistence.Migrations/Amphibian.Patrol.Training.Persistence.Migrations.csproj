@@ -17,6 +17,7 @@
     <None Remove="Scripts\0009-CompleteAssignments.sql" />
     <None Remove="Scripts\0010-Shifts.sql" />
     <None Remove="Scripts\0011-Roles.sql" />
+    <None Remove="Scripts\0012-SectionColors.sql" />
     <None Remove="Scripts\1001-TestData.sql" />
   </ItemGroup>
 
@@ -32,6 +33,7 @@
     <EmbeddedResource Include="Scripts\0009-CompleteAssignments.sql" />
     <EmbeddedResource Include="Scripts\0010-Shifts.sql" />
     <EmbeddedResource Include="Scripts\0011-Roles.sql" />
+    <EmbeddedResource Include="Scripts\0012-SectionColors.sql" />
     <EmbeddedResource Include="Scripts\1001-TestData.sql" />
   </ItemGroup>
 

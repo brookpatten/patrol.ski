@@ -9,7 +9,7 @@
             <CCardBody>
                 <CForm>
                  <CRow>
-                    <CCol md="4">
+                    <CCol md="3">
                         <CSelect
                         label="Plan"
                         :value.sync="selectedPlanId"
@@ -17,7 +17,7 @@
                         placeholder="Plan"
                         />
                     </CCol>
-                    <CCol md="4">
+                    <CCol md="3">
                         <CSelect
                         label="User"
                         :value.sync="selectedUserId"
@@ -25,9 +25,11 @@
                         placeholder="User"
                         />
                     </CCol>
-                    <CCol md="4">
-                        
-                         <CInputCheckbox :checked.sync="completed" label="Complete"/>
+                    <CCol md="3">
+                        <CInputCheckbox :checked.sync="completed" label="Complete"/>
+                    </CCol>
+                    <CCol md="3">
+                        <CButton v-if="hasPermission('MaintainAssignments')" color="primary" :to="{ name: 'NewAssignment', params: { planId: selectedPlanId } }">New Assignment(s)</CButton>
                     </CCol>
                  </CRow>
                 </CForm>
@@ -65,7 +67,7 @@
                     <CButtonGroup size="sm">
                       <CButton color="primary" :to="{ name: 'Assignment', params: { assignmentId: data.item.id } }">View</CButton>
                       <CButton v-if="hasPermission('MaintainPlans')" color="primary" :to="{ name: 'EditPlan', params: { planId: data.item.planId } }">Edit Plan</CButton>
-                      <CButton v-if="hasPermission('MaintainAssignments')" color="primary" :to="{ name: 'ManageAssignment', params: { assignmentId: data.item.id } }">Edit Assignment</CButton>
+                      <CButton v-if="hasPermission('MaintainAssignments')" color="primary" :to="{ name: 'EditAssignment', params: { assignmentId: data.item.id } }">Edit Assignment</CButton>
                     </CButtonGroup>
                   </td>
               </template>
@@ -116,10 +118,14 @@ export default {
         return this.$store.getters.selectedPatrol;
     },
     planOptions: function(){
-        return _.map(this.plans,function(p){return {value:p.id,label:p.name};});
+        var options = _.map(this.plans,function(p){return {value:p.id,label:p.name};});
+        options.splice(0,0,{label:'Any',value:null});
+        return options;
     },
     userOptions: function(){
-        return _.map(this.users,function(p){return {value:p.id,label:p.lastName+', '+p.firstName};});
+        var options = _.map(this.users,function(p){return {value:p.id,label:p.lastName+', '+p.firstName};});
+        options.splice(0,0,{label:'Any',value:null});
+        return options;
     }
   },
   methods: {

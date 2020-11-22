@@ -24,13 +24,16 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         private readonly IPatrolRepository _patrolRepository;
         private readonly IPlanRepository _planRepository;
         private readonly IPlanService _planService;
+        private readonly IPatrolService _patrolService;
 
-        public PlanController(ILogger<PlanController> logger, IPatrolRepository patrolRepository, IPlanRepository planRepository, IPlanService planService)
+        public PlanController(ILogger<PlanController> logger, IPatrolRepository patrolRepository, IPlanRepository planRepository, IPlanService planService, IPatrolService patrolService)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
             _planRepository = planRepository;
             _planService = planService;
+            _patrolService = patrolService;
+
         }
 
         [HttpGet]
@@ -107,8 +110,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> Create(int patrolId, string name, int? copyFromPlanId)
         {
-            var userPatrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-            if (userPatrols.Any(x => x.Id == patrolId))
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainPlans())
             {
                 var plan = await _planService.CreatePlan(name, patrolId, copyFromPlanId);
                 return Ok(plan);
@@ -127,8 +129,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         {
             var existingPlan = await _planRepository.GetPlan(dto.Id);
 
-            var userPatrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-            if (userPatrols.Any(x => x.Id == existingPlan.PatrolId))
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainPlans())
             {
                 if (await _planService.IsPlanFormatValid(dto))
                 {
@@ -140,6 +141,41 @@ namespace Amphibian.Patrol.Training.Api.Controllers
                 {
                     return Problem("The plan is invalid");
                 }
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+
+        [HttpPost]
+        [Route("plan/levels/create")]
+        [Authorize]
+        [UnitOfWork]
+        public async Task<IActionResult> CreateLevel(Level level)
+        {
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), level.PatrolId)).CanMaintainPlans())
+            {
+                await _planRepository.InsertLevel(level);
+                return Ok(level);
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        [HttpPost]
+        [Route("plan/skills/create")]
+        [Authorize]
+        [UnitOfWork]
+        public async Task<IActionResult> CreateSkill(Skill skill)
+        {
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), skill.PatrolId)).CanMaintainPlans())
+            {
+                await _planRepository.InsertSkill(skill);
+                return Ok(skill);
             }
             else
             {

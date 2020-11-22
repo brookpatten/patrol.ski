@@ -24,7 +24,7 @@
       <!--<CSidebarNavItem v-if='hasPermission("MaintainPatrol")'
         name='Integration' to='/administration/integration' icon='cil-cloud-download' />-->
       <CSidebarNavItem v-if='hasPermission("MaintainPlans")'
-        name='Plans' to='/administration/plans' icon='cil-grid' />
+        name='Training Plans' to='/administration/plans' icon='cil-grid' />
       <CSidebarNavItem v-if='hasPermission("MaintainAssignments")'
         name='Assignments' to='/administration/assignments' icon='cil-pencil' />
       <!--<CSidebarNavItem v-if='hasPermission("MaintainPlans")'

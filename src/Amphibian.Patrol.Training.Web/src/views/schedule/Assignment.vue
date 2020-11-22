@@ -27,16 +27,21 @@
                     </tbody>
                 </table>
             </CCardBody>
-            <CCardFooter v-if="newSignatures.length>0">
-                <CButton v-on:click="sign()" block color="primary"><CIcon name="cil-pen"/>&nbsp;Sign</CButton>
+            <CCardFooter v-if="newSignatures.length>0 || hasPermission('MaintainAssignments')">
+                <CButtonGroup class="float-right">
+                    <CButton v-if="newSignatures.length>0" v-on:click="sign()" color="primary"><CIcon :content="$options.freeSet.cilPen"/>&nbsp;Sign</CButton>
+                    <CButton v-if="hasPermission('MaintainAssignments')" :to="{name:'EditAssignment',params:{assignmentId:assignmentId}}" color="success">Edit Assignment</CButton>
+                </CButtonGroup>
             </CCardFooter>
         </CCard>
     </div>
 </template>
 
 <script>
+import { freeSet } from '@coreui/icons'
 export default {
   name: 'Assignment',
+  freeSet,
   components: {
   },
   props: ['assignmentId'],
@@ -129,13 +134,21 @@ export default {
                     }
                 }
             }
+        },
+        hasPermission: function(permission){
+          return this.selectedPatrol!=null && this.selectedPatrol.permissions!=null && _.indexOf(this.selectedPatrol.permissions,permission) >= 0;
         }
   },
   mounted: function(){
       this.getAssignment(this.assignmentId);
   },
   computed: {
-      
+    selectedPatrolId: function () {
+      return this.$store.state.selectedPatrolId;
+    },
+    selectedPatrol: function (){
+        return this.$store.getters.selectedPatrol;
+    }
   }
 }
 </script>

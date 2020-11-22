@@ -8,7 +8,14 @@
                         <tr>
                             <th scope="col">Skill</th>
                             <th scope="col" v-for="level in levels" :key="level.index+'-level'">
-                              {{level.level.name}}
+                              <span v-if="!edit">{{level.level.name}}</span>
+                              <CSelect v-if="edit"
+                                label="Level"
+                                :value.sync="level.levelId"
+                                :options="allLevelsOptions"
+                                :update:value="canonicalizeSkillsAndLevels"
+                                placeholder="None"
+                                />
                               <CButtonGroup class="float-right" v-if="edit">
                                 <CButton size="sm" color="danger" v-on:click="removeLevel(level.level)"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
                                 <CButton v-if="last(levels)==level" size="sm" color="primary">Add Level <CIcon :content="$options.freeSet.cilArrowThickRight"/></CButton>
@@ -22,8 +29,10 @@
                         <template v-for="signOffRow in signOffTable">
                           <tr v-if="signOffRow.header" :key="signOffRow.index+'-header-row'">
                             <td></td>
-                            <th v-for="section in signOffRow.header.sections" :key="section.columnIndex+'-'+section.rowIndex+'-header'" :colspan="section.columnCount" v-bind:style="{ backgroundColor: section ? section.color : null}">
-                              {{section.name}}
+                            <th v-for="section in signOffRow.header.sections" :key="section.columnIndex+'-'+section.rowIndex+'-header'" :colspan="section.columnCount">
+                              <span v-if="!edit">{{section.name}}</span>
+                              <CInput v-if="edit && (section.id || section.id==0)" v-model="section.name"></CInput>
+                              <v-swatches v-if="edit && (section.id || section.id==0)" v-model="section.color" show-fallback fallback-input-type="color" popover-x="left" class="float-right"></v-swatches>
                               <CButtonGroup class="float-right" v-if="edit">
                                 <CButton v-if="section.id || section.id==0" v-on:click="removeSection(section)" size="sm" color="danger"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
                                 <CButton v-if="section.id || section.id==0" size="sm" color="primary">Add Level <CIcon :content="$options.freeSet.cilArrowThickRight"/></CButton>
@@ -33,8 +42,19 @@
                           </tr>
                           <tr :key="signOffRow.index+'-skill-row'">
                             <td>
-                              {{signOffRow.skill.name}}
-                              <CButton  v-if="edit" v-on:click="removeSkill(signOffRow.skill)" size="sm" color="danger" class="float-right"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
+                              <span v-if="!edit">{{signOffRow.skill.name}}</span>
+                              <CSelect v-if="edit && !signOffRow.skillIsNew"
+                                label="Skill"
+                                :value.sync="signOffRow.skillId"
+                                :options="allSkillsOptions"
+                                :update:value="canonicalizeSkillsAndLevels"
+                                placeholder="None"></CSelect>
+                                <CInput v-if="edit && signOffRow.skillIsNew" v-model="signOffRow.newSkillName"></CInput>
+                              <CButtonGroup class="float-right">
+                                <CButton  v-if="edit && !signOffRow.skillIsNew" v-on:click="signOffRow.skillIsNew = false" size="sm" color="primary"><CIcon :content="$options.freeSet.cilPlus"/></CButton>
+                                <CButton  v-if="edit && signOffRow.skillIsNew" v-on:click="signOffRow.skillIsNew = true" size="sm" color="success"><CIcon :content="$options.freeSet.cilCheck"/></CButton>
+                                <CButton  v-if="edit" v-on:click="removeSkill(signOffRow.skill)" size="sm" color="danger"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
+                              </CButtonGroup>
                             </td>
                             <td v-for="signOff in signOffRow.signOffs" :key="signOff.rowIndex+'-'+signOff.columnIndex+'-skill-buttons'" v-bind:style="{ backgroundColor: signOff.section ? signOff.section.color : null}">
                                 <span v-if="signOff!=null && signOff.section"><input type="checkbox" disabled/></span>
@@ -73,10 +93,13 @@
 
 <script>
 import { freeSet } from '@coreui/icons'
+import VSwatches from 'vue-swatches'
+import "vue-swatches/dist/vue-swatches.css"
 export default {
   name: 'EditPlan',
   freeSet,
   components: {
+    VSwatches 
   },
   props: ['planId'],
   data () {
@@ -95,22 +118,30 @@ export default {
   methods: {
         //fetch data
         getPlan(planId) {
+          if(planId){
             this.$http.get('plan/'+planId)
                 .then(response => {
                     console.log(response);
                     this.plan = response.data;
-                    this.tabelize();
+                    this.isLoadComplete();
                     this.getGroups();
                     this.getLevels();
                     this.getSkills();
                 }).catch(response => {
                     console.log(response);
                 });
+          }
+          else{
+            this.plan.name="New Plan";
+            this.plan.patrolId=this.selectedPatrolId;
+            this.addSection(0,1,0,1);
+          }
         },
         getGroups() {
           this.$http.get('user/groups/'+this.plan.patrolId)
             .then(response => {
               this.allGroups = response.data;
+              this.isLoadComplete();
             }).catch(response=>{
                 console.log(response);
             });
@@ -119,6 +150,7 @@ export default {
           this.$http.get('plan/levels/'+this.plan.patrolId)
             .then(response => {
               this.allLevels = response.data;
+              this.isLoadComplete();
             }).catch(response=>{
                 console.log(response);
             });
@@ -127,10 +159,39 @@ export default {
           this.$http.get('plan/skills/'+this.plan.patrolId)
             .then(response => {
               this.allSkills = response.data;
+              this.isLoadComplete();
             }).catch(response=>{
                 console.log(response);
             });
         },
+        isLoadComplete(){
+          if(this.allSkills.length>0 && this.allLevels.length>0 && this.allGroups.length>0 && this.plan.sections){
+            this.tabelize();
+          }
+        },
+        createSkill(name,onComplete){
+          this.$http.post('plan/skills/create',{name:name,patrolId:this.plan.patrolId})
+            .then(response => {
+              this.allSkills.push(response.data);
+              if(onComplete){
+                onComplete(response.data);
+              }
+            }).catch(response=>{
+                console.log(response);
+            });
+        },
+        createLevel(name,onComplete){
+          this.$http.post('plan/levels/create',{name:name,patrolId:this.plan.patrolId})
+            .then(response => {
+              this.allLevels.push(response.data);
+              if(onComplete){
+                onComplete(response.data);
+              }
+            }).catch(response=>{
+                console.log(response);
+            });
+        },
+        
 
         //utilities
         last(arr){
@@ -147,7 +208,7 @@ export default {
         },
         randomColor(){
           var rand = Math.floor(Math.random()*16777215).toString(16);
-          return "#" + rand;
+          return ("#" + rand).toUpperCase();
         },
 
         //modifiers
@@ -155,7 +216,7 @@ export default {
           console.log("addSection",rowIndex,rowCount,columnIndex,columnCount,sourceSection);
 
           //build up the viewmodel for the new section
-          var section = {rowIndex,rowCount,columnIndex,columnCount,id:0,name:'New Section',skills:[],levels:[]};
+          var section = {rowIndex,rowCount,columnIndex,columnCount,id:0,name:'New Section',skills:[],levels:[],color:this.randomColor()};
           for(var i=0;i<rowCount;i++){
             //add skills
             var newSkill=null;
@@ -286,33 +347,48 @@ export default {
                 this.plan.sections[i].columnIndex = _.min(_.map(this.plan.sections[i].levels,x=>x.columnIndex));
                 this.plan.sections[i].columnCount = this.plan.sections[i].levels.length;
 
-                if(this.plan.sections[i] && !this.plan.sections[i].color){
-                  this.plan.sections[i].color = this.randomColor();
-                }
+                //if(this.plan.sections[i] && !this.plan.sections[i].color){
+                  //this.plan.sections[i].color = this.randomColor();
+                //}
             }
 
             //sort by row, then by column
             this.sortedSections = _.orderBy(this.plan.sections,['rowIndex','columnIndex']);
             this.plan.sections = this.sortedSections;
         },
+        canonicalizeSkillsAndLevels(){
+          //ensure the instances used in the models/viewmodels are the same even in objects loaded from different requests
+          for(var s=0;s<this.plan.sections.length;s++){
+            for(var ss=0;ss<this.plan.sections[s].skills;ss++){
+              this.plan.sections[s].skills[ss].skill = _.find(this.allSkills,{'id':this.plan.sections[s].skills[ss].skillId});
+            }
+            for(var ss=0;ss<this.plan.sections[s].levels;ss++){
+              this.plan.sections[s].levels[ss].level = _.find(this.allLevels,{'id':this.plan.sections[s].levels[ss].levelId});
+            }
+          }
+        },
         tabelize(){
             //convert the list of sections into a 2 dimensional array for easy html formatting
             this.signOffTable=[];
             this.levels=[];
 
+            this.canonicalizeSkillsAndLevels();
             this.sortSections();
             
             for(var i=0;i<this.sortedSections.length;i++){
                 for(var s=this.sortedSections[i].rowIndex;s<this.sortedSections[i].rowIndex + this.sortedSections[i].rowCount;s++){
                     //add empty rows until we get to the index needed
                     while(this.signOffTable.length<=s){
-                        this.signOffTable.push({skill:null,signOffs:[]});
+                        this.signOffTable.push({skill:null,skillId:0,signOffs:[]});
                     }
 
                     //if this is a newly added row, set the skill/row header
                     var sectionSkill = _.find(this.sortedSections[i].skills,{rowIndex:s});
                     if(this.signOffTable[s].skill == null && sectionSkill!=null){
                         this.signOffTable[s].skill = sectionSkill.skill;
+                        this.signOffTable[s].skillId = sectionSkill.skillId;
+                        this.signOffTable[s].skillIsNew = false;
+                        this.signOffTable[s].newSkillName = '';
                     }
 
                     //if we're in the first row of a section, make sure to set up a header row
@@ -453,7 +529,18 @@ export default {
       this.getPlan(this.planId);
   },
   computed: {
-      
+      allLevelsOptions(){
+        return _.map(this.allLevels,function(x){return {value:x.id,label:x.name};});
+      },
+      allSkillsOptions(){
+        return _.map(this.allSkills,function(x){return {value:x.id,label:x.name};});
+      },
+      selectedPatrolId: function () {
+        return this.$store.state.selectedPatrolId;
+      },
+      selectedPatrol: function (){
+          return this.$store.getters.selectedPatrol;
+      }
   }
 }
 </script>

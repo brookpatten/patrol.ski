@@ -41,18 +41,18 @@ insert into plans (name,patrolid) values ('Red Jacket',2);
 
 --sections
 --big patrol
-insert into sections (name,patrolid) values ('Ski Skills',1);
+insert into sections (name,patrolid,color) values ('Ski Skills',1,'#A8DFFF');
 --1
-insert into sections (name,patrolid) values ('Snowboard Skills',1);
+insert into sections (name,patrolid,color) values ('Snowboard Skills',1,'#A8DFFF');
 --2
-insert into sections (name,patrolid) values ('Toboggan Skills',1);
+insert into sections (name,patrolid,color) values ('Toboggan Skills',1,'#2BB1FF');
 --3
 --tiny patrol
-insert into sections (name,patrolid) values ('Red Jacket',2);
+insert into sections (name,patrolid,color) values ('Red Jacket',2,'#A8DFFF');
 --4
 
 --big patrol final
-insert into sections (name,patrolid) values ('Final',1);
+insert into sections (name,patrolid,color) values ('Final',1,'#82FF8F');
 --5
 
 

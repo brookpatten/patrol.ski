@@ -12,5 +12,6 @@ namespace Amphibian.Patrol.Training.Api.Dtos
         public int SectionId { get; set; }
         public Skill Skill { get; set; }
         public int RowIndex { get; set; }
+        public int SkillId { get; set; }
     }
 }

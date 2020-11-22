@@ -77,6 +77,8 @@ const Levels = () => import('@/views/administration/Levels')
 const EditUser = () => import('@/views/administration/EditUser')
 const EditGroup = () => import('@/views/administration/EditGroup')
 const Assignments = () => import('@/views/administration/Assignments')
+const NewAssignment = () => import('@/views/administration/NewAssignment')
+const EditAssignment = () => import('@/views/administration/EditAssignment')
 
 Vue.use(Router)
 
@@ -243,6 +245,24 @@ function configRoutes () {
               },
               props: true
             },
+            {
+              path: 'new-assignment/:planId',
+              name: 'NewAssignment',
+              component: NewAssignment,
+              meta: { 
+                requiresAuth: true
+              },
+              props: true
+            },
+            {
+              path: 'edit-assignment/:assignmentId',
+              name: 'EditAssignment',
+              component: EditAssignment,
+              meta: { 
+                requiresAuth: true
+              },
+              props: true
+            }
           ]
         },
         {

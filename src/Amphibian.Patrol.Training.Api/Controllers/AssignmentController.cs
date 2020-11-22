@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Amphibian.Patrol.Training.Api.Extensions;
 using Amphibian.Patrol.Training.Api.Dtos;
 using Amphibian.Patrol.Training.Api.Infrastructure;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
@@ -26,9 +27,11 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         private IAssignmentService _assignmentService;
         private IUserRepository _userRepository;
         private IPatrolService _patrolService;
+        private ISystemClock _clock;
 
         public AssignmentController(ILogger<AssignmentController> logger, IPatrolRepository patrolRepository, IPlanRepository planRepository, 
-            IAssignmentRepository assignmentRepository, IPlanService planService, IAssignmentService assignmentService, IUserRepository userRepository, IPatrolService patrolService)
+            IAssignmentRepository assignmentRepository, IPlanService planService, IAssignmentService assignmentService, IUserRepository userRepository, 
+            IPatrolService patrolService, ISystemClock systemClock)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
@@ -38,6 +41,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             _assignmentService = assignmentService;
             _userRepository = userRepository;
             _patrolService = patrolService;
+            _clock = systemClock;
         }
 
         [HttpGet]
@@ -155,6 +159,123 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             {
                 var assignments = await _assignmentRepository.GetIncompleteAssignments(patrolId, User.GetUserId());
                 return Ok(assignments);
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        public class CreateAssignmentDto
+        {
+            public int PlanId { get; set; }
+            public IList<int> ToUserIds{get;set;} 
+            public DateTime? DueAt { get; set; }
+        }
+        [HttpPost]
+        [Route("assignments/create")]
+        [Authorize]
+        [UnitOfWork]
+        public async Task<IActionResult> CreateAssignments(CreateAssignmentDto dto)
+        {
+            var plan = await _planRepository.GetPlan(dto.PlanId);
+            var validPatrolUsers = await _patrolRepository.GetUsersForPatrol(plan.PatrolId);
+
+            //TODO: also make sure the user has the right to create these signatures
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), plan.PatrolId)).CanMaintainAssignments())
+            {
+                if(dto.ToUserIds.All(x=>validPatrolUsers.Any(y=>x==y.Id)))
+                {
+                    await _assignmentService.CreateAssignments(dto.PlanId, dto.ToUserIds, dto.DueAt);
+                    return Ok();
+                }
+                else
+                {
+                    //tried to assign to a user for which they don't have access
+                    return Forbid();
+                }
+            }
+            else
+            {
+                //user does not have access to plan/patrol
+                return Forbid();
+            }
+        }
+
+        [HttpPut]
+        [Route("assignments/update")]
+        [Authorize]
+        [UnitOfWork]
+        public async Task<IActionResult> UpdateAssignment(Assignment dto)
+        {
+            var existing = await _assignmentRepository.GetAssignment(dto.Id);
+            var plan = await _planRepository.GetPlan(existing.PlanId);
+            
+            //TODO: also make sure the user has the right to create these signatures
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), plan.PatrolId)).CanMaintainAssignments())
+            {
+                existing.DueAt = dto.DueAt;
+                //existing.AssignedAt = dto.AssignedAt;
+                if (!existing.CompletedAt.HasValue && dto.CompletedAt.HasValue)
+                {
+                    existing.CompletedAt = dto.CompletedAt;
+                }
+                await _assignmentRepository.UpdateAssignment(existing);
+                return Ok();
+            }
+            else
+            {
+                //user does not have access to plan/patrol
+                return Forbid();
+            }
+        }
+
+        [HttpGet]
+        [Route("assignments/counts-by-day")]
+        [Authorize]
+        public async Task<IActionResult> CountsByDay(int patrolId,DateTime? start, DateTime? end)
+        {
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainAssignments())
+            {
+                if (!start.HasValue)
+                {
+                    start = _clock.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0)).DateTime;
+                }
+                if (!end.HasValue)
+                {
+                    end = _clock.UtcNow.DateTime;
+                }
+                var result = await _assignmentRepository.GetAssignmentCountsByDay(patrolId, start.Value, end.Value);
+                return Ok(result);
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        [HttpGet]
+        [Route("assignments/progress-by-day")]
+        [Authorize]
+        public async Task<IActionResult> GetAssignmentProgressByDay(int patrolId, DateTime? start, DateTime? end, int? planId, int? userId)
+        {
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainAssignments())
+            {
+                if (!start.HasValue)
+                {
+                    start = _clock.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0)).DateTime;
+                }
+                if (!end.HasValue)
+                {
+                    end = _clock.UtcNow.DateTime;
+                }
+                var result = await _assignmentRepository.GetAssignmentProgressByDay(patrolId, start.Value, end.Value, planId, userId);
+
+                
+
+                return Ok(result
+                    .GroupBy(x=> new { x.AssignmentId, x.AssignedAt, x.CompletedAt, x.PlanId, x.PlanName, x.UserEmail, x.UserFirstName, x.UserLastName})
+                    .Select(x=>new { x.Key.AssignmentId, x.Key.AssignedAt, x.Key.CompletedAt, x.Key.PlanId, x.Key.PlanName, x.Key.UserEmail, x.Key.UserFirstName, x.Key.UserLastName, Days = x.Select(y=>new { y.Day, y.completedsignatures, y.requiredsignatures}).ToList() }));
             }
             else
             {

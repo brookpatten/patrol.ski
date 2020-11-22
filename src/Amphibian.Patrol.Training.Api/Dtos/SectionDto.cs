@@ -12,5 +12,6 @@ namespace Amphibian.Patrol.Training.Api.Dtos
         public IEnumerable<SectionLevelDto> Levels { get; set; }
         public IEnumerable<SectionSkillDto> Skills { get; set; }
         public bool CurrentUserCanSign { get; set; }
+        public string Color { get; set; }
     }
 }

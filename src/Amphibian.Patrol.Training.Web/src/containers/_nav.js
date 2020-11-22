@@ -44,7 +44,7 @@ export default [
       },
       {
         _name: 'CSidebarNavItem',
-        name: 'Plans',
+        name: 'Training Plans',
         to: '/administration/plans',
         icon: 'cil-grid'
       },

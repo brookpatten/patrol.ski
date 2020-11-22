@@ -1,5 +1,35 @@
 <template>
     <div>
+        <CCard v-if="hasPermission('MaintainAssignments') && assignmentCountsByDay.length>0">
+            <CCardHeader>
+            <slot name="header">
+                <CIcon name="cil-grid"/>Incomplete Assignments, Last 30 Days
+            </slot>
+            </CCardHeader>
+            <CCardBody>
+                <CChartLine
+                    :datasets="assignmentCountsByDay"
+                    :labels="assignmentCountsByDayLabels"
+                    :options="assignmentCountsByDayOptions"
+                />
+            </CCardBody>
+        </CCard>
+
+        <CCard v-if="hasPermission('MaintainAssignments') && assignmentProgressByDay.length>0">
+            <CCardHeader>
+            <slot name="header">
+                <CIcon name="cil-grid"/>Assignment Progress, Last 30 Days
+            </slot>
+            </CCardHeader>
+            <CCardBody>
+                <CChartLine
+                    :datasets="assignmentProgressByDay"
+                    :labels="assignmentProgressByDayLabels"
+                    :options="assignmentProgressByDayOptions"
+                />
+            </CCardBody>
+        </CCard>
+
         <CCard v-if="trainerShifts.length>0">
             <CCardHeader>
             <slot name="header">
@@ -141,9 +171,11 @@
 </template>
 
 <script>
+import { CChartLine } from '@coreui/vue-chartjs'
+
 export default {
   name: 'Home',
-  components: {
+  components: { CChartLine
   },
   computed: {
     selectedPatrolId: function () {
@@ -155,7 +187,15 @@ export default {
   },
   watch: {
     selectedPatrolId(){
+      this.getMyAssignments();
       this.getIncompleteTrainerAssignments();
+      this.getCommittedTrainingShifts();
+      this.getAvailableTrainingShifts();
+      this.getTrainerShifts();
+      if(this.hasPermission('MaintainAssignments')){
+          this.getAssignmentCountsByDay();
+          this.getAssignmentProgressByDay();
+      }
     }
   },
   props: [],
@@ -199,7 +239,45 @@ export default {
             {key:'at',label:'Date/Time'},
             {key:'traineeCount',label:'Group Size'},
             {key:'buttons',label:''},
-        ]
+        ],
+        assignmentCountsByDay:[],
+        assignmentCountsByDayOptions:{
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        stepSize: 1
+                    }
+                }]
+            },
+            title:{
+                display: false,
+                text: 'Incomplete Assignments, Last 30 Days'
+            },
+            legend:{
+                display: false
+            }
+        },
+        assignmentCountsByDayLabels:[],
+        assignmentProgressByDay:[],
+        assignmentProgressByDayOptions:{
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        stepSize: 25,
+                        min: 0,
+                        max: 100
+                    }
+                }]
+            },
+            title:{
+                display: false,
+                text: 'Assignment Progress, Last 30 Days'
+            },
+            legend:{
+                display:false
+            }
+        },
+        assignmentProgressByDayLabels:[]
     }
   },
   methods: {
@@ -248,6 +326,55 @@ export default {
                     console.log(response);
                 });
         },
+        getAssignmentCountsByDay(){
+            this.assignmentCountsByDay=[];
+            this.$http.get('assignments/counts-by-day?patrolId='+this.selectedPatrolId)
+                .then(response => {
+                    console.log(response);
+                    var counts = response.data;
+                    this.assignmentCountsByDay = _.map(counts,function(g){
+                        return {
+                            label: g.planName,
+                            backgroundColor: g.planColor,
+                            data: _.map(g.countsByDay,'openAssignmentCount')
+                        };
+                    });
+
+                    if(this.assignmentCountsByDay.length>0){
+                        this.assignmentCountsByDayLabels = _.map(counts[0].countsByDay,function(d){
+                            return (new Date(d.day)).toLocaleDateString();
+                        });
+                    }
+                    
+                }).catch(response => {
+                    console.log(response);
+                });
+        },
+        getAssignmentProgressByDay(){
+            this.assignmentProgressByDay=[];
+            this.$http.get('assignments/progress-by-day?patrolId='+this.selectedPatrolId)
+                .then(response => {
+                    console.log(response);
+                    var counts = response.data;
+                    this.assignmentProgressByDay = _.map(counts,function(g){
+                        return {
+                            label: g.userLastName+', '+g.userFirstName+' - '+g.planName,
+                            backgroundColor: 'rgba('+(Math.floor(Math.random() * Math.floor(255)))+','+(Math.floor(Math.random() * Math.floor(255)))+','+(Math.floor(Math.random() * Math.floor(255)))+',10)',
+                            data: _.map(g.days,function(d){
+                                return Math.round((d.completedsignatures / d.requiredsignatures) * 100.0);
+                            })
+                        };
+                    });
+                    if(this.assignmentProgressByDay.length>0){
+                        this.assignmentProgressByDayLabels = _.map(counts[0].days,function(d){
+                            return (new Date(d.day)).toLocaleDateString();
+                        });
+                    }
+                    
+                }).catch(response => {
+                    console.log(response);
+                });
+        },
         commit(id){
             this.$http.post('trainingshifts/commit/'+id)
                 .then(response => {
@@ -267,6 +394,9 @@ export default {
                 }).catch(response => {
                     console.log(response);
                 });
+        },
+        hasPermission: function(permission){
+          return this.selectedPatrol!=null && this.selectedPatrol.permissions!=null && _.indexOf(this.selectedPatrol.permissions,permission) >= 0;
         }
   },
   mounted: function(){
@@ -275,6 +405,10 @@ export default {
       this.getCommittedTrainingShifts();
       this.getAvailableTrainingShifts();
       this.getTrainerShifts();
+      if(this.hasPermission('MaintainAssignments')){
+          this.getAssignmentCountsByDay();
+          this.getAssignmentProgressByDay();
+      }
   }
 }
 </script>
