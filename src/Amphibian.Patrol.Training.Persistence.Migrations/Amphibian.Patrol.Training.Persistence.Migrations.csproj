@@ -13,6 +13,7 @@
     <None Remove="Scripts\0005-PatrolUsers.sql" />
     <None Remove="Scripts\0006-Assignments.sql" />
     <None Remove="Scripts\0007-Signatures.sql" />
+    <None Remove="Scripts\0008-Groups.sql" />
     <None Remove="Scripts\1001-TestData.sql" />
   </ItemGroup>
 
@@ -24,6 +25,7 @@
     <EmbeddedResource Include="Scripts\0005-PatrolUsers.sql" />
     <EmbeddedResource Include="Scripts\0006-Assignments.sql" />
     <EmbeddedResource Include="Scripts\0007-Signatures.sql" />
+    <EmbeddedResource Include="Scripts\0008-Groups.sql" />
     <EmbeddedResource Include="Scripts\1001-TestData.sql" />
   </ItemGroup>
 
