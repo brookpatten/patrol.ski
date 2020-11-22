@@ -221,6 +221,20 @@ insert into signatures (assignmentid,sectionskillid,sectionlevelid,signedbyuseri
 insert into signatures (assignmentid,sectionskillid,sectionlevelid,signedbyuserid,signedat) values (1,2,2,2,getdate());
 --4
 
+----groups
+--big patrol trainers
+insert into groups (name,patrolid) values ('trainers',1);
+--tiny patrol trainers
+insert into groups (name,patrolid) values ('trainers',2);
+
+insert into groupusers (groupid,userid) values (1,2);
+insert into groupusers (groupid,userid) values (2,2);
+
+insert into sectiongroups (sectionid,groupid) values (1,1);
+insert into sectiongroups (sectionid,groupid) values (2,1);
+insert into sectiongroups (sectionid,groupid) values (3,1);
+insert into sectiongroups (sectionid,groupid) values (4,2);
+
 --sanity check
 --select
 --p.name patrol,

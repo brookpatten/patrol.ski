@@ -53,7 +53,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [Authorize]
         public async Task<IActionResult> PlanDetails(int planId)
         {
-            var plan = await _planService.GetPlan(planId);
+            var plan = await _planService.GetPlan(planId, User.GetUserId());
             var userPatrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
             if(userPatrols.Any(x=>x.Id==plan.PatrolId))
             {

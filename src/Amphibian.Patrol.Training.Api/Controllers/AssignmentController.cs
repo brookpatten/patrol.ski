@@ -70,7 +70,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         public async Task<IActionResult> GetAssignment(int assignmentId)
         {
             var assignment = await _assignmentService.GetAssignment(assignmentId);
-            var plan = await _planService.GetPlan(assignment.PlanId);
+            var plan = await _planService.GetPlan(assignment.PlanId,User.GetUserId());
             var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
             if (patrols.Any(x => x.Id == plan.PatrolId))
             {
@@ -99,7 +99,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         public async Task<IActionResult> CreateSignatures(CreateSignaturesDto dto)
         {
             var assignment = await _assignmentService.GetAssignment(dto.AssignmentId);
-            var plan = await _planService.GetPlan(assignment.PlanId);
+            var plan = await _planService.GetPlan(assignment.PlanId, User.GetUserId());
             var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
             //TODO: also make sure the user has the right to create these signatures
             if (patrols.Any(x => x.Id == plan.PatrolId))
