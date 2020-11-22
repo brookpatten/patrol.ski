@@ -10,5 +10,6 @@ namespace Amphibian.Patrol.Training.Api.Models
         public int Id { get; set; }
         public int PatrolId { get; set; }
         public int UserId { get; set; }
+        public Role? Role { get; set; }
     }
 }

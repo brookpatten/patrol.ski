@@ -77,6 +77,19 @@ namespace Amphibian.Patrol.Training.Api.Repositories
             return await _connection.SelectAsync<PatrolUser>(x => x.UserId == userId);
         }
 
+        public async Task<PatrolUser> GetPatrolUser(int userId, int patrolId)
+        {
+            var pus = await _connection.SelectAsync<PatrolUser>(x => x.UserId == userId && x.PatrolId == patrolId);
+            if(pus.Any())
+            {
+                return pus.First();
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         public async Task<PatrolUser> GetPatrolUser(int id)
         {
             return await _connection.GetAsync<PatrolUser>(id);

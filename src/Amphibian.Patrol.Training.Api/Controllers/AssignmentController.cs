@@ -9,8 +9,6 @@ using Amphibian.Patrol.Training.Api.Repositories;
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
 using Amphibian.Patrol.Training.Api.Extensions;
 using Amphibian.Patrol.Training.Api.Dtos;
 

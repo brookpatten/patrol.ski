@@ -130,8 +130,4 @@ namespace Amphibian.Patrol.Training.Configuration
         public string FromEmail { get; set; }
     }
 
-    public class AzureConfiguration
-    {
-        public string KeyVaultUrl { get; set; }
-    }
 }

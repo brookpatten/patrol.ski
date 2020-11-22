@@ -10,5 +10,9 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         Task<IEnumerable<User>> GetUsersInGroup(int groupId);
         Task<IEnumerable<Group>> GetGroupsForSection(int sectionId);
         Task<IEnumerable<int>> GetSectionIdsInPlanThatUserCanSign(int userId, int planId);
+        Task<Group> GetGroup(int id);
+        Task<GroupUser> InsertGroupUser(GroupUser groupUser);
+        Task DeleteGroupUser(GroupUser groupUser);
+        Task<GroupUser> GetGroupUser(int userId, int groupId);
     }
 }

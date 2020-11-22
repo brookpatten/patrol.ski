@@ -10,7 +10,7 @@ using Amphibian.Patrol.Training.Api.Models;
 
 namespace Amphibian.Patrol.Training.Api.Services
 {
-    public class EmailService
+    public class EmailService:IEmailService
     {
         private string _apiKey;
         private string _overrideTo;
@@ -50,6 +50,15 @@ Please follow use link to reset your password {_urlRoot}{resetRoute}",
                 HtmlContent = @$"Hello {user.FirstName},<br/>Please follow <a href='{_urlRoot}{resetRoute}'>this</a> link ({_urlRoot}{resetRoute}) to reset your password.",
             };
             var response = await Send(msg, new EmailAddress(user.Email, user.GetFullName()));
+        }
+
+        public async Task SendNewUserWelcomeEmail(User user, string patrolName, string welcomeRoute)
+        {
+
+        }
+        public async Task SendExistingUserWelcomeEmail(User user, string patrolName, string welcomeRoute)
+        {
+
         }
 
         private async Task<Response> Send(SendGridMessage message,params EmailAddress[] to)

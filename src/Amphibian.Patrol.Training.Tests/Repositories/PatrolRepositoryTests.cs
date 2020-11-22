@@ -146,5 +146,14 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
             Assert.AreEqual(_patrol.Id, allPatrolUsers.First().Id);
             Assert.AreEqual(_patrol.Name, allPatrolUsers.First().Name);
         }
+
+        [Test]
+        public async Task CanGetPatrolUserWithRole()
+        {
+            var pu = await _patrolRepository.GetPatrolUser(3, 1);
+
+
+            Assert.AreEqual(Role.Administrator, pu.Role);
+        }
     }
 }

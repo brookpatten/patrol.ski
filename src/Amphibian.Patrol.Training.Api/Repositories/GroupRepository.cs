@@ -22,6 +22,11 @@ namespace Amphibian.Patrol.Training.Api.Repositories
             _connection = connection;
         }
 
+        public async Task<Group> GetGroup(int id)
+        {
+            return _connection.Get<Group>(id);
+        }
+
         public async Task<IEnumerable<User>> GetUsersInGroup(int groupId)
         {
             return await _connection.QueryAsync<User>(
@@ -58,6 +63,23 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                 inner join sectiongroups sg on sg.groupid=gu.groupid
                 inner join plansections ps on ps.sectionid=sg.sectionid and ps.planid=@planId
                 where gu.userid=@userId", new { userId,planId });
+        }
+
+        public async Task<GroupUser> InsertGroupUser(GroupUser groupUser)
+        {
+            groupUser.Id = (int)await _connection.InsertAsync(groupUser);
+            return groupUser;
+        }
+
+        public async Task DeleteGroupUser(GroupUser groupUser)
+        {
+            await _connection.DeleteAsync(groupUser);
+        }
+
+        public async Task<GroupUser> GetGroupUser(int userId, int groupId)
+        {
+            var users = await _connection.SelectAsync<GroupUser>(x => x.GroupId == groupId && x.UserId == userId);
+            return users.FirstOrDefault();
         }
     }
 }

@@ -7,6 +7,10 @@ insert into users(email,firstname,lastname,passwordsalt,passwordhash,passwordhas
 values ('trainer','test','trainer',0xAC174909DBF93DCE1BC0AD2880391A8BACA2207D84FBBD89DB6D5500A20C7DB0,0x2DC0CDA8863338A36E3EDD1E41238B2542252876C4547C5C860F8D0F47A2B832,5);
 --2
 
+insert into users(email,firstname,lastname,passwordsalt,passwordhash,passwordhashiterations)
+values ('admin','admin','',0xAC174909DBF93DCE1BC0AD2880391A8BACA2207D84FBBD89DB6D5500A20C7DB0,0x2DC0CDA8863338A36E3EDD1E41238B2542252876C4547C5C860F8D0F47A2B832,5);
+--3
+
 insert into patrols(name) values ('Big Mountain Patrol');
 --1
 insert into patrols(name) values ('Tiny Mountain Patrol');
@@ -19,6 +23,10 @@ insert into patrolusers (patrolid,userid) values (2,1);
 insert into patrolusers (patrolid,userid) values (1,2);
 --3
 insert into patrolusers (patrolid,userid) values (2,2);
+--4
+insert into patrolusers (patrolid,userid,Role) values (1,3,'Administrator');
+--3
+insert into patrolusers (patrolid,userid,Role) values (2,3,'Administrator');
 --4
 
 --plans

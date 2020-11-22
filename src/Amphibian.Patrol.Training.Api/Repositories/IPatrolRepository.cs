@@ -11,6 +11,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         Task<IEnumerable<Models.Patrol>> GetPatrolsForUser(int userId);
         Task<IEnumerable<PatrolUser>> GetPatrolUsersForPatrol(int patrolId);
         Task<IEnumerable<PatrolUser>> GetPatrolUsersForUser(int userId);
+        Task<PatrolUser> GetPatrolUser(int userId, int patrolId);
         Task<IEnumerable<User>> GetUsersForPatrol(int patrolId);
         Task InsertPatrol(Models.Patrol patrol);
         Task InsertPatrolUser(PatrolUser patrolUser);
