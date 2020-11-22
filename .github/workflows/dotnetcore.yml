@@ -18,9 +18,9 @@ jobs:
       with:
         dotnet-version: 3.1.101
     - name: Build with dotnet
-      run: dotnet build src/schedule.sln
+      run: dotnet build src/Amphibian.Patrol.Training.sln
     - name: Run Tests
-      run: dotnet test src/schedule.sln --filter TestCategory!=Persistence
+      run: dotnet test src/Amphibian.Patrol.Training.sln --filter TestCategory!=Persistence
     - name: Setup Node.js for use with actions
       uses: actions/setup-node@v1.1.0
       # with:
@@ -31,10 +31,10 @@ jobs:
         # Optional scope for authenticating against scoped registries
         # scope: # optional
     - name: Install Node Frontend Dependencies
-      working-directory: ./src/Schedule.Web
+      working-directory: ./src/Amphibian.Patrol.Training.Web
       run: npm install
     - name: Build Node Frontend
-      working-directory: ./src/Schedule.Web
+      working-directory: ./src/Amphibian.Patrol.Training.Web
       run: npm run build
     # - name: Create Nuget Package
       # run: dotnet pack src/Schedule.Api/Schedule.Api.csproj
@@ -54,11 +54,11 @@ jobs:
     - name: Create Deployment Folder
       run: mkdir deployment
     - name: Copy .Net App to Deployment Folder
-      run: cp src/Schedule.Api/bin/Debug/netcoreapp3.1/* deployment -r
+      run: cp src/Amphibian.Patrol.Training.Api/bin/Debug/netcoreapp3.1/* deployment -r
     - name: Create Static Content Folder
       run: mkdir deployment/static
     - name: Copy Node Frontend to Deployment Folder
-      run: cp src/Schedule.Web/dist/* deployment/static -r
+      run: cp src/Amphibian.Patrol.Training.Web/dist/* deployment/static -r
     - name: Login to Azure
       uses: Azure/login@v1
       with:
@@ -86,4 +86,4 @@ jobs:
         # Applies to Web App Containers only: Path of the Docker-Compose file. Should be a fully qualified path or relative to the default working directory. Required for multi-container scenario
         # configuration-file: # optional
         # Enter the start up command. For ex. dotnet run or dotnet run
-        startup-command: ./Schedule.Api
+        startup-command: ./Amphibian.Patrol.Training.Api
