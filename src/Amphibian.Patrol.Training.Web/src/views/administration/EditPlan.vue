@@ -7,16 +7,17 @@
                     <thead class="thead-dark">
                         <tr>
                             <th scope="col">Skill</th>
-                            <th scope="col" v-for="level in levels" :key="level.index+'-level'">
-                              <div>{{level.level.name}}</div>
-                              
-                              <CButtonGroup v-if="edit">
-                                <CButton  v-if="edit" v-on:click="beginEditLevel(level.level)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
-                                <CButton size="sm" color="danger" v-on:click="removeLevel(level.level)"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
-                                <CButton v-if="last(levels)==level" size="sm" color="success">Level <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
-                                <CButton v-if="last(levels)==level" size="sm" color="primary" v-on:click="addSection(0,signOffTable.length,levels.length,1)">Section <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
-                              </CButtonGroup>
-                              
+                            <th scope="col" v-for="level in levels" :key="level ? level.index+'-level' : 'blank-level'">
+                              <template v-if="level">
+                                <div>{{level.level.name}}</div>
+                                
+                                <CButtonGroup v-if="edit">
+                                  <CButton  v-if="edit" v-on:click="beginEditLevel(level)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
+                                  <CButton size="sm" color="danger" v-on:click="removeLevel(level)"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
+                                  <CButton v-if="last(levels)==level" size="sm" color="success">Level <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
+                                  <CButton v-if="last(levels)==level" size="sm" color="primary" v-on:click="addSection(0,signOffTable.length,levels.length,1)">Section <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
+                                </CButtonGroup>
+                              </template>
                             </th>
                         </tr>
                     </thead>
@@ -38,7 +39,7 @@
                             <td>
                               <div>{{signOffRow.skill.name}}</div>
                               <CButtonGroup>
-                                <CButton  v-if="edit" v-on:click="beginEditSkill(signOffRow.skill)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
+                                <CButton  v-if="edit" v-on:click="beginEditSkill(signOffRow)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
                                 <CButton  v-if="edit" size="sm" color="success">Skill<CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
                                 <CButton  v-if="edit" v-on:click="removeSkill(signOffRow.skill)" size="sm" color="danger"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
                               </CButtonGroup>
@@ -70,9 +71,8 @@
               <CButtonGroup class="float-right">
                 <CButton v-if="!edit" v-on:click="edit=true" color="success">Edit <CIcon :content="$options.freeSet.cilPencil"/></CButton>
                 <CButton v-if="edit" v-on:click="edit=false" color="success">Preview <CIcon :content="$options.freeSet.cilMagnifyingGlass"/></CButton>
-                <CButton color="primary">Save <CIcon :content="$options.freeSet.cilSave"/></CButton>
+                <CButton color="primary" v-on:click="save">Save <CIcon :content="$options.freeSet.cilSave"/></CButton>
               </CButtonGroup>
-              
             </CCardFooter>
         </CCard>
         <CCard v-if="editor=='section'">
@@ -106,29 +106,48 @@
         <CCard v-if="editor=='skill'">
           <CCardHeader>Edit Skill</CCardHeader>
           <CCardBody>
-            <CSelect v-if="editSkill.id"
+            <CRow>
+              <CCol md="3">
+                <CSelect
                 label="Skill"
-                :value.sync="editSkill.id"
+                :value.sync="selectedSkillId"
                 :options="allSkillsOptions"
                 placeholder="None"></CSelect>
-             <CButton size="sm" v-on:click="editSkill.id=null"><CIcon :content="$options.freeSet.cilPlus"/></CButton>
-             <CInput v-model="newSkillName"></CInput>
-             <CButton size="sm" v-on:click="editSkill.id=allSkills[0].id"><CIcon :content="$options.freeSet.cilX"/></CButton>
+              </CCol>
+              <CCol md="3">
+                <CInput v-model="newSkillName" label="Name:" v-if="!selectedSkillId">
+                </CInput>
+              </CCol>
+            </CRow>
           </CCardBody>
           <CCardFooter>
               <CButtonGroup class="float-right">
-                <CButton v-if="editSkill.id || newSkillName.length>0" color="primary" v-on:click="endEditSkill">Ok <CIcon :content="$options.freeSet.cilCheck"/></CButton>
+                <CButton color="info" v-on:click="editor='plan'">Cancel <CIcon :content="$options.freeSet.cilX"/></CButton>
+                <CButton v-if="selectedSkillId || (newSkillName.length>0 && newSkillName.length<100)" color="primary" v-on:click="endEditSkill">Ok <CIcon :content="$options.freeSet.cilCheck"/></CButton>
               </CButtonGroup>
             </CCardFooter>
         </CCard>
         <CCard v-if="editor=='level'">
           <CCardHeader>Edit Level</CCardHeader>
           <CCardBody>
-            
+            <CRow>
+              <CCol md="3">
+                <CSelect
+                label="Skill"
+                :value.sync="selectedLevelId"
+                :options="allLevelsOptions"
+                placeholder="None"></CSelect>
+              </CCol>
+              <CCol md="3">
+                <CInput v-model="newLevelName" label="Name:" v-if="!selectedLevelId">
+                </CInput>
+              </CCol>
+            </CRow>
           </CCardBody>
           <CCardFooter>
               <CButtonGroup class="float-right">
-                <CButton color="primary" v-on:click="endEditLevel">Ok <CIcon :content="$options.freeSet.cilCheck"/></CButton>
+                <CButton color="info" v-on:click="editor='plan'">Cancel <CIcon :content="$options.freeSet.cilX"/></CButton>
+                <CButton v-if="selectedLevelId || (newLevelName.length>0 && newLevelName.length<100)" color="primary" v-on:click="endEditLevel">Ok <CIcon :content="$options.freeSet.cilCheck"/></CButton>
               </CButtonGroup>
             </CCardFooter>
         </CCard>
@@ -167,11 +186,13 @@ export default {
         editSection:{},
         
         //skill editor
-        editSkill:{},
+        editSkillRow:{},
+        selectedSkillId:0,
         newSkillName:'',
 
         //level editor
-        editLevel:{},
+        editLevelColumn:{},
+        selectedLevelId:0,
         newLevelName:''
     }
   },
@@ -179,7 +200,7 @@ export default {
         //fetch data
         getPlan(planId) {
           if(planId){
-            this.edit=false;
+            //this.edit=false;
             this.$http.get('plan/'+planId)
                 .then(response => {
                     console.log(response);
@@ -216,21 +237,83 @@ export default {
             return {groupId:g.id};
           });
         },
-        beginEditLevel(level){
-          this.editLevel = level;
+        beginEditLevel(sectionLevel){
+          this.editLevelColumn = sectionLevel;
+          this.selectedLevelId = sectionLevel.level.id;
           this.editor='level';
         },
         endEditLevel(){
-          //save a new level
-          this.editor='plan';
+          if(this.selectedLevelId){
+            var level = _.find(this.allLevels,{id:this.selectedLevelId});
+            this.swapLevelIntoPlan(this.editLevelColumn.level.id,this.editLevelColumn.columnIndex,level);
+          }
+          else{
+            this.$http.post('plan/levels/create',{patrolId:this.plan.patrolId,name:this.newLevelName})
+              .then(response => {
+                var newLevel = response.data;
+                this.allLevels.push(newLevel);
+                this.swapLevelIntoPlan(this.editLevelColumn.level.id,this.editLevelColumn.columnIndex,newLevel);
+              }).catch(response=>{
+                  console.log(response);
+              });
+          }
         },
-        beginEditSkill(skill){
-          this.editSkill = skill;
+        beginEditSkill(signOffRow){
+          this.editSkillRow = signOffRow;
+          this.selectedSkillId = signOffRow.skill.id;
           this.editor='skill';
         },
         endEditSkill(){
-          //save a new level
-          this.editor='plan';
+          if(this.selectedSkillId){
+            var skill = _.find(this.allSkills,{id:this.selectedSkillId});
+            this.swapSkillIntoPlan(this.editSkillRow.skill.id,this.editSkillRow.index,skill);
+          }
+          else{
+            this.$http.post('plan/skills/create',{patrolId:this.plan.patrolId,name:this.newSkillName})
+              .then(response => {
+                var newSkill = response.data;
+                this.allSkills.push(newSkill);
+                this.swapSkillIntoPlan(this.editSkillRow.skill.id,this.editSkillRow.index,newSkill);
+              }).catch(response=>{
+                  console.log(response);
+              });
+          }
+        },
+        swapSkillIntoPlan(oldSkillId,oldIndex,newSkill){
+            //swap the selected skill into the plan
+            for(var s=0;s<this.plan.sections.length;s++){
+              for(var sk=0;sk<this.plan.sections[s].skills.length;sk++){
+                if(this.plan.sections[s].skills[sk].skill.id==oldSkillId 
+                  && oldIndex == this.plan.sections[s].skills[sk].rowIndex){
+                  this.plan.sections[s].skills[sk].skill = newSkill;
+                  this.plan.sections[s].skills[sk].skillId = newSkill.id;
+                }
+              }
+            }
+
+            this.tabelize();
+            //save a new level
+            this.editor='plan';
+            this.editSkillRow = {};
+            this.selectedSkillId = null;
+        },
+        swapLevelIntoPlan(oldLevelId,oldIndex,newLevel){
+            //swap the selected skill into the plan
+            for(var s=0;s<this.plan.sections.length;s++){
+              for(var sk=0;sk<this.plan.sections[s].levels.length;sk++){
+                if(this.plan.sections[s].levels[sk].level.id==oldLevelId 
+                  && oldIndex == this.plan.sections[s].levels[sk].columnIndex){
+                  this.plan.sections[s].levels[sk].level = newLevel;
+                  this.plan.sections[s].levels[sk].levelId = newLevel.id;
+                }
+              }
+            }
+
+            this.tabelize();
+            //save a new level
+            this.editor='plan';
+            this.editLevelColumn = {};
+            this.selectedLevelId = null;
         },
         getGroups() {
           this.$http.get('user/groups/'+this.plan.patrolId)
@@ -401,21 +484,31 @@ export default {
               }
             }
           }
+          this.pruneEmptySections();
           this.tabelize();
         },
-        removeLevel(level,section){
-          var removeColumnIndex=-1;
+        pruneEmptySections(){
           for(var s=0;s<this.plan.sections.length;s++){
-            if(section==null || (section!=null && this.plan.sections[s]==section)){
+            if(this.plan.sections[s].skills.length==0 || this.plan.sections[s].levels.length==0){
+              this.plan.sections.splice(0,1);
+              s--;
+            }
+          }
+        },
+        removeLevel(level,section){
+          var removeColumnIndex=level.index;
+
+          for(var s=0;s<this.plan.sections.length;s++){
+            
+            if(!section || (section && this.plan.sections[s]==section)){
               for(var i=0;i<this.plan.sections[s].levels.length;i++){
-                if(this.plan.sections[s].levels[i].level==level || (level.id && this.plan.sections[s].levels[i].level.id==level.id)){
-                  removeColumnIndex = this.plan.sections[s].levels[i].columnIndex;
-                  //this.plan.sections[s].skills = 
+                if(this.plan.sections[s].levels[i].levelId==level.level.id
+                    && this.plan.sections[s].levels[i].columnIndex == removeColumnIndex){
                   this.plan.sections[s].levels.splice(i,1);
                 }
+                
                 //only recalc rowindexes if we're removing the skill entirely
-                if(section==null 
-                && removeColumnIndex>-1
+                if(!section 
                 && i < this.plan.sections[s].levels.length
                 && removeColumnIndex<this.plan.sections[s].levels[i].columnIndex
                 ){
@@ -423,14 +516,11 @@ export default {
                   //i--;
                 }
               }
-
-              if(this.plan.sections[s].levels.length==0){
-                _.pull(this.plan.sections,this.plan.sections[s]);
-                s--;
-              }
             }
           }
+          this.pruneEmptySections();
           this.tabelize();
+          console.log('removed level'+level.index)
         },
         
         //view model buildup
@@ -482,8 +572,6 @@ export default {
                     if(this.signOffTable[s].skill == null && sectionSkill!=null){
                         this.signOffTable[s].skill = sectionSkill.skill;
                         this.signOffTable[s].skillId = sectionSkill.skillId;
-                        this.signOffTable[s].skillIsNew = false;
-                        this.signOffTable[s].newSkillName = '';
                     }
 
                     //if we're in the first row of a section, make sure to set up a header row
@@ -618,6 +706,14 @@ export default {
             for(var i=0;i<this.levels.length;i++){
               this.levels[i].index=i;
             }
+        },
+        save(){
+          this.$http.post('plan/update',this.plan)
+            .then(response => {
+              this.$router.push({name:'Plans'});
+            }).catch(response=>{
+                console.log(response);
+            });
         }
   },
   mounted: function(){
@@ -625,10 +721,14 @@ export default {
   },
   computed: {
       allLevelsOptions(){
-        return _.map(this.allLevels,function(x){return {value:x.id,label:x.name};});
+        var options = _.map(this.allLevels,function(x){return {value:x.id,label:x.name};});
+        options.splice(0,0,{value:null,label:'(New...)'});
+        return options;
       },
       allSkillsOptions(){
-        return _.map(this.allSkills,function(x){return {value:x.id,label:x.name};});
+        var options = _.map(this.allSkills,function(x){return {value:x.id,label:x.name};});
+        options.splice(0,0,{value:null,label:'(New...)'});
+        return options;
       },
       selectedPatrolId: function () {
         return this.$store.state.selectedPatrolId;
