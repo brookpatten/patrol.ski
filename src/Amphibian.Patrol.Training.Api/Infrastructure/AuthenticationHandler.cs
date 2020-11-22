@@ -13,28 +13,23 @@ using System.Security.Claims;
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Services;
 using Amphibian.Patrol.Training.Api.Repositories;
+using AuthenticationService = Amphibian.Patrol.Training.Api.Services.AuthenticationService;
 
 namespace Amphibian.Patrol.Training.Api.Infrastructure
 {
     public class AuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        private readonly UserRepository _userRepository;
-        private readonly TokenRepository _tokenRepository;
-        private readonly PasswordService _passwordService;
-       
+        private readonly AuthenticationService _authenticationService;
+
         public AuthenticationHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
             ISystemClock clock,
-            TokenRepository tokenRepository,
-            UserRepository userRepository,
-            PasswordService passwordService)
+            AuthenticationService authenticationService)
             : base(options, logger, encoder, clock)
         {
-            _tokenRepository = tokenRepository;
-            _userRepository = userRepository;
-            _passwordService = passwordService;
+            _authenticationService = authenticationService;
         }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -57,13 +52,8 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
                     var credentials = credentialString.Split(new[] { ':' }, 2);
                     var email = credentials[0];
                     var password = credentials[1];
-                    var checkUser = await _userRepository.GetUser(email);
-                    if(_passwordService.CheckPassword(checkUser, password))
-                    {
-                        //success
-                        user = checkUser;
-                    }
-                    else
+                    user = await _authenticationService.AuthenticateUserWithPassword(email, password);
+                    if(user==null)
                     {
                         //bad password
                         return AuthenticateResult.Fail("Invalid Username or Password");
@@ -71,25 +61,10 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
                 }
                 else if(Guid.TryParse(credentialString,out tokenGuid))
                 {
-                    var token = await _tokenRepository.GetToken(tokenGuid);
-                    if(token==null)
+                    user = await _authenticationService.AuthenticateUserWithToken(tokenGuid);
+                    if(user==null)
                     {
-                        //invalid token
                         return AuthenticateResult.Fail("Invalid Authorization Header");
-                    }
-                    else if(DateTime.Now - token.LastRequestAt > new TimeSpan(1,0,0))
-                    {
-                        //expired token
-                        await _tokenRepository.DeleteToken(token);
-                        return AuthenticateResult.Fail("Invalid Authorization Header");
-                    }
-                    else
-                    {
-                        //valid token
-                        user = await _userRepository.GetUser(token.UserId);
-
-                        token.LastRequestAt = DateTime.Now;
-                        await _tokenRepository.UpdateToken(token);
                     }
                 }
                 else

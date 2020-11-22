@@ -58,6 +58,7 @@ namespace Amphibian.Patrol.Training.Api
             });
             services.AddScoped<UserRepository,UserRepository>();
             services.AddScoped<TokenRepository, TokenRepository>();
+            services.AddScoped<Amphibian.Patrol.Training.Api.Services.AuthenticationService, Amphibian.Patrol.Training.Api.Services.AuthenticationService>();
             services.AddScoped<Amphibian.Patrol.Training.Api.Services.PasswordService, Amphibian.Patrol.Training.Api.Services.PasswordService>(sp=>new Amphibian.Patrol.Training.Api.Services.PasswordService(5,32));
         }
 
