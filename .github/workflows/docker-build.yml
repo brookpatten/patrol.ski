@@ -20,7 +20,8 @@ jobs:
       with:
         username: patroltraining
         password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
-        repository: patroltraining.azurecr.io/frontend
+        registry: patroltraining.azurecr.io
+        repository: frontend
         tags: latest
         dockerfile: src/Amphibian.Patrol.Training.Web/Dockerfile
     - name: Build Api
@@ -28,6 +29,7 @@ jobs:
       with:
         username: patroltraining
         password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
-        repository: patroltraining.azurecr.io/api
+        registry: patroltraining.azurecr.io
+        repository: api
         tags: latest
         dockerfile: src/Dockerfile
