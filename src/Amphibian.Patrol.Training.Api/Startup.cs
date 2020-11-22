@@ -61,6 +61,8 @@ namespace Amphibian.Patrol.Training.Api
             services.AddScoped<ITokenRepository, TokenRepository>();
             services.AddScoped<Amphibian.Patrol.Training.Api.Services.IAuthenticationService, Amphibian.Patrol.Training.Api.Services.AuthenticationService>();
             services.AddScoped<Amphibian.Patrol.Training.Api.Services.IPasswordService, Amphibian.Patrol.Training.Api.Services.PasswordService>(sp=>new Amphibian.Patrol.Training.Api.Services.PasswordService(5,32));
+
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -81,15 +83,18 @@ namespace Amphibian.Patrol.Training.Api
                 staticFilesPath = Path.Combine(Directory.GetCurrentDirectory(), "static");
             }
 
-            app.UseDefaultFiles(new DefaultFilesOptions() 
-            { 
-                DefaultFileNames = new List<string>() { "index.html" }, 
-                FileProvider = new PhysicalFileProvider(staticFilesPath)
-            });
-            app.UseStaticFiles(new StaticFileOptions()
+            if (Directory.Exists(staticFilesPath))
             {
-                FileProvider = new PhysicalFileProvider(staticFilesPath),
-            });
+                app.UseDefaultFiles(new DefaultFilesOptions()
+                {
+                    DefaultFileNames = new List<string>() { "index.html" },
+                    FileProvider = new PhysicalFileProvider(staticFilesPath)
+                });
+                app.UseStaticFiles(new StaticFileOptions()
+                {
+                    FileProvider = new PhysicalFileProvider(staticFilesPath),
+                });
+            }
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>

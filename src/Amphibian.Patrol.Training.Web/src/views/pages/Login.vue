@@ -29,7 +29,7 @@
                   </CCol>
                   <CCol col="6" class="text-right">
                     <CButton color="link" class="px-0">Forgot password?</CButton>
-                    <CButton color="link" class="d-md-none">Register now!</CButton>
+                    <CButton color="link" class="d-md-none" :to="{name:'Register'}">Register now!</CButton>
                   </CCol>
                 </CRow>
               </CForm>
@@ -46,6 +46,7 @@
             <CButton
               color="primary"
               class="active mt-3"
+               :to="{name:'Register'}"
             >
               Register Now!
             </CButton>

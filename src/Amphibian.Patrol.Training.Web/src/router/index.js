@@ -103,7 +103,7 @@ function configRoutes () {
   return [
     {
       path: '/',
-      redirect: '/pages/landing',
+      redirect: '/dashboard',
       name: '',
       component: TheContainer,
       children: [

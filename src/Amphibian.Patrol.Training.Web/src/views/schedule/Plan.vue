@@ -4,6 +4,7 @@
             <GoogleLogin :params="googleParams" :onSuccess="onSuccess" :onFailure="onFailure">Login</GoogleLogin>
         </CCard>
         <CCard>
+            <CButton v-on:click="test()">Test</CButton>
         </CCard>
         <CCard>
             <CCardHeader>
@@ -87,6 +88,15 @@ export default {
         },
         onFailure(err) {
             console.log(err);
+        },
+        test() {
+            console.log('test');
+            this.$http.get('schedule/test')
+                .then(response => {
+                    console.log(response);
+                }).catch(response => {
+                    console.log(response);
+                });
         }
   }
 }
