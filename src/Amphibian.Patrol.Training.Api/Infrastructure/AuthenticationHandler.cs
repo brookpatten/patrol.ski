@@ -66,6 +66,8 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
                             else
                             {
                                 //make a token and put it in the response header?
+                                var token = await _authenticationService.CreateNewTokenForUser(user);
+                                Response.Headers.Add("Authorization", "Token " + token.TokenGuid);
                             }
                         }
                     }
@@ -78,10 +80,6 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
                             if (user == null)
                             {
                                 return AuthenticateResult.Fail("Invalid Authorization Header");
-                            }
-                            else
-                            {
-                                //renew the token?
                             }
                         }
                     }
