@@ -10,8 +10,6 @@ using Dapper.Contrib.Extensions;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
@@ -26,21 +24,17 @@ namespace Amphibian.Patrol.Training.Api.Controllers
     public class ScheduleController : ControllerBase
     {
         private readonly ILogger<ScheduleController> _logger;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public ScheduleController(ILogger<ScheduleController> logger, IHttpContextAccessor httpContextAccessor)
+        public ScheduleController(ILogger<ScheduleController> logger)
         {
             _logger = logger;
-            _httpContextAccessor = httpContextAccessor;
         }
 
         [Authorize]
         [HttpGet]
         [Route("[controller]/[action]")]
-        public async Task<IActionResult> Test()
+        public void Test()
         {
-            var userId = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value;
-            return Ok(userId);
         }
     }
 }

@@ -100,13 +100,8 @@ namespace Amphibian.Patrol.Training.Tests.Infrastructure
 
             _context.Request.Headers.Add("Authorization", new Microsoft.Extensions.Primitives.StringValues(credentialString));
 
-            var userObj = new User() { Email = user, Id = 1 };
             _authenticationServiceMock.Setup(x => x.AuthenticateUserWithPassword(user, password))
-                .Returns(Task.FromResult(userObj))
-                .Verifiable();
-
-            _authenticationServiceMock.Setup(x => x.CreateNewTokenForUser(userObj)).
-                Returns(Task.FromResult(new Token() { UserId = userObj.Id,TokenGuid = Guid.NewGuid()}))
+                .Returns(Task.FromResult(new User() { Email = user, Id = 1 }))
                 .Verifiable();
 
             var result = await _authenticationHandler.AuthenticateAsync();
