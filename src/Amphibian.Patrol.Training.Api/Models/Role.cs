@@ -12,8 +12,37 @@ namespace Amphibian.Patrol.Training.Api.Models
         Coordinator
     }
 
+    public enum Permission
+    {
+        MaintainPlans,
+        MaintainUsers,
+        MaintainGroups,
+        MaintainAssignments,
+        RevokeSignatures,
+        MaintainShifts,
+        MaintainPatrol
+    }
+
     public static class RoleExtensions
     {
+        public static Dictionary<Role, IList<Permission>> DefaultPermissions = new Dictionary<Role, IList<Permission>>()
+        {
+            {Role.Administrator,Enum.GetValues(typeof(Permission)).Cast<Permission>().ToList() },
+            {Role.Coordinator, new List<Permission>(){Permission.MaintainAssignments} }
+        };
+
+        public static IList<Permission> Permissions(this Role? role)
+        {
+            if (role.HasValue)
+            {
+                return DefaultPermissions[role.Value];
+            }
+            else
+            {
+                return new List<Permission>();
+            }
+        }
+
         public static bool FalseIfNullOrTrueIf(this Role? role,Func<Role,bool> trueIf)
         {
             if(!role.HasValue)
@@ -25,37 +54,39 @@ namespace Amphibian.Patrol.Training.Api.Models
                 return trueIf(role.Value);
             }
         }
-        public static bool FalseIfNullOrTrueIfIn(this Role? role, params Role[] roles)
+
+        public static bool Can(this Role? role, Permission permission)
         {
-            return role.FalseIfNullOrTrueIf(x => roles.Contains(x));
+            return role.FalseIfNullOrTrueIf(x => DefaultPermissions[x].Contains(permission));
         }
+
         public static bool CanMaintainPlans(this Role? role)
         {
-            return role.FalseIfNullOrTrueIfIn(Role.Administrator);
+            return role.Can(Permission.MaintainPlans);
         }
         public static bool CanMaintainUsers(this Role? role)
         {
-            return role.FalseIfNullOrTrueIfIn(Role.Administrator);
+            return role.Can(Permission.MaintainUsers);
         }
         public static bool CanMaintainGroups(this Role? role)
         {
-            return role.FalseIfNullOrTrueIfIn(Role.Administrator);
+            return role.Can(Permission.MaintainGroups);
         }
         public static bool CanMaintainAssignments(this Role? role)
         {
-            return role.FalseIfNullOrTrueIfIn(Role.Administrator,Role.Coordinator);
+            return role.Can(Permission.MaintainAssignments);
         }
         public static bool CanRevokeSignatures(this Role? role)
         {
-            return role.FalseIfNullOrTrueIfIn(Role.Administrator, Role.Coordinator);
+            return role.Can(Permission.RevokeSignatures);
         }
         public static bool CanMaintainShifts(this Role? role)
         {
-            return role.FalseIfNullOrTrueIfIn(Role.Administrator, Role.Coordinator);
+            return role.Can(Permission.MaintainShifts);
         }
         public static bool CanmaintainPatrol(this Role? role)
         {
-            return role.FalseIfNullOrTrueIfIn(Role.Administrator);
+            return role.Can(Permission.MaintainPatrol);
         }
     }
 }

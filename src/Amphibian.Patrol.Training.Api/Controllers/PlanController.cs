@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Amphibian.Patrol.Training.Api.Extensions;
+using Amphibian.Patrol.Training.Api.Infrastructure;
+using Amphibian.Patrol.Training.Api.Dtos;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
@@ -58,6 +60,52 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             if(userPatrols.Any(x=>x.Id==plan.PatrolId))
             {
                 return Ok(plan);
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        [HttpPost]
+        [Route("plan/create")]
+        [Authorize]
+        [UnitOfWork]
+        public async Task<IActionResult> Create(int patrolId, string name, int? copyFromPlanId)
+        {
+            var userPatrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
+            if (userPatrols.Any(x => x.Id == patrolId))
+            {
+                var plan = await _planService.CreatePlan(name, patrolId, copyFromPlanId);
+                return Ok(plan);
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        [HttpPost]
+        [Route("plan/update")]
+        [Authorize]
+        [UnitOfWork]
+        public async Task<IActionResult> Update(PlanDto dto)
+        {
+            var existingPlan = await _planRepository.GetPlan(dto.Id);
+
+            var userPatrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
+            if (userPatrols.Any(x => x.Id == existingPlan.PatrolId))
+            {
+                if (await _planService.IsPlanFormatValid(dto))
+                {
+                    await _planService.UpdatePlan(dto);
+                    var updatedPlan = await _planService.GetPlan(dto.Id, User.GetUserId());
+                    return Ok(updatedPlan);
+                }
+                else
+                {
+                    return Problem("The plan is invalid");
+                }
             }
             else
             {

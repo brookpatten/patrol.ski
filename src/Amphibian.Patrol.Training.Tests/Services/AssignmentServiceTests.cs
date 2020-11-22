@@ -216,9 +216,9 @@ namespace Amphibian.Patrol.Training.Tests.Services
                 .Returns(Task.FromResult((new List<int>() { sectionId }).AsEnumerable()));
 
             _patrolRepository.Setup(x => x.GetPatrolsForUser(userId))
-                .Returns(Task.FromResult((new List<Amphibian.Patrol.Training.Api.Models.Patrol>()
+                .Returns(Task.FromResult((new List<PatrolUserDto>()
             {
-                new Amphibian.Patrol.Training.Api.Models.Patrol()
+                new PatrolUserDto()
                 {
                     Id = patrolId,
                     Name = "Patrol"
@@ -294,9 +294,9 @@ namespace Amphibian.Patrol.Training.Tests.Services
                 .Returns(Task.FromResult((new List<int>() { sectionId }).AsEnumerable()));
 
             _patrolRepository.Setup(x => x.GetPatrolsForUser(userId))
-                .Returns(Task.FromResult((new List<Amphibian.Patrol.Training.Api.Models.Patrol>()
+                .Returns(Task.FromResult((new List<PatrolUserDto>()
             {
-                new Amphibian.Patrol.Training.Api.Models.Patrol()
+                new PatrolUserDto()
                 {
                     Id = patrolId+1,
                     Name = "Patrol"
@@ -372,9 +372,9 @@ namespace Amphibian.Patrol.Training.Tests.Services
                 .Returns(Task.FromResult((new List<int>() { sectionId }).AsEnumerable()));
 
             _patrolRepository.Setup(x => x.GetPatrolsForUser(userId))
-                .Returns(Task.FromResult((new List<Amphibian.Patrol.Training.Api.Models.Patrol>()
+                .Returns(Task.FromResult((new List<PatrolUserDto>()
             {
-                new Amphibian.Patrol.Training.Api.Models.Patrol()
+                new PatrolUserDto()
                 {
                     Id = patrolId,
                     Name = "Patrol"
@@ -450,9 +450,9 @@ namespace Amphibian.Patrol.Training.Tests.Services
                 .Returns(Task.FromResult((new List<int>() { }).AsEnumerable()));
 
             _patrolRepository.Setup(x => x.GetPatrolsForUser(userId))
-                .Returns(Task.FromResult((new List<Amphibian.Patrol.Training.Api.Models.Patrol>()
+                .Returns(Task.FromResult((new List<PatrolUserDto>()
             {
-                new Amphibian.Patrol.Training.Api.Models.Patrol()
+                new PatrolUserDto()
                 {
                     Id = patrolId,
                     Name = "Patrol"

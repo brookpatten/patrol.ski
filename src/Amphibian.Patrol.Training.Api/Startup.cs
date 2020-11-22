@@ -39,6 +39,7 @@ using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Mappings;
 using Amphibian.Patrol.Training.Api.Infrastructure;
 using System.Reflection;
+using System.Text.Json.Serialization;
 
 namespace Amphibian.Patrol.Training.Api
 {
@@ -65,7 +66,11 @@ namespace Amphibian.Patrol.Training.Api
             services.AddSingleton(serviceConfiguration);
 
             services.AddControllers()
-                .AddFluentValidation();
+                .AddFluentValidation()
+                .AddJsonOptions(options => {
+                    options.JsonSerializerOptions.IgnoreNullValues = true;
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
 
             services.AddSwaggerGen(c =>
             {
@@ -125,6 +130,7 @@ namespace Amphibian.Patrol.Training.Api
             services.AddScoped<IPlanService, PlanService>();
             services.AddScoped<IAssignmentService, AssignmentService>();
             services.AddScoped<IUserService, UserService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

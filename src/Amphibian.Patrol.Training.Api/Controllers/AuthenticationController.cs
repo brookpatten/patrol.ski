@@ -147,6 +147,5 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             var patrols = await _patrolRepository.GetPatrolsForUser(userId);
             return Ok(patrols);
         }
-
     }
 }

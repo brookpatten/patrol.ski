@@ -9,6 +9,7 @@ using Dommel;
 
 using Amphibian.Patrol.Training.Api.Models;
 using System.Data.Common;
+using Amphibian.Patrol.Training.Api.Dtos;
 
 namespace Amphibian.Patrol.Training.Api.Repositories
 {
@@ -60,12 +61,13 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                 .ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<Amphibian.Patrol.Training.Api.Models.Patrol>> GetPatrolsForUser(int userId)
+        public async Task<IEnumerable<PatrolUserDto>> GetPatrolsForUser(int userId)
         {
-            return await _connection.QueryAsync<Amphibian.Patrol.Training.Api.Models.Patrol>(
+            return await _connection.QueryAsync<PatrolUserDto>(
                 @$"select 
                     p.id
-                    ,p.name 
+                    ,p.name
+                    ,pu.role
                     from patrolusers pu
                     inner join patrols p on p.id=pu.patrolid
                    where 

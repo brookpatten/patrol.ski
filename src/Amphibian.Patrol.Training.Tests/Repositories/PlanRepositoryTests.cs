@@ -10,6 +10,7 @@ using Dommel;
 using System.Linq;
 using AutoMapper;
 using Amphibian.Patrol.Training.Api.Mappings;
+using Amphibian.Patrol.Training.Api.Dtos;
 
 namespace Amphibian.Patrol.Training.Tests.Repositories
 {
@@ -19,7 +20,7 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         private PatrolRepository _patrolRepository;
         private UserRepository _userRepository;
         private User _user;
-        private Amphibian.Patrol.Training.Api.Models.Patrol _patrol;
+        private PatrolUserDto _patrol;
         private Plan _plan;
         private IMapper _mapper;
 
