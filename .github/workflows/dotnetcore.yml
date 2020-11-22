@@ -30,14 +30,12 @@ jobs:
         # registry-url: # optional
         # Optional scope for authenticating against scoped registries
         # scope: # optional
-    - name: Change to frontend directory
-      run: cd src/Schedule.Web
     - name: Install Node Frontend Dependencies
+      working-directory: ./src/Schedule.Web
       run: npm install
     - name: Build Node Frontend
+      working-directory: ./src/Schedule.Web
       run: npm run build
-    - name: Change to working directory
-      run: cd ../../
     # - name: Create Nuget Package
       # run: dotnet pack src/Schedule.Api/Schedule.Api.csproj
     # - name: Push Nupkg to GitHub Packages
@@ -60,7 +58,7 @@ jobs:
     - name: Copy .Net App Config to Deployment Folder
       run: cp src/Schedule.Api/*.json deployment
     - name: Copy Node Frontend to Deployment Folder
-      run: cp src/Schedule.Web/dist/* deployment
+      run: cp src/Schedule.Web/dist deployment
     - name: Login to Azure
       uses: Azure/login@v1
       with:
