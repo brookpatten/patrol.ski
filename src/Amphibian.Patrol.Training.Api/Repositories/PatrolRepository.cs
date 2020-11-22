@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 using System.Data;
 
 using Dapper;
-using Dapper.Contrib;
-using Dapper.Contrib.Extensions;
+using Dommel;
 
 using Amphibian.Patrol.Training.Api.Models;
 
@@ -29,7 +28,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task InsertPatrol(Amphibian.Patrol.Training.Api.Models.Patrol patrol)
         {
-            await _connection.InsertAsync(patrol)
+            patrol.Id = (int)await _connection.InsertAsync(patrol)
                 .ConfigureAwait(false);
         }
 
@@ -41,15 +40,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task<IEnumerable<PatrolUser>> GetPatrolUsersForPatrol(int patrolId)
         {
-            return await _connection.QueryAsync<PatrolUser>(
-                @$"select 
-                    id
-                    ,patrolid
-                    ,userid 
-                   from patrolusers 
-                   where 
-                    patrolid=@patrolId", new { patrolId })
-                .ConfigureAwait(false);
+            return await _connection.SelectAsync<PatrolUser>(x => x.PatrolId == patrolId);
         }
 
         public async Task<IEnumerable<User>> GetUsersForPatrol(int patrolId)
@@ -83,15 +74,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task<IEnumerable<PatrolUser>> GetPatrolUsersForUser(int userId)
         {
-            return await _connection.QueryAsync<PatrolUser>(
-                @$"select 
-                    id
-                    ,patrolid
-                    ,userid 
-                   from patrolusers 
-                   where 
-                    userid=@userId", new { userId })
-                .ConfigureAwait(false);
+            return await _connection.SelectAsync<PatrolUser>(x => x.UserId == userId);
         }
 
         public async Task<PatrolUser> GetPatrolUser(int id)
@@ -101,19 +84,13 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task InsertPatrolUser(PatrolUser patrolUser)
         {
-            await _connection.InsertAsync(patrolUser)
+            patrolUser.Id = (int)await _connection.InsertAsync(patrolUser)
                 .ConfigureAwait(false);
         }
 
         public async Task DeletePatrolUser(int patrolId, int userId)
         {
-            await _connection.ExecuteAsync(
-                @$"delete 
-                   from patrolusers
-                   where 
-                    patrolid=@patrolId 
-                    and userid=@userId", new { patrolId, userId })
-                .ConfigureAwait(false);
+            await _connection.DeleteMultipleAsync<PatrolUser>(x => x.PatrolId == patrolId && x.UserId == userId);
         }
     }
 }

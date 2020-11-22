@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Repositories;
-using Dapper.Contrib.Extensions;
+using Dommel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using AutoMapper;

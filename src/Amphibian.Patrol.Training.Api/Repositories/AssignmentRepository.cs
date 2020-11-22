@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 using System.Data;
 
 using Dapper;
-using Dapper.Contrib;
-using Dapper.Contrib.Extensions;
+using Dommel;
 
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Dtos;
@@ -82,7 +81,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public Task<IEnumerable<Signature>> GetSignaturesForAssignment(int assignmentId)
         {
-            return _connection.QueryAsync<Signature>(@"select id,assignmentid,sectionskillid,sectionlevelid,signedbyuserid,signedat from signatures where assignmentid=@assignmentId", new { assignmentId });
+            return _connection.SelectAsync<Signature>(x => x.AssignmentId == assignmentId);
         }
 
         public Task<IEnumerable<SignatureDto>> GetSignaturesWithUsersForAssignment(int assignmentId)
@@ -113,7 +112,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task InsertSignature(Signature signature)
         {
-            await _connection.InsertAsync(signature);
+            signature.Id=(int)await _connection.InsertAsync(signature);
         }
     }
 }

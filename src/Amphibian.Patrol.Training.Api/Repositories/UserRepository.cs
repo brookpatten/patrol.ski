@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 
 using System.Data;
 using Dapper;
-using Dapper.Contrib;
-using Dapper.Contrib.Extensions;
+using Dommel;
 
 using Amphibian.Patrol.Training.Api.Models;
 
@@ -23,7 +22,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task InsertUser(User user)
         {
-            user.Id = await _connection.InsertAsync(user).ConfigureAwait(false);
+            user.Id = (int)await _connection.InsertAsync(user).ConfigureAwait(false);
         }
 
         public async Task UpdateUser(User user)
@@ -39,8 +38,15 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task<User> GetUser(string email)
         {
-            var user = await _connection.QuerySingleOrDefaultAsync<User>(@"select id,email,firstname,lastname,passwordsalt,passwordhash,passwordhashiterations from users where email=@email", new { email }).ConfigureAwait(false);
-            return user;
+            var users = await _connection.SelectAsync<User>(x => x.Email == email);
+            if(users.Any())
+            {
+                return users.First();
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }

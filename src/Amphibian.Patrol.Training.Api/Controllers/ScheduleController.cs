@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
 using Dapper;
-using Dapper.Contrib.Extensions;
+using Dommel;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Authorization;
@@ -39,9 +39,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [Route("[controller]/[action]")]
         public IActionResult Test()
         {
-            var userId = User.GetUserId();
-            
-            return Ok(userId);
+            return Ok();
         }
     }
 }

@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 using System.Data;
 using Dapper;
-using Dapper.Contrib;
+using Dommel;
 
-using Dapper.Contrib.Extensions;
 using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Amphibian.Patrol.Training.Api.Repositories
@@ -24,7 +23,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task InsertToken(Token token)
         {
-            token.Id = await _connection.InsertAsync(token).ConfigureAwait(false);
+            token.Id = (int)await _connection.InsertAsync(token).ConfigureAwait(false);
         }
 
         public async Task UpdateToken(Token token)
@@ -40,8 +39,15 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task<Token> GetToken(Guid tokenGuid)
         {
-            var token = await _connection.QuerySingleOrDefaultAsync<Token>(@"select Id,TokenGuid,UserId,CreatedAt,LastRequestAt from tokens where TokenGuid=@tokenGuid", new { tokenGuid }).ConfigureAwait(false);
-            return token;
+            var tokens = await _connection.SelectAsync<Token>(x => x.TokenGuid == tokenGuid);
+            if(tokens.Any())
+            {
+                return tokens.First();
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public async Task DeleteToken(Token token)
