@@ -15,6 +15,7 @@
     <PackageReference Include="AutoMapper" Version="9.0.0" />
     <PackageReference Include="dapper" Version="2.0.35" />
     <PackageReference Include="Dommel" Version="1.11.0" />
+    <PackageReference Include="Figgle" Version="0.4.0" />
     <PackageReference Include="FluentValidation" Version="8.6.2" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="8.6.2" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />

@@ -55,3 +55,13 @@ jobs:
         repository: brookpatten/patrol.training/onestop
         tags: latest
         path: ./src
+        
+  azure-dev-update:
+  
+    needs: [build_onestop]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Trigger Dev Update
+      uses: joelwmale/webhook-action@master
+      with:
+        url: ${{ secrets.DEV_WEBHOOK }}

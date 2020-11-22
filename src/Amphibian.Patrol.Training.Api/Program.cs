@@ -19,13 +19,46 @@ namespace Amphibian.Patrol.Training.Api
     {
         public static void Main(string[] args)
         {
+            PrintBanners();
+
             var builder = CreateHostBuilder(args);
             var host = builder.Build();
             host.Run();
         }
 
+        public static void PrintBanners()
+        {
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine(Figgle.FiggleFonts.Standard.Render("Patrol.Training"));
+
+            var env = PatrolTrainingApiConfiguration.Environment;
+            if (env == "Local")
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+            else if (env == "Development")
+            {
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
+            }
+            else if (env == "Test")
+            {
+                Console.ForegroundColor = ConsoleColor.Yellow;
+            }
+            else if (env == "Production")
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+
+            Console.WriteLine(Figgle.FiggleFonts.SlantSmall.Render(env));
+
+
+            Console.ForegroundColor = ConsoleColor.White;
+        }
+
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
+            
+
             var builder = Host.CreateDefaultBuilder(args)
             .ConfigureAppConfiguration((hostingContext, config) =>
             {

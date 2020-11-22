@@ -4,10 +4,6 @@ using System.Linq;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
 using System.IO;
-using Microsoft.Azure.KeyVault;
-using Microsoft.Azure.Services.AppAuthentication;
-using Microsoft.Extensions.Configuration.AzureKeyVault;
-using Azure.Identity;
 using System.Net.Http;
 
 namespace Amphibian.Patrol.Training.Configuration
@@ -16,7 +12,7 @@ namespace Amphibian.Patrol.Training.Configuration
     {
         public DatabaseConfiguration Database { get; set; }
         public TestConfiguration Test { get; set; }
-        public EmailConfiguration Email{get;set;}
+        public EmailConfiguration Email { get; set; }
         public AppConfiguration App { get; set; }
 
         public PatrolTrainingApiConfiguration()
@@ -25,6 +21,19 @@ namespace Amphibian.Patrol.Training.Configuration
             Test = new TestConfiguration();
             Email = new EmailConfiguration();
             App = new AppConfiguration();
+        }
+
+        public static string Environment
+        {
+            get
+            {
+                var environmentName = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+                if (string.IsNullOrEmpty(environmentName))
+                {
+                    environmentName = "Local";
+                }
+                return environmentName;
+            }
         }
 
         public static (IConfiguration,PatrolTrainingApiConfiguration) LoadFromJsonConfig(IConfigurationBuilder builder=null, params string[] basePaths)
@@ -42,7 +51,8 @@ namespace Amphibian.Patrol.Training.Configuration
                 if (File.Exists(Path.Combine(path, "appsettings.json")))
                 {
                     configBasePath = path;
-                    Console.WriteLine("Found appsettings.json in " + path);
+                    
+                    Console.WriteLine("Configuration: " + path);
                     //logger.LogInformation($"Found Configuration in {configBasePath}");
                     break;
                 }
@@ -54,14 +64,7 @@ namespace Amphibian.Patrol.Training.Configuration
                 throw new FileNotFoundException("Failed to find appsettings.json");
             }
 
-            //this is a little backward, but we always read the env from the environment variable so that we can figure out which config to load
-            //the config could potentially contain an environment as well
-            //this name "ASPNETCORE_ENVIRONMENT" is special for asp.net core and triggers other behaviors in asp.net core
-            var environmentName = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
-            if (string.IsNullOrEmpty(environmentName))
-            {
-                environmentName = "Local";
-            }
+            var environmentName = Environment;
             Console.WriteLine("Environment: "+environmentName);
             var machineName = System.Environment.MachineName;
             Console.WriteLine("Machine: " + machineName);
@@ -87,27 +90,8 @@ namespace Amphibian.Patrol.Training.Configuration
             
             var serviceConfiguration = config.Get<PatrolTrainingApiConfiguration>();
 
-            //if config specifies an azure secret url, we need to load those secrets into config too
-            //if (!string.IsNullOrEmpty(serviceConfiguration.Azure.KeyVaultUrl))
-            //{
-            //    Console.WriteLine("Configuring from Key Vault " + serviceConfiguration.Azure.KeyVaultUrl);
-            //    builder = builder.AddAzureKeyVault(serviceConfiguration.Azure.KeyVaultUrl);
-
-            //    //do it again, this time with azure keyvault
-            //    config = builder.Build();
-            //    serviceConfiguration = config.Get<PatrolTrainingApiConfiguration>();
-
-            //    Console.WriteLine("Configuration Complete");
-
-            //    if (string.IsNullOrEmpty(serviceConfiguration.Database.ConnectionString))
-            //    {
-            //        throw new KeyNotFoundException("Database.ConnectionString cannot be null or empty, please verify configuration");
-            //    }
-            //    if (string.IsNullOrEmpty(serviceConfiguration.Email.SendGridApiKey))
-            //    {
-            //        throw new KeyNotFoundException("Email.SendGridApiKey cannot be null or empty, please verify configuration");
-            //    }
-            //}
+            var connStringBuilder = new Microsoft.Data.SqlClient.SqlConnectionStringBuilder(serviceConfiguration.Database.ConnectionString);
+            Console.WriteLine("Database: " + connStringBuilder.DataSource + " "+ connStringBuilder.InitialCatalog);
 
             return (config,serviceConfiguration);
         }

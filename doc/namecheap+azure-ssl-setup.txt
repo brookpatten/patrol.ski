@@ -1,0 +1,7 @@
+#generate csr
+winpty openssl req -newkey rsa:2048
+
+#choose "all others" when re-issuing through namecheap
+
+#export to pfx for azure
+winpty openssl pkcs12 -export -out certificate.pfx -inkey privkey.pem -in dev_patrol_training.crt -certfile dev_patrol_training.ca-bundle
