@@ -8,5 +8,6 @@ namespace Amphibian.Patrol.Training.Api.Services
     {
         Task<AssignmentDto> GetAssignment(int id);
         Task CreateSignatures(int assignmentId, int byUserId, IList<NewSignatureDto> newSignatures);
+        Task<bool> AllowCreateSignatures(int assignmentId, int byUserId, IList<NewSignatureDto> newSignatures);
     }
 }

@@ -22,6 +22,9 @@ namespace Amphibian.Patrol.Training.Tests.Services
         private IMapper _mapper;
         private Mock<ILogger<AssignmentService>> _loggerMock;
         private Mock<IPlanService> _planServiceMock;
+        private Mock<IGroupRepository> _groupRepositoryMock;
+        private Mock<IPlanRepository> _planRepositoryMock;
+        private Mock<IPatrolRepository> _patrolRepository;
 
         [SetUp]
         public void Setup()
@@ -30,8 +33,11 @@ namespace Amphibian.Patrol.Training.Tests.Services
             _mapper = DtoMappings.GetMapperConfiguration().CreateMapper();
             _loggerMock = new Mock<ILogger<AssignmentService>>();
             _planServiceMock = new Mock<IPlanService>();
+            _patrolRepository = new Mock<IPatrolRepository>();
+            _groupRepositoryMock = new Mock<IGroupRepository>();
+            _planRepositoryMock = new Mock<IPlanRepository>();
             
-            _assignmentService = new AssignmentService(_assignmentRepositoryMock.Object,_planServiceMock.Object, _loggerMock.Object, _mapper);
+            _assignmentService = new AssignmentService(_assignmentRepositoryMock.Object,_planServiceMock.Object, _loggerMock.Object,_planRepositoryMock.Object,_patrolRepository.Object,_groupRepositoryMock.Object, _mapper);
         }
 
         [Test]
@@ -41,7 +47,6 @@ namespace Amphibian.Patrol.Training.Tests.Services
             _assignmentRepositoryMock.Setup(x => x.GetAssignment(assignmentId))
                 .Returns(Task.FromResult(new Assignment() { Id = assignmentId,PlanId=1,UserId=1,AssignedAt=new System.DateTime(2020,1,1,0,0,0) }))
                 .Verifiable();
-
 
             _assignmentRepositoryMock.Setup(x => x.GetAssignment(assignmentId))
                 .Returns(Task.FromResult(new Assignment() { Id=1,PlanId=1,UserId=1}))
@@ -144,6 +149,318 @@ namespace Amphibian.Patrol.Training.Tests.Services
 
             
             _assignmentRepositoryMock.Verify();
+        }
+
+        [Test]
+        public async Task AllowCreateSignatureIfValid()
+        {
+            var assignmentId = 1;
+            var planId = 1;
+            var patrolId = 1;
+            var sectionId = 1;
+            var userId = 1;
+
+
+            _assignmentRepositoryMock.Setup(x => x.GetAssignment(assignmentId))
+                .Returns(Task.FromResult(new Assignment()
+                {
+                    Id = assignmentId,
+                    PlanId = planId,
+                    CompletedAt = DateTime.UtcNow
+                })).Verifiable();
+
+            int sectionSkillId = 5;
+            int sectionLevelId = 6;
+
+            _planRepositoryMock.Setup(x => x.GetPlan(planId)).Returns(Task.FromResult(new Plan()
+            {
+                Id = planId,
+                Name = "Name",
+                PatrolId = patrolId
+            }));
+
+            _planRepositoryMock.Setup(x => x.GetSectionsForPlan(planId)).Returns(Task.FromResult((new List<Section>()
+            {
+                new Section()
+                {
+                    Id = sectionId,
+                    PatrolId = patrolId,
+                    Name = "Name"
+                }
+            }).AsEnumerable()));
+
+            _planRepositoryMock.Setup(x => x.GetSectionLevelsForPlan(planId)).Returns(Task.FromResult((new List<SectionLevelDto>()
+            {
+                new SectionLevelDto()
+                {
+                    Id = sectionLevelId,
+                    ColumnIndex=0,
+                    SectionId = sectionId
+                }
+            }).AsEnumerable()));
+
+            _planRepositoryMock.Setup(x => x.GetSectionSkillsForPlan(planId)).Returns(Task.FromResult((new List<SectionSkillDto>()
+            {
+                new SectionSkillDto()
+                {
+                    Id = sectionSkillId,
+                    RowIndex=0,
+                    SectionId = sectionId
+                }
+            }).AsEnumerable()));
+
+            _groupRepositoryMock.Setup(x => x.GetSectionIdsInPlanThatUserCanSign(userId, planId))
+                .Returns(Task.FromResult((new List<int>() { sectionId }).AsEnumerable()));
+
+            _patrolRepository.Setup(x => x.GetPatrolsForUser(userId))
+                .Returns(Task.FromResult((new List<Amphibian.Patrol.Training.Api.Models.Patrol>()
+            {
+                new Amphibian.Patrol.Training.Api.Models.Patrol()
+                {
+                    Id = patrolId,
+                    Name = "Patrol"
+                }
+            }).AsEnumerable()));
+
+
+            var result = await _assignmentService.AllowCreateSignatures(assignmentId, 1, new List<NewSignatureDto>() { new NewSignatureDto() { SectionLevelId = sectionLevelId, SectionSkillId = sectionSkillId } });
+
+            _assignmentRepositoryMock.Verify();
+            Assert.True(result);
+        }
+
+        [Test]
+        public async Task DontAllowCreateSignatureIfWrongPatrol()
+        {
+            var assignmentId = 1;
+            var planId = 1;
+            var patrolId = 1;
+            var sectionId = 1;
+            var userId = 1;
+
+
+            _assignmentRepositoryMock.Setup(x => x.GetAssignment(assignmentId))
+                .Returns(Task.FromResult(new Assignment()
+                {
+                    Id = assignmentId,
+                    PlanId = planId,
+                    CompletedAt = DateTime.UtcNow
+                })).Verifiable();
+
+            int sectionSkillId = 5;
+            int sectionLevelId = 6;
+
+            _planRepositoryMock.Setup(x => x.GetPlan(planId)).Returns(Task.FromResult(new Plan()
+            {
+                Id = planId,
+                Name = "Name",
+                PatrolId = patrolId
+            }));
+
+            _planRepositoryMock.Setup(x => x.GetSectionsForPlan(planId)).Returns(Task.FromResult((new List<Section>()
+            {
+                new Section()
+                {
+                    Id = sectionId,
+                    PatrolId = patrolId,
+                    Name = "Name"
+                }
+            }).AsEnumerable()));
+
+            _planRepositoryMock.Setup(x => x.GetSectionLevelsForPlan(planId)).Returns(Task.FromResult((new List<SectionLevelDto>()
+            {
+                new SectionLevelDto()
+                {
+                    Id = sectionLevelId,
+                    ColumnIndex=0,
+                    SectionId = sectionId
+                }
+            }).AsEnumerable()));
+
+            _planRepositoryMock.Setup(x => x.GetSectionSkillsForPlan(planId)).Returns(Task.FromResult((new List<SectionSkillDto>()
+            {
+                new SectionSkillDto()
+                {
+                    Id = sectionSkillId,
+                    RowIndex=0,
+                    SectionId = sectionId
+                }
+            }).AsEnumerable()));
+
+            _groupRepositoryMock.Setup(x => x.GetSectionIdsInPlanThatUserCanSign(userId, planId))
+                .Returns(Task.FromResult((new List<int>() { sectionId }).AsEnumerable()));
+
+            _patrolRepository.Setup(x => x.GetPatrolsForUser(userId))
+                .Returns(Task.FromResult((new List<Amphibian.Patrol.Training.Api.Models.Patrol>()
+            {
+                new Amphibian.Patrol.Training.Api.Models.Patrol()
+                {
+                    Id = patrolId+1,
+                    Name = "Patrol"
+                }
+            }).AsEnumerable()));
+
+
+            var result = await _assignmentService.AllowCreateSignatures(assignmentId, 1, new List<NewSignatureDto>() { new NewSignatureDto() { SectionLevelId = sectionLevelId, SectionSkillId = sectionSkillId } });
+
+            _assignmentRepositoryMock.Verify();
+            Assert.False(result);
+        }
+
+        [Test]
+        public async Task DontAllowCreateSignatureIfSectionSkillsDontMatch()
+        {
+            var assignmentId = 1;
+            var planId = 1;
+            var patrolId = 1;
+            var sectionId = 1;
+            var userId = 1;
+
+
+            _assignmentRepositoryMock.Setup(x => x.GetAssignment(assignmentId))
+                .Returns(Task.FromResult(new Assignment()
+                {
+                    Id = assignmentId,
+                    PlanId = planId,
+                    CompletedAt = DateTime.UtcNow
+                })).Verifiable();
+
+            int sectionSkillId = 5;
+            int sectionLevelId = 6;
+
+            _planRepositoryMock.Setup(x => x.GetPlan(planId)).Returns(Task.FromResult(new Plan()
+            {
+                Id = planId,
+                Name = "Name",
+                PatrolId = patrolId
+            }));
+
+            _planRepositoryMock.Setup(x => x.GetSectionsForPlan(planId)).Returns(Task.FromResult((new List<Section>()
+            {
+                new Section()
+                {
+                    Id = sectionId,
+                    PatrolId = patrolId,
+                    Name = "Name"
+                }
+            }).AsEnumerable()));
+
+            _planRepositoryMock.Setup(x => x.GetSectionLevelsForPlan(planId)).Returns(Task.FromResult((new List<SectionLevelDto>()
+            {
+                new SectionLevelDto()
+                {
+                    Id = sectionLevelId+1,
+                    ColumnIndex=0,
+                    SectionId = sectionId
+                }
+            }).AsEnumerable()));
+
+            _planRepositoryMock.Setup(x => x.GetSectionSkillsForPlan(planId)).Returns(Task.FromResult((new List<SectionSkillDto>()
+            {
+                new SectionSkillDto()
+                {
+                    Id = sectionSkillId+1,
+                    RowIndex=0,
+                    SectionId = sectionId
+                }
+            }).AsEnumerable()));
+
+            _groupRepositoryMock.Setup(x => x.GetSectionIdsInPlanThatUserCanSign(userId, planId))
+                .Returns(Task.FromResult((new List<int>() { sectionId }).AsEnumerable()));
+
+            _patrolRepository.Setup(x => x.GetPatrolsForUser(userId))
+                .Returns(Task.FromResult((new List<Amphibian.Patrol.Training.Api.Models.Patrol>()
+            {
+                new Amphibian.Patrol.Training.Api.Models.Patrol()
+                {
+                    Id = patrolId,
+                    Name = "Patrol"
+                }
+            }).AsEnumerable()));
+
+
+            var result = await _assignmentService.AllowCreateSignatures(assignmentId, 1, new List<NewSignatureDto>() { new NewSignatureDto() { SectionLevelId = sectionLevelId, SectionSkillId = sectionSkillId } });
+
+            _assignmentRepositoryMock.Verify();
+            Assert.False(result);
+        }
+
+        [Test]
+        public async Task DontAllowCreateSignatureIfSectionNotAllowedByGroup()
+        {
+            var assignmentId = 1;
+            var planId = 1;
+            var patrolId = 1;
+            var sectionId = 1;
+            var userId = 1;
+
+
+            _assignmentRepositoryMock.Setup(x => x.GetAssignment(assignmentId))
+                .Returns(Task.FromResult(new Assignment()
+                {
+                    Id = assignmentId,
+                    PlanId = planId,
+                    CompletedAt = DateTime.UtcNow
+                })).Verifiable();
+
+            int sectionSkillId = 5;
+            int sectionLevelId = 6;
+
+            _planRepositoryMock.Setup(x => x.GetPlan(planId)).Returns(Task.FromResult(new Plan()
+            {
+                Id = planId,
+                Name = "Name",
+                PatrolId = patrolId
+            }));
+
+            _planRepositoryMock.Setup(x => x.GetSectionsForPlan(planId)).Returns(Task.FromResult((new List<Section>()
+            {
+                new Section()
+                {
+                    Id = sectionId,
+                    PatrolId = patrolId,
+                    Name = "Name"
+                }
+            }).AsEnumerable()));
+
+            _planRepositoryMock.Setup(x => x.GetSectionLevelsForPlan(planId)).Returns(Task.FromResult((new List<SectionLevelDto>()
+            {
+                new SectionLevelDto()
+                {
+                    Id = sectionLevelId,
+                    ColumnIndex=0,
+                    SectionId = sectionId
+                }
+            }).AsEnumerable()));
+
+            _planRepositoryMock.Setup(x => x.GetSectionSkillsForPlan(planId)).Returns(Task.FromResult((new List<SectionSkillDto>()
+            {
+                new SectionSkillDto()
+                {
+                    Id = sectionSkillId,
+                    RowIndex=0,
+                    SectionId = sectionId
+                }
+            }).AsEnumerable()));
+
+            _groupRepositoryMock.Setup(x => x.GetSectionIdsInPlanThatUserCanSign(userId, planId))
+                .Returns(Task.FromResult((new List<int>() {  }).AsEnumerable()));
+
+            _patrolRepository.Setup(x => x.GetPatrolsForUser(userId))
+                .Returns(Task.FromResult((new List<Amphibian.Patrol.Training.Api.Models.Patrol>()
+            {
+                new Amphibian.Patrol.Training.Api.Models.Patrol()
+                {
+                    Id = patrolId,
+                    Name = "Patrol"
+                }
+            }).AsEnumerable()));
+
+
+            var result = await _assignmentService.AllowCreateSignatures(assignmentId, 1, new List<NewSignatureDto>() { new NewSignatureDto() { SectionLevelId = sectionLevelId, SectionSkillId = sectionSkillId } });
+
+            _assignmentRepositoryMock.Verify();
+            Assert.False(result);
         }
     }
 }

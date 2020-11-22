@@ -8,6 +8,7 @@ using Amphibian.Patrol.Training.Api.Dtos;
 using Amphibian.Patrol.Training.Api.Repositories;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
+using Serilog.Sinks.SystemConsole.Themes;
 
 namespace Amphibian.Patrol.Training.Api.Services
 {
@@ -17,12 +18,19 @@ namespace Amphibian.Patrol.Training.Api.Services
         private ILogger<AssignmentService> _logger;
         private IMapper _mapper;
         private IPlanService _planService;
-        public AssignmentService(IAssignmentRepository assignmentRepository,IPlanService planService, ILogger<AssignmentService> logger, IMapper mapper)
+        private IPlanRepository _planRepository;
+        private IPatrolRepository _patrolRepository;
+        private IGroupRepository _groupRepository;
+        public AssignmentService(IAssignmentRepository assignmentRepository,IPlanService planService, ILogger<AssignmentService> logger, 
+            IPlanRepository planRepository, IPatrolRepository patrolRepository, IGroupRepository groupRepository,IMapper mapper)
         {
             _assignmentRepository = assignmentRepository;
             _logger = logger;
             _mapper = mapper;
             _planService = planService;
+            _planRepository = planRepository;
+            _patrolRepository = patrolRepository;
+            _groupRepository = groupRepository;
         }
 
         public async Task<AssignmentDto> GetAssignment(int id)
@@ -34,6 +42,45 @@ namespace Amphibian.Patrol.Training.Api.Services
             assignmentDto.Signatures = signatures;
 
             return assignmentDto;
+        }
+
+        public async Task<bool> AllowCreateSignatures(int assignmentId, int byUserId, IList<NewSignatureDto> newSignatures)
+        {
+            //ensure the specified assignment has a plan under a patrol the user has access to
+            var assignment = await _assignmentRepository.GetAssignment(assignmentId);
+            var plan = await _planRepository.GetPlan(assignment.PlanId);
+            var patrols = await _patrolRepository.GetPatrolsForUser(byUserId);
+            if(!patrols.Any(x=>x.Id==plan.PatrolId))
+            {
+                return false;
+            }
+            
+            var sections = await _planRepository.GetSectionsForPlan(plan.Id);
+            var sectionLevels = await _planRepository.GetSectionLevelsForPlan(plan.Id);
+            var sectionSkills = await _planRepository.GetSectionSkillsForPlan(plan.Id);
+
+            var sectionsUserCanSign = await _groupRepository.GetSectionIdsInPlanThatUserCanSign(byUserId, plan.Id);
+
+            foreach(var sig in newSignatures)
+            {
+                var sectionLevel = sectionLevels.SingleOrDefault(x => x.Id == sig.SectionLevelId);
+                var sectionSkill = sectionSkills.SingleOrDefault(x => x.Id == sig.SectionSkillId);
+
+                if(sectionLevel==null || sectionSkill==null || sectionLevel.SectionId != sectionSkill.SectionId)
+                {
+                    //the specified leve/skill ids are not in the plan
+                    return false;
+                }
+
+                var section = sections.Single(x => x.Id == sectionLevel.SectionId);
+                if(!sectionsUserCanSign.Any(x=>x==section.Id))
+                {
+                    //the user is not allowed to sign the section per group rules
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public async Task CreateSignatures(int assignmentId, int byUserId, IList<NewSignatureDto> newSignatures)

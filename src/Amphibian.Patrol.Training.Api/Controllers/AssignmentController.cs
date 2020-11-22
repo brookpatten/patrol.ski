@@ -98,13 +98,9 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [Authorize]
         public async Task<IActionResult> CreateSignatures(CreateSignaturesDto dto)
         {
-            var assignment = await _assignmentService.GetAssignment(dto.AssignmentId);
-            var plan = await _planService.GetPlan(assignment.PlanId, User.GetUserId());
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-            //TODO: also make sure the user has the right to create these signatures
-            if (patrols.Any(x => x.Id == plan.PatrolId))
+            if(await _assignmentService.AllowCreateSignatures(dto.AssignmentId,User.GetUserId(),dto.Signatures))
             {
-                await _assignmentService.CreateSignatures(assignment.Id, User.GetUserId(), dto.Signatures);
+                await _assignmentService.CreateSignatures(dto.AssignmentId, User.GetUserId(), dto.Signatures);
                 return Ok();
             }
             else
