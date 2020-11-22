@@ -23,12 +23,8 @@ jobs:
       run: dotnet test src/schedule.sln
     - name: Create Nuget Package
       run: dotnet pack src/Schedule.Api/Schedule.Api.csproj
-    - name: Upload artifact
-      uses: actions/upload-artifact@v1.0.0
-      with: 
-        name: Nuget Package
-        path: src/Schedule.Api/bin/Debug/
     - name: Publish NuGet
       uses: rohith/publish-nuget@v2.2.0
       with:
         PROJECT_FILE_PATH: src/Schedule.Api/Schedule.Api.csproj
+        NUGET_KEY: ${{ secrets.GITHUB_TOKEN }}
