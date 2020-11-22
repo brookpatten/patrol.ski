@@ -25,6 +25,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Amphibian.Patrol.Training.Api.Services;
+using Amphibian.Patrol.Training.Api.Controllers;
 
 namespace Amphibian.Patrol.Training.Api
 {
@@ -71,8 +72,8 @@ namespace Amphibian.Patrol.Training.Api
             services.AddScoped<IPlanRepository, PlanRepository>();
             services.AddScoped<Services.IAuthenticationService, Services.AuthenticationService>();
             services.AddScoped<Services.IPasswordService, Services.PasswordService>(sp=>new Services.PasswordService(5,32));
-            services.AddScoped<EmailService, EmailService>(provider => new EmailService(serviceConfiguration.Email.SendGridApiKey, serviceConfiguration.Email.SendAllEmailsTo));
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<EmailService, EmailService>(provider => new EmailService(serviceConfiguration.Email.SendGridApiKey, serviceConfiguration.Email.SendAllEmailsTo,serviceConfiguration.Email.FromName,serviceConfiguration.Email.FromEmail,serviceConfiguration.App.RootUrl));
+            //services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 
         private void SetFromEnvVarIfAvailable<T>(T config, Action<T,string> set,string name)

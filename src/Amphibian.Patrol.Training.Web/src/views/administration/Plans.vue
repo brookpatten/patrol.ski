@@ -43,6 +43,9 @@ export default {
         ]
     }
   },
+  mounted: function(){
+    this.loadPlans();
+  },
   computed: {
     selectedPatrolId: function () {
       return this.$store.state.selectedPatrolId;

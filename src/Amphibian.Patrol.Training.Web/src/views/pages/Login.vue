@@ -24,11 +24,21 @@
                   <template #prepend-content><CIcon name="cil-lock-locked"/></template>
                 </CInput>
                 <CRow>
+                  <CCol col="12" v-if="error!=null" class="text-left">
+                    <CAlert color="danger">{{error}}</CAlert>
+                  </CCol>
+                </CRow>
+                <CRow>
+                  <CCol col="12" v-if="message!=null" class="text-left">
+                    <CAlert color="primary">{{message}}</CAlert>
+                  </CCol>
+                </CRow>
+                <CRow>
                   <CCol col="6" class="text-left">
                     <CButton color="primary" class="px-4" type="submit">Login</CButton>
                   </CCol>
                   <CCol col="6" class="text-right">
-                    <CButton color="link" class="px-0">Forgot password?</CButton>
+                    <CButton color="link" class="px-0" v-on:click="reset">Forgot password?</CButton>
                     <CButton color="link" class="d-md-none" :to="{name:'Register'}">Register now!</CButton>
                   </CCol>
                 </CRow>
@@ -63,7 +73,9 @@ export default {
   data(){
       return {
         email : "",
-        password : ""
+        password : "",
+        error: null,
+        message: null
       }
     },
   methods: {
@@ -72,7 +84,20 @@ export default {
       let password = this.password;
       this.$store.dispatch('login',{email,password})
         .then(()=>this.$router.push('/dashboard'))
-        .catch(err => console.log(err));
+        .catch(err => {
+          console.log(err);
+          this.error = "Username or password is incorrect";
+        });
+    },
+    reset: function(){
+      let email = this.email;
+      this.$http.post('user/reset-password',{email}).then(response=>{
+        this.message = "We sent you an email with a link to reset your password";
+        this.error=null;
+      }).catch(err=>{
+        this.error = "Hmm, something went wrong";
+        this.message=null;
+      });
     }
   }
 }

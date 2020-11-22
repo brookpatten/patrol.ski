@@ -21,7 +21,7 @@
     <CDropdownItem>
       <CIcon name="cil-user" /> Profile
     </CDropdownItem>
-    <CDropdownItem>
+    <CDropdownItem v-on:click="logout">
       <CIcon name="cil-lock-locked" /> Logout
     </CDropdownItem>
     <CDropdownHeader tag="div" class="text-center" color="light" v-if="patrols && patrols.length>1">
@@ -64,6 +64,11 @@ export default {
     selectPatrol: function(id){
       this.$store.dispatch('change_patrol',id)
         .then(()=>this.$router.push(''))
+        .catch(err => console.log(err));
+    },
+    logout: function(){
+      this.$store.dispatch('logout')
+        .then(()=>this.$router.push({name:"Login"}))
         .catch(err => console.log(err));
     }
   }

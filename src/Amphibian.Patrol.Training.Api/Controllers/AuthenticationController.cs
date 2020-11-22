@@ -22,27 +22,39 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         private readonly IAuthenticationService _authenticationService;
         private readonly IUserRepository _userRepository;
         private readonly IPatrolRepository _patrolRepository;
+        private readonly EmailService _emailService;
         
         public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, 
-            IUserRepository userRepository, IPatrolRepository patrolRepository)
+            IUserRepository userRepository, IPatrolRepository patrolRepository, EmailService emailService)
         {
             _logger = logger;
             _authenticationService = authenticationService;
             _userRepository = userRepository;
             _patrolRepository = patrolRepository;
+            _emailService = emailService;
         }
 
         public class AuthenticationRequest
         {
             public string Email { get; set; }
             public string Password { get; set; }
+            public Guid? Token { get; set; }
         }
         [HttpPost]
         [Route("user/authenticate")]
         [AllowAnonymous]
         public async Task<IActionResult> Authenticate(AuthenticationRequest request)
         {
-            var user = await _authenticationService.AuthenticateUserWithPassword(request.Email, request.Password);
+            User user;
+            if(request.Token.HasValue)
+            {
+                user = await _authenticationService.AuthenticateUserWithToken(request.Token.Value);
+            }
+            else
+            {
+                user = await _authenticationService.AuthenticateUserWithPassword(request.Email, request.Password);
+            }
+
             if(user!=null)
             {
                 var token = await _authenticationService.CreateNewTokenForUser(user);
@@ -112,6 +124,26 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         {
             var email = User.FindFirst(ClaimTypes.Email).Value;
             await _authenticationService.ChangePassword(email, request.Password);
+            return Ok();
+        }
+
+        public class ResetPasswordRequest
+        {
+            public string Email { get; set; }
+        }
+        [HttpPost]
+        [Route("user/reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        {
+            string scheme = Url.ActionContext.HttpContext.Request.Scheme;
+            var user = await _userRepository.GetUser(request.Email);
+
+            if (user!=null)
+            {
+                var token = await _authenticationService.CreateNewTokenForUser(user);
+                await _emailService.SendResetEmail(user, $"user/recover-password/{token.TokenGuid}");
+            }
+            
             return Ok();
         }
 

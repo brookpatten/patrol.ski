@@ -10,12 +10,14 @@ namespace Amphibian.Patrol.Training.Configuration
         public DatabaseConfiguration Database { get; set; }
         public TestConfiguration Test { get; set; }
         public EmailConfiguration Email{get;set;}
+        public AppConfiguration App { get; set; }
 
         public PatrolTrainingApiConfiguration()
         {
             Database = new DatabaseConfiguration();
             Test = new TestConfiguration();
             Email = new EmailConfiguration();
+            App = new AppConfiguration();
         }
 
         public static PatrolTrainingApiConfiguration LoadFromJsonConfig(string configBasePath=null,string environmentName=null)
@@ -51,6 +53,11 @@ namespace Amphibian.Patrol.Training.Configuration
         }
     }
 
+    public class AppConfiguration
+    {
+        public string RootUrl { get; set; }
+    }
+
     public class DatabaseConfiguration
     {
         public string ConnectionString { get; set; }
@@ -74,5 +81,7 @@ namespace Amphibian.Patrol.Training.Configuration
     {
         public string SendGridApiKey { get; set; }
         public string SendAllEmailsTo { get; set; }
+        public string FromName { get; set; }
+        public string FromEmail { get; set; }
     }
 }
