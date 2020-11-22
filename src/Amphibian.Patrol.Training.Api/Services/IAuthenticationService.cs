@@ -10,5 +10,6 @@ namespace Amphibian.Patrol.Training.Api.Services
         Task<User> AuthenticateUserWithToken(Guid guid);
         Task<Token> CreateNewTokenForUser(User user);
         Task<User> RegisterUser(string email, string first, string last, string password);
+        Task ChangePassword(string userEmail, string password);
     }
 }

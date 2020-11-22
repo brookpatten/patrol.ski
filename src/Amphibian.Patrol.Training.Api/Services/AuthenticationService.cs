@@ -104,5 +104,11 @@ namespace Amphibian.Patrol.Training.Api.Services
             await _userRepository.InsertUser(user);
             return user;
         }
+        public async Task ChangePassword(string userEmail,string password)
+        {
+            var user = await _userRepository.GetUser(userEmail);
+            _passwordService.SetPassword(user, password);
+            await _userRepository.UpdateUser(user);
+        }
     }
 }

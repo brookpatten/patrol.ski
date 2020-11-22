@@ -8,6 +8,9 @@ using Microsoft.Extensions.Logging;
 using Amphibian.Patrol.Training.Api.Repositories;
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
@@ -17,12 +20,14 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         private readonly ILogger<AuthenticationController> _logger;
         private readonly IAuthenticationService _authenticationService;
         private readonly IUserRepository _userRepository;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, IUserRepository userRepository)
+        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, IUserRepository userRepository, IHttpContextAccessor httpContextAccessor)
         {
             _logger = logger;
             _authenticationService = authenticationService;
             _userRepository = userRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public class AuthenticationRequest
@@ -32,6 +37,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         }
         [HttpPost]
         [Route("user/authenticate")]
+        [AllowAnonymous]
         public async Task<IActionResult> Authenticate(AuthenticationRequest request)
         {
             var user = await _authenticationService.AuthenticateUserWithPassword(request.Email, request.Password);
@@ -68,6 +74,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         }
         [HttpPost]
         [Route("user/register")]
+        [AllowAnonymous]
         public async Task<IActionResult> Register(RegistrationRequest registration)
         {
             var user = await _userRepository.GetUser(registration.Email);
@@ -89,6 +96,21 @@ namespace Amphibian.Patrol.Training.Api.Controllers
                     Token = token.TokenGuid
                 });
             }
+        }
+
+        public class ChangePasswordRequest
+        {
+            public string Password { get; set; }
+        }
+
+        [HttpPost]
+        [Route("user/password")]
+        [Authorize]
+        public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
+        {
+            var email = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Email).Value;
+            await _authenticationService.ChangePassword(email, request.Password);
+            return Ok();
         }
 
     }
