@@ -42,40 +42,64 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
             User user = null;
             try
             {
-                var authHeader = AuthenticationHeaderValue.Parse(Request.Headers["Authorization"]);
-                var credentialBytes = Convert.FromBase64String(authHeader.Parameter);
-                var credentialString = Encoding.UTF8.GetString(credentialBytes);
-                Guid tokenGuid;
+                AuthenticationHeaderValue authenticationHeader;
 
-                if(credentialString.Contains(":"))
+                if (AuthenticationHeaderValue.TryParse(Request.Headers["Authorization"], out authenticationHeader))
                 {
-                    var credentials = credentialString.Split(new[] { ':' }, 2);
-                    var email = credentials[0];
-                    var password = credentials[1];
-                    user = await _authenticationService.AuthenticateUserWithPassword(email, password);
-                    if(user==null)
+                    if (authenticationHeader.Scheme == "Basic")
                     {
-                        //bad password
-                        return AuthenticateResult.Fail("Invalid Username or Password");
+                        var credentialBytes = Convert.FromBase64String(authenticationHeader.Parameter);
+                        var credentialString = Encoding.UTF8.GetString(credentialBytes);
+                        Guid tokenGuid;
+
+                        if (credentialString.Contains(":"))
+                        {
+                            var credentials = credentialString.Split(new[] { ':' }, 2);
+                            var email = credentials[0];
+                            var password = credentials[1];
+                            user = await _authenticationService.AuthenticateUserWithPassword(email, password);
+                            if (user == null)
+                            {
+                                //bad password
+                                return AuthenticateResult.Fail("Invalid Username or Password");
+                            }
+                            else
+                            {
+                                //make a token and put it in the response header?
+                            }
+                        }
                     }
-                }
-                else if(Guid.TryParse(credentialString,out tokenGuid))
-                {
-                    user = await _authenticationService.AuthenticateUserWithToken(tokenGuid);
-                    if(user==null)
+                    else if(authenticationHeader.Scheme=="Token")
                     {
+                        Guid tokenGuid;
+                        if(Guid.TryParse(authenticationHeader.Parameter,out tokenGuid))
+                        {
+                            user = await _authenticationService.AuthenticateUserWithToken(tokenGuid);
+                            if (user == null)
+                            {
+                                return AuthenticateResult.Fail("Invalid Authorization Header");
+                            }
+                            else
+                            {
+                                //renew the token?
+                            }
+                        }
+                    }
+                    else
+                    {
+                        //it's not a token and it's not a basic, what is it?
                         return AuthenticateResult.Fail("Invalid Authorization Header");
                     }
                 }
                 else
                 {
-                    //it's not a token and it's not a jwt, what is it?
+                    //we can't understand the auth header
                     return AuthenticateResult.Fail("Invalid Authorization Header");
                 }
             }
-            catch
+            catch(Exception ex)
             {
-                //some exception we weren't ready for
+                //some exception we weren't ready for, likely a malformed header
                 return AuthenticateResult.Fail("Invalid Authorization Header");
             }
 

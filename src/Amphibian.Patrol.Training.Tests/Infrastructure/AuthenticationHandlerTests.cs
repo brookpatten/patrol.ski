@@ -25,6 +25,7 @@ namespace Amphibian.Patrol.Training.Tests.Infrastructure
         private Mock<UrlEncoder> _urlEncoderMock;
         private AuthenticationHandler _authenticationHandler;
         private Mock<ISystemClock> _systemClockMock;
+        private DefaultHttpContext _context;
 
         [SetUp]
         public async Task Setup()
@@ -43,18 +44,113 @@ namespace Amphibian.Patrol.Training.Tests.Infrastructure
             _authenticationServiceMock = new Mock<IAuthenticationService>();
             _authenticationHandler = new AuthenticationHandler(om.Object, loggerFactory.Object, _urlEncoderMock.Object, _systemClockMock.Object, _authenticationServiceMock.Object);
 
-            var context = new DefaultHttpContext();
+            _context = new DefaultHttpContext();
             
-            await _authenticationHandler.InitializeAsync(new AuthenticationScheme("", "", typeof(AuthenticationHandler)), context);
+            await _authenticationHandler.InitializeAsync(new AuthenticationScheme("", "", typeof(AuthenticationHandler)), _context);
 
         }
 
         [Test]
-        public async Task AuthenticateWithNoAuthorizeShouldFail()
+        public async Task AuthenticateWithNoAuthorizationHeaderShouldFail()
         {
+            _context.Request.Headers.Add("", new Microsoft.Extensions.Primitives.StringValues(""));
+
             var result = await _authenticationHandler.AuthenticateAsync();
 
             Assert.AreEqual(AuthenticateResult.Fail("").Succeeded, result.Succeeded);
+        }
+
+        [Test]
+        public async Task AuthenticateWithInvalidAuthorizationHeaderShouldFail()
+        {
+            _context.Request.Headers.Add("Authorization", new Microsoft.Extensions.Primitives.StringValues(""));
+
+            var result = await _authenticationHandler.AuthenticateAsync();
+
+            Assert.AreEqual(AuthenticateResult.Fail("").Succeeded, result.Succeeded);
+        }
+
+        [Test]
+        public async Task AuthenticateWithIncorrectCredentialAuthorizationHeaderShouldFail()
+        {
+            string user = "user";
+            string password = "password";
+            var credentialBytes = Encoding.UTF8.GetBytes($"{user}:{password}");
+            var credentialString = "Basic " + Convert.ToBase64String(credentialBytes);
+
+            _context.Request.Headers.Add("Authorization", new Microsoft.Extensions.Primitives.StringValues(credentialString));
+
+            _authenticationServiceMock.Setup(x => x.AuthenticateUserWithPassword(user, password))
+                .Returns(Task.FromResult((User)null))
+                .Verifiable();
+
+            var result = await _authenticationHandler.AuthenticateAsync();
+
+            _authenticationServiceMock.Verify();
+            Assert.AreEqual(AuthenticateResult.Fail("").Succeeded, result.Succeeded);
+        }
+
+        [Test]
+        public async Task AuthenticateWithCorrectCredentialAuthorizationHeaderShouldSucceed()
+        {
+            string user = "user";
+            string password = "password";
+            var credentialBytes = Encoding.UTF8.GetBytes($"{user}:{password}");
+            var credentialString = "Basic " + Convert.ToBase64String(credentialBytes);
+
+            _context.Request.Headers.Add("Authorization", new Microsoft.Extensions.Primitives.StringValues(credentialString));
+
+            _authenticationServiceMock.Setup(x => x.AuthenticateUserWithPassword(user, password))
+                .Returns(Task.FromResult(new User() { Email = user, Id = 1 }))
+                .Verifiable();
+
+            var result = await _authenticationHandler.AuthenticateAsync();
+
+            _authenticationServiceMock.Verify();
+            Assert.AreEqual(true,result.Succeeded);
+            Assert.NotNull(result.Ticket);
+        }
+
+        [Test]
+        public async Task AuthenticateWithInvalidTokenAuthorizationHeaderShouldFail()
+        {
+            string user = "user";
+            Guid token = Guid.NewGuid();
+            var credentialString = "Token " + token;
+
+            _context.Request.Headers.Add("Authorization", new Microsoft.Extensions.Primitives.StringValues(credentialString));
+
+            _authenticationServiceMock.Setup(x => x.AuthenticateUserWithToken(token))
+                .Returns(Task.FromResult((User)null))
+                .Verifiable();
+
+            var result = await _authenticationHandler.AuthenticateAsync();
+
+            _authenticationServiceMock.Verify();
+            Assert.AreEqual(AuthenticateResult.Fail("").Succeeded, result.Succeeded);
+        }
+
+        [Test]
+        public async Task AuthenticateWithValidTokenAuthorizationHeaderShouldSucceed()
+        {
+            string user = "user";
+            Guid token = Guid.NewGuid();
+            var credentialString = "Token " + token;
+
+            _context.Request.Headers.Add("Authorization", new Microsoft.Extensions.Primitives.StringValues(credentialString));
+
+            _authenticationServiceMock.Setup(x => x.AuthenticateUserWithToken(token))
+                .Returns(Task.FromResult(new User() { 
+                    Email = user,
+                    Id= 1
+                }))
+                .Verifiable();
+
+            var result = await _authenticationHandler.AuthenticateAsync();
+
+            _authenticationServiceMock.Verify();
+            Assert.AreEqual(true, result.Succeeded);
+            Assert.NotNull(result.Ticket);
         }
     }
 }

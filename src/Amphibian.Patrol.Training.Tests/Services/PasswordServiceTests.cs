@@ -5,7 +5,7 @@ using Amphibian.Patrol.Training.Api.Services;
 namespace Amphibian.Patrol.Training.Tests.Services
 {
     [TestFixture(Category = "Services")]
-    public class Tests
+    public class PasswordServiceTests
     {
         private int _defaultIterations = 5;
         private int _defaultHashLength = 32;
