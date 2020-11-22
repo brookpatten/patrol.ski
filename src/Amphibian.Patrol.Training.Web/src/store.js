@@ -47,6 +47,9 @@ const mutations = {
   },
   change_patrol(state,data){
     state.selectedPatrolId = data;
+  },
+  toggle (state, variable) {
+    state[variable] = !state[variable]
   }
 }
 

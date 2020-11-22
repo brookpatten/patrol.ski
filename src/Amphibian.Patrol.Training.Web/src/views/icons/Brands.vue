@@ -2,7 +2,7 @@
   <div>
     <CCard>
       <CCardHeader>
-        <CIcon name="cil-basket"/>Brand icons
+        <CIcon name="cil-basket"/> Brand icons
       </CCardHeader>
       <CCardBody>
         <CRow class="text-center">

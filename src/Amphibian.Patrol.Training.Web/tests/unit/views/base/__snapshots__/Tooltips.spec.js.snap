@@ -24,7 +24,7 @@ exports[`Tooltips.vue renders correctly 1`] = `
       >
         <a
           class="card-header-action"
-          href="https://coreui.io/vue/docs/directives/tooltip"
+          href="https://coreui.io/oovue/docs/directives/tooltip"
           rel="noreferrer noopener"
           target="_blank"
         >

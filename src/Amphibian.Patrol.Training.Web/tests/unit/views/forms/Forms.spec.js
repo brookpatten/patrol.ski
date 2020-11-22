@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import { shallowMount } from '@vue/test-utils'
 import CoreuiVue from '@coreui/vue'
-import Forms from '@/views/base/Forms'
+import Forms from '@/views/forms/Forms'
 
 Vue.use(CoreuiVue)
 
@@ -11,11 +11,6 @@ describe('Forms.vue', () => {
   })
   it('is Forms', () => {
     const wrapper = shallowMount(Forms)
-    expect(wrapper.is(Forms)).toBe(true)
+    expect(wrapper.findComponent(Forms)).toBeTruthy()
   })
-  // render random chackboxes
-  // test('renders correctly', () => {
-  //   const wrapper = shallowMount(Forms)
-  //   expect(wrapper.element).toMatchSnapshot()
-  // })
 })

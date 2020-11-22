@@ -8,12 +8,13 @@ const localVue = createLocalVue()
 localVue.use(Vuex)
 localVue.use(VueRouter)
 localVue.use(CoreuiVue)
+
 const store = new Vuex.Store({
   state: {
-    darkMode: false,
     sidebarShow: 'responsive',
     sidebarMinimize: false,
-    asideShow: false
+    asideShow: false,
+    darkMode: false
   }
 })
 
@@ -37,6 +38,6 @@ describe('TheContainer.vue', () => {
       localVue,
       router
     })
-    expect(wrapper.isVueInstance()).toBe(true)
+    expect(wrapper.vm).toBeTruthy()
   })
 })

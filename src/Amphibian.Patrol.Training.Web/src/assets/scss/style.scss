@@ -1,8 +1,8 @@
 // If you want to override variables do it here
 @import "variables";
 
-// Import styles
-@import "~@coreui/coreui/scss/coreui";
+// Import styles with default layout.
+@import "~@coreui/coreui-pro/scss/coreui";
 
 // If you want to add something do it here
 @import "custom";
@@ -15,3 +15,4 @@
   height: 1.2rem;
   font-size: 1.2rem;
 }
+

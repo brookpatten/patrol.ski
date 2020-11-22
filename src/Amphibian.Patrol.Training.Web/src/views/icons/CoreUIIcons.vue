@@ -3,8 +3,7 @@
   <div>
     <CCard>
       <CCardHeader>
-        <CIcon :content="$options.freeSet.cilHandPointDown"/>
-        CoreUI Icons
+        <CIcon :content="$options.freeSet.cilHandPointDown"/> CoreUI Icons
         <CBadge color="info">New</CBadge>
         <div class="card-header-actions">
           <a

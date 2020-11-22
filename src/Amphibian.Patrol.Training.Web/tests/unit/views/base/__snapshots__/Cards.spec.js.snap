@@ -444,7 +444,7 @@ exports[`Cards.vue renders correctly 1`] = `
       class="col-sm-6 col-md-4"
     >
       <div
-        class="card text-center bg-primary text-white"
+        class="card text-center bg-gradient-primary text-white"
       >
         <div
           class="card-body"
@@ -474,7 +474,7 @@ exports[`Cards.vue renders correctly 1`] = `
       class="col-sm-6 col-md-4"
     >
       <div
-        class="card text-center bg-success text-white"
+        class="card text-center bg-gradient-success text-white"
       >
         <div
           class="card-body"
@@ -504,7 +504,7 @@ exports[`Cards.vue renders correctly 1`] = `
       class="col-sm-6 col-md-4"
     >
       <div
-        class="card text-center bg-info text-white"
+        class="card text-center bg-gradient-info text-white"
       >
         <div
           class="card-body"
@@ -534,7 +534,7 @@ exports[`Cards.vue renders correctly 1`] = `
       class="col-sm-6 col-md-4"
     >
       <div
-        class="card text-center bg-warning text-white"
+        class="card text-center bg-gradient-warning text-white"
       >
         <div
           class="card-body"
@@ -564,7 +564,7 @@ exports[`Cards.vue renders correctly 1`] = `
       class="col-sm-6 col-md-4"
     >
       <div
-        class="card text-center bg-danger text-white"
+        class="card text-center bg-gradient-danger text-white"
       >
         <div
           class="card-body"
@@ -594,7 +594,7 @@ exports[`Cards.vue renders correctly 1`] = `
       class="col-sm-6 col-md-4"
     >
       <div
-        class="card text-center bg-secondary"
+        class="card text-center bg-gradient-secondary"
       >
         <div
           class="card-body"
@@ -628,7 +628,7 @@ exports[`Cards.vue renders correctly 1`] = `
       class="col-sm-6 col-md-4"
     >
       <div
-        class="card bg-primary text-white"
+        class="card bg-gradient-primary text-white"
       >
         <div
           class="card-body"
@@ -644,7 +644,7 @@ exports[`Cards.vue renders correctly 1`] = `
       class="col-sm-6 col-md-4"
     >
       <div
-        class="card bg-success text-white"
+        class="card bg-gradient-success text-white"
       >
         <div
           class="card-body"
@@ -660,7 +660,7 @@ exports[`Cards.vue renders correctly 1`] = `
       class="col-sm-6 col-md-4"
     >
       <div
-        class="card bg-info text-white"
+        class="card bg-gradient-info text-white"
       >
         <div
           class="card-body"
@@ -676,7 +676,7 @@ exports[`Cards.vue renders correctly 1`] = `
       class="col-sm-6 col-md-4"
     >
       <div
-        class="card bg-warning text-white"
+        class="card bg-gradient-warning text-white"
       >
         <div
           class="card-body"
@@ -692,7 +692,7 @@ exports[`Cards.vue renders correctly 1`] = `
       class="col-sm-6 col-md-4"
     >
       <div
-        class="card bg-danger text-white"
+        class="card bg-gradient-danger text-white"
       >
         <div
           class="card-body"
@@ -707,78 +707,81 @@ exports[`Cards.vue renders correctly 1`] = `
     <div
       class="col-sm-6 col-md-4"
     >
-      <div
-        class="card bg-secondary"
+      <transition-stub
         name="fade"
       >
-        <header
-          class="card-header"
+        <div
+          class="card bg-gradient-secondary"
         >
-          
+          <header
+            class="card-header"
+          >
+            
             Card with header actions
             
+            <div
+              class="card-header-actions"
+            >
+              <a
+                class="card-header-action btn-setting"
+                href="#"
+                target="_self"
+              >
+                <svg
+                  class="c-icon"
+                  role="img"
+                  viewBox="0 0 64 64"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  undefined
+                </svg>
+              </a>
+               
+              <a
+                class="card-header-action btn-minimize"
+                href="#"
+                target="_self"
+              >
+                <svg
+                  class="c-icon"
+                  role="img"
+                  viewBox="0 0 64 64"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  undefined
+                </svg>
+              </a>
+               
+              <a
+                class="card-header-action btn-close"
+                href="#"
+                target="_self"
+              >
+                <svg
+                  class="c-icon"
+                  role="img"
+                  viewBox="0 0 64 64"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  undefined
+                </svg>
+              </a>
+            </div>
+          </header>
+           
           <div
-            class="card-header-actions"
+            class=""
           >
-            <a
-              class="card-header-action btn-setting"
-              href="#"
-              target="_self"
+            <div
+              class="card-body"
             >
-              <svg
-                class="c-icon"
-                role="img"
-                viewBox="0 0 64 64"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                undefined
-              </svg>
-            </a>
-             
-            <a
-              class="card-header-action btn-minimize"
-              href="#"
-              target="_self"
-            >
-              <svg
-                class="c-icon"
-                role="img"
-                viewBox="0 0 64 64"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                undefined
-              </svg>
-            </a>
-             
-            <a
-              class="card-header-action btn-close"
-              href="#"
-              target="_self"
-            >
-              <svg
-                class="c-icon"
-                role="img"
-                viewBox="0 0 64 64"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                undefined
-              </svg>
-            </a>
-          </div>
-        </header>
-         
-        <div
-          class=""
-        >
-          <div
-            class="card-body"
-          >
-            
+              
               Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
             
+            </div>
           </div>
         </div>
-      </div>
+      </transition-stub>
     </div>
   </div>
 </div>

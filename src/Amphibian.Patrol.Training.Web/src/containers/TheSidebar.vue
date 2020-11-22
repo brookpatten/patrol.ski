@@ -1,6 +1,6 @@
 <template>
   <CSidebar 
-    fixed 
+    unfoldable 
     :minimize="minimize"
     :show="show"
     @update:show="(value) => $store.commit('set', ['sidebarShow', value])"

@@ -13,7 +13,7 @@
             span. If you want to have a squared version flag then add the class
             flag-icon-squared as well. -->
           </CCol>
-          <template v-for="(flag, flagName) in displayedFlags">
+          <template v-for="(flag, flagName) in $options.flagSet">
             <CCol
               class="mb-5"
               col="3"
@@ -35,11 +35,6 @@ import { flagSet } from '@coreui/icons'
 export default {
   name: 'Flags',
   flagSet,
-  computed: {
-    displayedFlags () {
-      return this.$options.flagSet
-    }
-  },
   methods: {
     toKebabCase (str) {
       return str.replace(/([a-z])([A-Z0-9])/g, '$1-$2').toLowerCase()

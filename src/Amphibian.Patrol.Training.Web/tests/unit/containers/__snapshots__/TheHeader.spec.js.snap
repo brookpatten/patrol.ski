@@ -4,7 +4,6 @@ exports[`TheHeader.vue renders correctly 1`] = `
 <cheader-stub
   colorscheme="light"
   fixed="true"
-  light=""
   tag="header"
   withsubheader="true"
 >
@@ -92,58 +91,40 @@ exports[`TheHeader.vue renders correctly 1`] = `
     </cheadernavitem-stub>
   </cheadernav-stub>
    
-  <cheadernav-stub
-    class="mr-4"
-  >
+  <cheadernav-stub>
     <cheadernavitem-stub
-      class="d-md-down-none mx-2"
+      class="px-3"
     >
-      <cheadernavlink-stub
-        activeclass="router-link-active"
-        event="click"
-        exactactiveclass="router-link-exact-active"
-        routertag="a"
-        target="_self"
+      <button
+        class="c-header-nav-btn"
       >
         <cicon-stub
-          name="cil-bell"
+          name="cil-moon"
         />
-      </cheadernavlink-stub>
+      </button>
     </cheadernavitem-stub>
      
-    <cheadernavitem-stub
-      class="d-md-down-none mx-2"
-    >
-      <cheadernavlink-stub
-        activeclass="router-link-active"
-        event="click"
-        exactactiveclass="router-link-exact-active"
-        routertag="a"
-        target="_self"
-      >
-        <cicon-stub
-          name="cil-list"
-        />
-      </cheadernavlink-stub>
-    </cheadernavitem-stub>
+    <theheaderdropdownnotif-stub />
      
-    <cheadernavitem-stub
-      class="d-md-down-none mx-2"
-    >
-      <cheadernavlink-stub
-        activeclass="router-link-active"
-        event="click"
-        exactactiveclass="router-link-exact-active"
-        routertag="a"
-        target="_self"
-      >
-        <cicon-stub
-          name="cil-envelope-open"
-        />
-      </cheadernavlink-stub>
-    </cheadernavitem-stub>
+    <theheaderdropdowntasks-stub />
+     
+    <theheaderdropdownmssgs-stub />
      
     <theheaderdropdownaccnt-stub />
+     
+    <cheadernavitem-stub
+      class="px-3"
+    >
+      <button
+        class="c-header-nav-btn"
+      >
+        <cicon-stub
+          class="mr-2"
+          name="cil-applications-settings"
+          size="lg"
+        />
+      </button>
+    </cheadernavitem-stub>
   </cheadernav-stub>
    
   <csubheader-stub

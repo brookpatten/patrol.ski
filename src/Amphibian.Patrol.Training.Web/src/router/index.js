@@ -17,9 +17,9 @@ const Widgets = () => import('@/views/widgets/Widgets')
 
 // Views - Components
 const Cards = () => import('@/views/base/Cards')
-const Forms = () => import('@/views/base/Forms')
+const Forms = () => import('@/views/forms/Forms')
 const Switches = () => import('@/views/base/Switches')
-const Tables = () => import('@/views/base/Tables')
+const Tables = () => import('@/views/tables/Tables')
 const Tabs = () => import('@/views/base/Tabs')
 const Breadcrumbs = () => import('@/views/base/Breadcrumbs')
 const Carousels = () => import('@/views/base/Carousels')

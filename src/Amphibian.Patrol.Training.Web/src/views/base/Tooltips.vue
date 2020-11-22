@@ -7,7 +7,7 @@
         <small><code>v-c-tooltip</code> directive</small>
         <div class="card-header-actions">
           <a 
-            href="https://coreui.io/vue/docs/directives/tooltip" 
+            href="https://coreui.io/oovue/docs/directives/tooltip" 
             class="card-header-action" 
             rel="noreferrer noopener" 
             target="_blank"
