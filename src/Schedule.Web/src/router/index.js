@@ -57,6 +57,9 @@ const Register = () => import('@/views/pages/Register')
 const Users = () => import('@/views/users/Users')
 const User = () => import('@/views/users/User')
 
+// Schedule
+const Plan = () => import('@/views/schedule/Plan')
+
 Vue.use(Router)
 
 export default new Router({
@@ -78,6 +81,11 @@ function configRoutes () {
           path: 'dashboard',
           name: 'Dashboard',
           component: Dashboard
+        },
+        {
+          path: 'plan',
+          name: 'Plan',
+          component: Plan
         },
         {
           path: 'theme',
