@@ -10,6 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
+      #sql server for db integration tests
       mssql:
         image: mcr.microsoft.com/mssql/server:2017-CU8-ubuntu
         env:
@@ -133,3 +134,14 @@ jobs:
       uses: joelwmale/webhook-action@master
       with:
         url: ${{ secrets.DEV_WEBHOOK }}
+        
+    #- name: Login to Azure
+    #  uses: Azure/login@v1
+    #  with:
+    #    creds: ${{ secrets.AZURE_CREDENTIALS }}
+        
+    #- name: Deploy Dev Api
+    #  uses: Azure/webapps-deploy@v2
+    #  with:
+    #    app-name: webapp-pass-depot-dev
+    #    images: ghcr.io/brookpatten/patrol-training-onestop:build-${{ github.run_number }}
