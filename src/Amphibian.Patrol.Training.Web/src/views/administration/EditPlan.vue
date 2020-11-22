@@ -45,7 +45,7 @@
                                 <CButton v-if="edit" v-on:click="beginEditSkill(signOffRow)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
                                 <CButton v-if="edit && allowRemoveSkill" v-on:click="removeSkill(signOffRow.skill)" size="sm" color="danger"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
                                 <CButton v-if="edit" size="sm" color="success">Skill <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
-                                <CButton v-if="edit && last(signOffTable)==signOffRow" size="sm" color="primary" v-on:click="addSection(signOffRow.index+1,1,0,levels.length,section)">Section <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
+                                <CButton v-if="edit && last(signOffTable)==signOffRow" size="sm" color="primary" v-on:click="addSection(signOffRow.index+1,1,null,null,null)">Section <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
                               </CButtonGroup>
                             </td>
                             <td v-for="signOff in signOffRow.signOffs" :key="signOff.rowIndex+'-'+signOff.columnIndex+'-skill-buttons'" v-bind:style="{ backgroundColor: signOff.section ? signOff.section.color : null}">
@@ -390,13 +390,35 @@ export default {
           return ("#" + rand).toUpperCase();
         },
         
+        addSectionRow(index){
+          var section = {rowIndex:index,rowCount:1,columnIndex,columnCount:this.levels.length,id:0,name:'New Section',skills:[],levels:[],color:this.randomColor()};
+          
+          section.skills.push(this.allSkills[0]);
 
+          for(var i=0;i<this.levels.length;i++){
+            section.levels.push(this.levels[i]);
+          }
+
+          for(var i=0;i<this.plan.sections.length;i++){
+            //loop through skills if we need to move anything down
+            for(var s=0;s<this.plan.sections[i].skills.length;s++){
+                if(this.plan.sections[i].skills[s].rowIndex>=index){
+                  this.plan.sections[i].skills[s].rowIndex++;
+                }
+            }
+          }
+
+          this.plan.sections.push(section);
+          this.tabelize();
+          this.updateEditorButtons();
+        },
         //modifiers
         addSection(rowIndex,rowCount,columnIndex,columnCount,sourceSection){
           console.log("addSection",rowIndex,rowCount,columnIndex,columnCount,sourceSection);
 
           //build up the viewmodel for the new section
           var section = {rowIndex,rowCount,columnIndex,columnCount,id:0,name:'New Section',skills:[],levels:[],color:this.randomColor()};
+          
           for(var i=0;i<rowCount;i++){
             //add skills
             var newSkill=null;
@@ -413,11 +435,14 @@ export default {
             }
             section.skills.push({id:0,rowIndex:rowIndex+i,sectionid:0,skill:newSkill});
           }
-          for(var i=0;i<columnCount;i++){
+          for(var i=0;i<columnCount ? columnCount : this.levels.length;i++){
             //add levels
             var newLevel=null;
             if(!columnCount || columnCount==1 || sourceSection==null){
               newLevel = this.allLevels[0];
+            }
+            else if(sourceSection==null){
+              newLevel = this.levels[i];
             }
             else if(sourceSection!=null){
               for(var ss=0;ss<sourceSection.levels.length;ss++){

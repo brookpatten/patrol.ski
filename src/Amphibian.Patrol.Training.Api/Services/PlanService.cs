@@ -361,6 +361,10 @@ namespace Amphibian.Patrol.Training.Api.Services
                 }
                 else
                 {
+                    section.Name = newSection.Name;
+                    section.Color = newSection.Color;
+                    await _planRepository.UpdateSection(section);
+
                     //sync levels
                     var sectionLevels = (await _planRepository.GetSectionLevels(section.Id)).OrderBy(x => x.ColumnIndex).ToList();
                     foreach(var sectionLevel in sectionLevels)
@@ -452,7 +456,8 @@ namespace Amphibian.Patrol.Training.Api.Services
                 var section = new Section()
                 {
                     Name = newSection.Name,
-                    PatrolId = plan.PatrolId
+                    PatrolId = plan.PatrolId,
+                    Color = newSection.Color
                 };
                 await _planRepository.InsertSection(section);
                 var planSection = new PlanSection()

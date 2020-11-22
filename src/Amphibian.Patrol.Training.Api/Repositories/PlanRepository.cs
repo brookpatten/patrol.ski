@@ -176,6 +176,11 @@ namespace Amphibian.Patrol.Training.Api.Repositories
             await _connection.DeleteAsync(section);
         }
 
+        public async Task UpdateSection(Section section)
+        {
+            await _connection.UpdateAsync(section);
+        }
+
         public async Task DeleteSectionLevel(SectionLevel sectionLevel)
         {
             await _connection.DeleteAsync(sectionLevel);

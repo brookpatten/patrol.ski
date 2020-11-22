@@ -23,6 +23,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         Task InsertSection(Section section);
         Task InsertPlanSection(PlanSection planSection);
         Task DeleteSection(Section section);
+        Task UpdateSection(Section section);
         Task InsertSectionLevel(SectionLevel sectionLevel);
         Task DeleteSectionLevel(SectionLevel sectionLevel);
         Task UpdateSectionLevel(SectionLevel sectionLevel);
