@@ -31,6 +31,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
 
         [HttpGet]
         [Route("plans")]
+        [Authorize]
         public async Task<IActionResult> Plans(int patrolId)
         {
             var patrol = (await _patrolRepository.GetPatrolsForUser(User.GetUserId())).SingleOrDefault(x=>x.Id==patrolId);

@@ -23,7 +23,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public Task<IEnumerable<Plan>> GetPlansForPatrol(int patrolId)
         {
-            throw new NotImplementedException();
+            return _connection.QueryAsync<Plan>(@"select Id,PatrolId,Name from Plans where patrolId=@patrolId",new { patrolId });
         }
     }
 }
