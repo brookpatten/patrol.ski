@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Amphibian.Patrol.Training.Persistence.Migrations": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Local"
+      }
+    }
+  }
+}

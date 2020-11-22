@@ -13,7 +13,9 @@ namespace Amphibian.Patrol.Training.Persistence.Migrations
     {
         static void Main(string[] args)
         {
-            var configuration = PatrolTrainingApiConfiguration.LoadFromJsonConfig(Path.Combine(Directory.GetCurrentDirectory(), "../../../../Amphibian.Patrol.Training.Api"));
+            var configurations = PatrolTrainingApiConfiguration.LoadFromJsonConfig(null,Path.Combine(Directory.GetCurrentDirectory(), "../../../../Amphibian.Patrol.Training.Api"));
+
+            var configuration = configurations.Item2;
 
             if (configuration.Database.MigrateSchema)
             {

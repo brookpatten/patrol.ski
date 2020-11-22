@@ -1,12 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
 using System.IO;
+using Microsoft.Azure.KeyVault;
+using Microsoft.Azure.Services.AppAuthentication;
+using Microsoft.Extensions.Configuration.AzureKeyVault;
 
 namespace Amphibian.Patrol.Training.Configuration
 {
     public class PatrolTrainingApiConfiguration
     {
+        public AzureConfiguration Azure { get; set; }
+
         public DatabaseConfiguration Database { get; set; }
         public TestConfiguration Test { get; set; }
         public EmailConfiguration Email{get;set;}
@@ -14,42 +21,82 @@ namespace Amphibian.Patrol.Training.Configuration
 
         public PatrolTrainingApiConfiguration()
         {
+            Azure = new AzureConfiguration();
             Database = new DatabaseConfiguration();
             Test = new TestConfiguration();
             Email = new EmailConfiguration();
             App = new AppConfiguration();
         }
 
-        public static PatrolTrainingApiConfiguration LoadFromJsonConfig(string configBasePath=null,string environmentName=null)
+        public static (IConfiguration,PatrolTrainingApiConfiguration) LoadFromJsonConfig(IConfigurationBuilder builder=null, params string[] basePaths)
         {
-            if(string.IsNullOrEmpty(environmentName))
+            var checkPaths = basePaths.ToList();
+            if (!checkPaths.Any())
             {
-                environmentName = Environment.GetEnvironmentVariable("ENVIRONMENT");
-                if(string.IsNullOrEmpty(environmentName))
+                checkPaths.Add(Directory.GetCurrentDirectory());
+            }
+
+            string configBasePath = null;
+            foreach (var path in basePaths)
+            {
+                if (File.Exists(Path.Combine(path, "appsettings.json")))
                 {
-                    environmentName = "Local";
+                    configBasePath = path;
+                    //logger.LogInformation($"Found Configuration in {configBasePath}");
+                    break;
                 }
             }
 
-            if(string.IsNullOrEmpty(configBasePath))
+            if (string.IsNullOrEmpty(configBasePath))
             {
-                configBasePath = Directory.GetCurrentDirectory();
+                //logger.LogCritical("Failed to find configuration in {@basePaths}",basePaths);
+                throw new FileNotFoundException("Failed to find appsettings.json");
             }
 
-            var builder = new ConfigurationBuilder()
+            //this is a little backward, but we always read the env from the environment variable so that we can figure out which config to load
+            //the config could potentially contain an environment as well
+            //this name "ASPNETCORE_ENVIRONMENT" is special for asp.net core and triggers other behaviors in asp.net core
+            var environmentName = System.Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+            if (string.IsNullOrEmpty(environmentName))
+            {
+                environmentName = "Local";
+            }
+            var machineName = System.Environment.MachineName;
+
+            //logger.LogInformation($"Loading Configuration For Environment {environmentName} Machine {machineName}");
+
+            if(builder==null)
+            {
+                builder = new ConfigurationBuilder();
+            }
+
+            builder = new ConfigurationBuilder()
                 .SetBasePath(configBasePath)
-                .AddJsonFile("appsettings.json", false, true);
-
-            if (File.Exists(Path.Combine(configBasePath, $"appsettings.{environmentName}.json")))
-            {
-                builder = builder.AddJsonFile($"appsettings.{environmentName}.json",false,true);
-            }
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile($"appsettings.{environmentName}.json", optional: false)
+                .AddJsonFile($"appsettings.{machineName}.machine.json", optional: true)
+                .AddJsonFile($"appsettings.{environmentName}.{machineName}.machine.json", optional: true)
+                .AddEnvironmentVariables();
 
             IConfiguration config = builder.Build();
-
             var serviceConfiguration = config.Get<PatrolTrainingApiConfiguration>();
 
-            return serviceConfiguration;
+            //if config specifies an azure secret url, we need to load those secrets into config too
+            if (!string.IsNullOrEmpty(serviceConfiguration.Azure.KeyVaultUrl))
+            {
+                //logger.LogInformation($"Loading Additional Secret Configuration from Azure Key Vault {serviceConfiguration.SecretAzureKeyVaultUrl}");
+                var azureServiceTokenProvider = new AzureServiceTokenProvider();
+                var keyVaultClient = new KeyVaultClient(
+                    new KeyVaultClient.AuthenticationCallback(
+                        azureServiceTokenProvider.KeyVaultTokenCallback));
+                builder.AddAzureKeyVault(serviceConfiguration.Azure.KeyVaultUrl, keyVaultClient, new DefaultKeyVaultSecretManager());
+
+                //do it again, this time with azure keyvault
+                config = builder.Build();
+                serviceConfiguration = config.Get<PatrolTrainingApiConfiguration>();
+            }
+
+            return (config,serviceConfiguration);
         }
     }
 
@@ -83,5 +130,10 @@ namespace Amphibian.Patrol.Training.Configuration
         public string SendAllEmailsTo { get; set; }
         public string FromName { get; set; }
         public string FromEmail { get; set; }
+    }
+
+    public class AzureConfiguration
+    {
+        public string KeyVaultUrl { get; set; }
     }
 }

@@ -29,7 +29,8 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         public void BaseOneTimeSetUp()
         {
             //find the config for the app
-            _configuration = PatrolTrainingApiConfiguration.LoadFromJsonConfig(Path.Combine(Directory.GetCurrentDirectory(), "../../../../Amphibian.Patrol.Training.Api"));
+            var configurations = PatrolTrainingApiConfiguration.LoadFromJsonConfig(null,Path.Combine(Directory.GetCurrentDirectory(), "../../../../Amphibian.Patrol.Training.Api"));
+            this._configuration = configurations.Item2;
 
             //reformat the existing connection string to connect to the master db (not strictly necassary, but mast always exists, the app db doesn't)
             _connectionStringBuilder = new SqlConnectionStringBuilder(_configuration.Database.ConnectionString);
