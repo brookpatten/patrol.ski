@@ -30,20 +30,8 @@ namespace Schedule.Api.Controllers
 
         [HttpGet]
         [Route("[controller]/[action]")]
-        public async Task TestMsSqlConnection()
+        public async Task Test()
         {
-
-
-            using (var connection = new SqlConnection("Server=tcp:trainingschedule.database.windows.net,1433;Initial Catalog=trainingschedule;Persist Security Info=False;User ID=trainingschedule;Password=Catalina25;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"))
-            {
-                await connection.OpenAsync();
-
-                await connection.CloseAsync();
-
-                Ok();
-            }
-
         }
-
     }
 }
