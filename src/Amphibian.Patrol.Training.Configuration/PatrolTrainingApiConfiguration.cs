@@ -56,7 +56,7 @@ namespace Amphibian.Patrol.Training.Configuration
                 }
             }
 
-            if (string.IsNullOrEmpty(configBasePath))
+            if (!File.Exists(Path.Combine(configBasePath, "appsettings.json")))
             {
                 //logger.LogCritical("Failed to find configuration in {@basePaths}",basePaths);
                 throw new FileNotFoundException("Failed to find appsettings.json");
