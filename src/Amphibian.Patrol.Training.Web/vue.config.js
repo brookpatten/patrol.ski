@@ -9,5 +9,10 @@ module.exports = {
   },
   transpileDependencies: [
     '@coreui/utils'
-  ]
+  ],
+  publicPath: '.',
+  devServer: {
+    proxy: 'https://localhost:44348',
+    publicPath: '/'
+  }
 }

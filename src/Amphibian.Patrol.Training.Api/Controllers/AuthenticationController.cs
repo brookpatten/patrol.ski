@@ -43,10 +43,14 @@ namespace Amphibian.Patrol.Training.Api.Controllers
                 {
                     Ok(new
                     {
-                        user.Id,
-                        user.Email,
-                        user.FirstName,
-                        user.LastName
+                        user = new
+                        {
+                            user.Id,
+                            user.Email,
+                            user.FirstName,
+                            user.LastName
+                        },
+                        token = Guid.NewGuid()
                     });
                 }
                 else
@@ -60,28 +64,48 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             }
         }
 
+        public class RegistrationRequest
+        {
+            public string Email { get; set; }
+            public string First { get; set; }
+            public string Last { get; set; }
+            public string Password { get; set; }
+        }
+        public class RegistrationResult
+        {
+            public string Email { get; set; }
+            public string First { get; set; }
+            public string Last { get; set; }
+            public Guid Token { get; set; }
+        }
         [AllowAnonymous]
         [HttpPost]
-        [Route("user/ceate")]
-        public async Task Create(string email,string firstname,string lastname, string password)
+        [Route("user/register")]
+        public async Task<IActionResult> Register(RegistrationRequest registration)
         {
-            var user = await _userRepository.GetUser(email);
+            var user = await _userRepository.GetUser(registration.Email);
             
             if (user != null)
             {
-                BadRequest(new { message = "User Already Exists" });
+                return BadRequest(new { message = "User Already Exists" });
             }
             else
             {
                 user = new User()
                 {
-                    Email = email,
-                    FirstName = firstname,
-                    LastName = lastname
+                    Email = registration.Email,
+                    FirstName = registration.First,
+                    LastName = registration.Last
                 };
-                _authenticationService.SetPassword(user, password);
+                _authenticationService.SetPassword(user, registration.Password);
                 await _userRepository.InsertUser(user);
-                Ok(user);
+                return Ok(new
+                {
+                    Email = user.Email,
+                    First = user.FirstName,
+                    Last = user.LastName,
+                    Token = Guid.NewGuid()
+                });
             }
         }
 

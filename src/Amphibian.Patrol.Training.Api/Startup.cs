@@ -68,13 +68,12 @@ namespace Amphibian.Patrol.Training.Api
                 DefaultFileNames = new List<string>() { "index.html" },
                 RequestPath=""
             });
-            app.UseStaticFiles();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
                 app.UseStaticFiles(new StaticFileOptions()
                 {
-                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "../Schedule.Web/dist")),
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "../Amphibian.Patrol.Training.Web/dist")),
                     RequestPath = ""
                 });
             }

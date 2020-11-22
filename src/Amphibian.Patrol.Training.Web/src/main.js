@@ -18,6 +18,11 @@ Vue.use(VueLodash, lodash)
 Vue.use(VueBlockUI)
 Vue.use(VueAxios, Axios)
 
+const token = localStorage.getItem('token')
+if (token) {
+  Vue.prototype.$http.defaults.headers.common['Authorization'] = token
+}
+
 new Vue({
   el: '#app',
   router,

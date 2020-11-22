@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import store from '../store.js'
 
 // Containers
 const TheContainer = () => import('@/containers/TheContainer')
@@ -77,12 +78,26 @@ const Levels = () => import('@/views/administration/Levels')
 
 Vue.use(Router)
 
-export default new Router({
+let router = new Router({
   mode: 'hash', // https://router.vuejs.org/api/#mode
   linkActiveClass: 'active',
   scrollBehavior: () => ({ y: 0 }),
   routes: configRoutes()
 })
+
+router.beforeEach((to, from, next) => {
+  if(to.matched.some(record => record.meta.requiresAuth)) {
+    if (store.getters.isLoggedIn) {
+      next()
+      return
+    }
+    next('/pages/login') 
+  } else {
+    next() 
+  }
+})
+
+export default router;
 
 function configRoutes () {
   return [
@@ -95,27 +110,42 @@ function configRoutes () {
         {
           path: 'dashboard',
           name: 'Dashboard',
-          component: Dashboard
+          component: Dashboard,
+          meta: { 
+            requiresAuth: true
+          }
         },
         {
           path: 'plan',
           name: 'Plan',
-          component: Plan
+          component: Plan,
+          meta: { 
+            requiresAuth: true
+          }
         },
         {
           path: 'schedule',
           name: 'Schedule',
-          component: Schedule
+          component: Schedule,
+          meta: { 
+            requiresAuth: true
+          }
         },
         {
           path: 'trainee',
           name: 'Trainee',
-          component: Trainee
+          component: Trainee,
+          meta: { 
+            requiresAuth: true
+          }
         },
         {
           path: 'trainer',
           name: 'Trainer',
-          component: Trainer
+          component: Trainer,
+          meta: { 
+            requiresAuth: true
+          }
         },
         {
           path: 'administration',
@@ -128,42 +158,66 @@ function configRoutes () {
             {
               path: 'administration',
               name: 'Administration',
-              component: Administration
+              component: Administration,
+              meta: { 
+                requiresAuth: true
+              }
             },
             {
               path: 'people',
               name: 'People',
-              component: People
+              component: People,
+              meta: { 
+                requiresAuth: true
+              }
             },
             {
               path: 'organization',
               name: 'Organization',
-              component: Organization
+              component: Organization,
+              meta: { 
+                requiresAuth: true
+              }
             },
             {
               path: 'integration',
               name: 'Integration',
-              component: Integration
+              component: Integration,
+              meta: { 
+                requiresAuth: true
+              }
             },
             {
               path: 'plans',
               name: 'Plans',
-              component: Plans
+              component: Plans,
+              meta: { 
+                requiresAuth: true
+              }
             },
             {
               path: 'skills',
               name: 'Skills',
-              component: Skills
+              component: Skills,
+              meta: { 
+                requiresAuth: true
+              }
             },
             {
               path: 'levels',
               name: 'Levels',
-              component: Levels
+              component: Levels,
+              meta: { 
+                requiresAuth: true
+              }
             },
             {
               path: 'edit-plan',
               name: 'EditPlan',
-              component: EditPlan
+              component: EditPlan,
+              meta: { 
+                requiresAuth: true
+              }
             }
           ]
         },

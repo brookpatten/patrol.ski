@@ -9,6 +9,7 @@ using Dapper;
 using Dapper.Contrib.Extensions;
 
 using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
@@ -19,6 +20,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
     }
 
     [ApiController]
+    [Authorize]
     public class ScheduleController : ControllerBase
     {
         private readonly ILogger<ScheduleController> _logger;
