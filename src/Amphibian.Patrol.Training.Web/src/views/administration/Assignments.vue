@@ -48,7 +48,6 @@
                             :value="(Math.round((data.item.signatures / data.item.signaturesRequired) * 100))"
                             color="success"
                             striped
-                            :animated="animate"
                             show-percentage
                             />
                     </td>

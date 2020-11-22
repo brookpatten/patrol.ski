@@ -77,9 +77,11 @@ namespace Amphibian.Patrol.Training.Api.Services
                 var sections = await _planRepository.GetSectionsForPlan(copyFromPlanId.Value);
                 var sectionSkills = await _planRepository.GetSectionSkillsForPlan(copyFromPlanId.Value);
                 var sectionLevels = await _planRepository.GetSectionLevelsForPlan(copyFromPlanId.Value);
+                var sectionGroups = await _planRepository.GetSectionGroupsForPlan(copyFromPlanId.Value);
 
                 var patrolLevels = (await _planRepository.GetLevels(patrolId)).ToList();
                 var patrolSkills = (await _planRepository.GetSkills(patrolId)).ToList();
+                var patrolGroups = (await _groupRepository.GetGroupsForPatrol(patrolId)).ToList();
 
                 foreach(var section in sections)
                 {
@@ -170,6 +172,41 @@ namespace Amphibian.Patrol.Training.Api.Services
                         };
                         await _planRepository.InsertSectionSkill(newSectionSkill);
                     }
+
+                    var groups = sectionGroups.Where(x => x.SectionId == section.Id);
+                    foreach(var sectionGroup in groups)
+                    {
+                        int groupid;
+                        if (sectionGroup.Group.PatrolId == patrolId)
+                        {
+                            groupid = sectionGroup.Group.Id;
+                        }
+                        else
+                        {
+                            if (patrolGroups.Any(x => x.Name == sectionGroup.Group.Name))
+                            {
+                                groupid = patrolGroups.First(x => x.Name == sectionGroup.Group.Name).Id;
+                            }
+                            else
+                            {
+                                var newGroup = new Group()
+                                {
+                                    PatrolId = patrolId,
+                                    Name = sectionGroup.Group.Name
+                                };
+                                await _groupRepository.InsertGroup(newGroup);
+                                patrolGroups.Add(newGroup);
+                                groupid = newGroup.Id;
+                            }
+                        }
+
+                        var newSectionGroup = new SectionGroup()
+                        {
+                            SectionId = newSection.Id,
+                            GroupId = groupid
+                        };
+                        await _planRepository.InsertSectionGroup(newSectionGroup);
+                    }
                 }
             }
 
@@ -184,6 +221,7 @@ namespace Amphibian.Patrol.Training.Api.Services
 
             var allLevels = (await _planRepository.GetLevels(plan.PatrolId)).ToList();
             var allSkills = (await _planRepository.GetSkills(plan.PatrolId)).ToList();
+            var allGroups = (await _groupRepository.GetGroupsForPatrol(plan.PatrolId)).ToList();
 
             if (plan.Sections!=null)
             {
@@ -234,6 +272,15 @@ namespace Amphibian.Patrol.Training.Api.Services
                     {
                         return false;
                     }
+
+                    //ensure all groups are in the patrol
+                    foreach(var sectionGroup in section.Groups)
+                    {
+                        if(!allGroups.Any(x=>x.Id==sectionGroup.GroupId))
+                        {
+                            return false;
+                        }
+                    }
                 }
                 return true;
             }
@@ -250,6 +297,7 @@ namespace Amphibian.Patrol.Training.Api.Services
 
             var allLevels = (await _planRepository.GetLevels(dto.PatrolId)).ToList();
             var allSkills = (await _planRepository.GetSkills(dto.PatrolId)).ToList();
+            var allGroups = (await _groupRepository.GetGroupsForPatrol(dto.PatrolId)).ToList();
 
             //update existing sections
             var sections = await _planRepository.GetSectionsForPlan(dto.Id);
@@ -318,6 +366,32 @@ namespace Amphibian.Patrol.Training.Api.Services
                             SkillId = newSectionSkill.Skill.Id
                         };
                         await _planRepository.InsertSectionSkill(sectionSkill);
+                    }
+
+                    //sync groups
+                    var sectionGroups = (await _planRepository.GetSectionGroups(section.Id)).ToList();
+                    foreach (var sectionGroup in sectionGroups)
+                    {
+                        var newSectionGroup = newSection.Groups.SingleOrDefault(x => x.Id == sectionGroup.Id);
+                        if (newSectionGroup == null)
+                        {
+                            await _planRepository.DeleteSectionGroup(sectionGroup);
+                        }
+                        else
+                        {
+                            sectionGroup.GroupId = newSectionGroup.GroupId;
+                            await _planRepository.UpdateSectionGroup(sectionGroup);
+                        }
+                    }
+
+                    foreach (var newSectionGroup in newSection.Groups.Where(x => x.Id == default(int)))
+                    {
+                        var sectionGroup = new SectionGroup()
+                        {
+                            SectionId = section.Id,
+                            GroupId = newSectionGroup.GroupId
+                        };
+                        await _planRepository.InsertSectionGroup(sectionGroup);
                     }
                 }
             }

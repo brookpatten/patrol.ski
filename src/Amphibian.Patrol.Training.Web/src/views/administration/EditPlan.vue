@@ -8,18 +8,13 @@
                         <tr>
                             <th scope="col">Skill</th>
                             <th scope="col" v-for="level in levels" :key="level.index+'-level'">
-                              <span v-if="!edit">{{level.level.name}}</span>
-                              <CSelect v-if="edit"
-                                label="Level"
-                                :value.sync="level.levelId"
-                                :options="allLevelsOptions"
-                                :update:value="canonicalizeSkillsAndLevels"
-                                placeholder="None"
-                                />
-                              <CButtonGroup class="float-right" v-if="edit">
+                              <div>{{level.level.name}}</div>
+                              
+                              <CButtonGroup v-if="edit">
+                                <CButton  v-if="edit" v-on:click="beginEditLevel(level.level)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
                                 <CButton size="sm" color="danger" v-on:click="removeLevel(level.level)"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
-                                <CButton v-if="last(levels)==level" size="sm" color="primary">Add Level <CIcon :content="$options.freeSet.cilArrowThickRight"/></CButton>
-                                <CButton v-if="last(levels)==level" size="sm" color="primary" v-on:click="addSection(0,signOffTable.length,levels.length,1)">Add Section <CIcon :content="$options.freeSet.cilArrowThickRight"/></CButton>
+                                <CButton v-if="last(levels)==level" size="sm" color="success">Level <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
+                                <CButton v-if="last(levels)==level" size="sm" color="primary" v-on:click="addSection(0,signOffTable.length,levels.length,1)">Section <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
                               </CButtonGroup>
                               
                             </th>
@@ -30,28 +25,21 @@
                           <tr v-if="signOffRow.header" :key="signOffRow.index+'-header-row'">
                             <td></td>
                             <th v-for="section in signOffRow.header.sections" :key="section.columnIndex+'-'+section.rowIndex+'-header'" :colspan="section.columnCount">
-                              <span>{{section.name}}</span>
-                              <CButtonGroup class="float-right" v-if="edit">
-                                <CButton v-on:click="editSectionMode(section)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
+                              <div>{{section.name}}</div>
+                              <CButtonGroup v-if="edit">
+                                <CButton v-if="section.id || section.id==0" v-on:click="beginEditSection(section)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
                                 <CButton v-if="section.id || section.id==0" v-on:click="removeSection(section)" size="sm" color="danger"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
-                                <CButton v-if="section.id || section.id==0" size="sm" color="primary">Add Level <CIcon :content="$options.freeSet.cilArrowThickRight"/></CButton>
-                                <CButton v-if="section.id || section.id==0 && (last(signOffRow.header.sections)==section)" size="sm" color="primary" v-on:click="addSection(section.rowIndex,section.rowCount,section.columnIndex + section.columnCount,1,section)">Add Section <CIcon :content="$options.freeSet.cilArrowThickRight"/></CButton>
+                                <CButton v-if="section.id || section.id==0" size="sm" color="success">Level <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
+                                <CButton v-if="section.id || section.id==0 && (last(signOffRow.header.sections)==section)" size="sm" color="primary" v-on:click="addSection(section.rowIndex,section.rowCount,section.columnIndex + section.columnCount,1,section)">Section <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
                               </CButtonGroup>
                             </th>
                           </tr>
                           <tr :key="signOffRow.index+'-skill-row'">
                             <td>
-                              <span v-if="!edit">{{signOffRow.skill.name}}</span>
-                              <CSelect v-if="edit && !signOffRow.skillIsNew"
-                                label="Skill"
-                                :value.sync="signOffRow.skillId"
-                                :options="allSkillsOptions"
-                                :update:value="canonicalizeSkillsAndLevels"
-                                placeholder="None"></CSelect>
-                                <CInput v-if="edit && signOffRow.skillIsNew" v-model="signOffRow.newSkillName"></CInput>
-                              <CButtonGroup class="float-right">
-                                <CButton  v-if="edit && !signOffRow.skillIsNew" v-on:click="signOffRow.skillIsNew = false" size="sm" color="primary"><CIcon :content="$options.freeSet.cilPlus"/></CButton>
-                                <CButton  v-if="edit && signOffRow.skillIsNew" v-on:click="signOffRow.skillIsNew = true" size="sm" color="success"><CIcon :content="$options.freeSet.cilCheck"/></CButton>
+                              <div>{{signOffRow.skill.name}}</div>
+                              <CButtonGroup>
+                                <CButton  v-if="edit" v-on:click="beginEditSkill(signOffRow.skill)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
+                                <CButton  v-if="edit" size="sm" color="success">Skill<CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
                                 <CButton  v-if="edit" v-on:click="removeSkill(signOffRow.skill)" size="sm" color="danger"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
                               </CButtonGroup>
                             </td>
@@ -63,14 +51,14 @@
                           <tr v-if="edit && signOffRow.footer" :key="signOffRow.index+'-footer'">
                             <td>
                               <CButtonGroup  class="float-right">
-                                <CButton size="sm" color="primary">Add Skill <CIcon :content="$options.freeSet.cilArrowThickTop"/></CButton>
-                                <CButton size="sm" color="primary" v-on:click="addSection(signOffRow.index+1,1,0,levels.length,section)">Add Section <CIcon :content="$options.freeSet.cilArrowThickBottom"/></CButton>
+                                <CButton size="sm" color="success">Skill <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
+                                <CButton size="sm" color="primary" v-on:click="addSection(signOffRow.index+1,1,0,levels.length,section)">Section <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
                               </CButtoNGroup>
                             </td>
                             <th v-for="section in signOffRow.footer.sections" :key="section.columnIndex+'-footer-buttons'" :colspan="section.columnCount" v-bind:style="{ backgroundColor: section.color}">
-                              <CButtonGroup>
-                                <CButton v-if="section.id || section.id==0" size="sm" color="primary">Add Skill <CIcon :content="$options.freeSet.cilArrowThickTop"/></CButton>
-                                <CButton v-if="section.id || section.id==0" size="sm" color="primary" v-on:click="addSection(section.rowIndex + section.rowCount,1,section.columnIndex,section.columnCount,section)">Add Section <CIcon :content="$options.freeSet.cilArrowThickBottom"/></CButton>
+                              <CButtonGroup  class="float-right">
+                                <CButton v-if="section.id || section.id==0" size="sm" color="success">Skill <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
+                                <CButton v-if="section.id || section.id==0" size="sm" color="primary" v-on:click="addSection(section.rowIndex + section.rowCount,1,section.columnIndex,section.columnCount,section)">Section <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
                               </CButtonGroup>
                             </th>
                           </tr>
@@ -90,16 +78,57 @@
         <CCard v-if="editor=='section'">
           <CCardHeader>Edit Section</CCardHeader>
           <CCardBody>
-            <CInput v-model="editSection.name"></CInput>
-            <label>Color</label><v-swatches v-model="editSection.color" show-fallback fallback-input-type="color" popover-x="right"></v-swatches>
-            <label>Group(s)</label>
-            <div v-for="group in allGroups" :key="group.id">
-                <input type="checkbox" :value="group.id" v-model="group.selected"/> <label>{{group.name}}</label>
-            </div>
+            <CRow>
+              <CCol md="3">
+                <label>Name</label>
+                <CInput v-model="editSection.name"></CInput>
+              </CCol>
+              <CCol md="3">
+                <label>Color</label><br/>
+                <v-swatches v-model="editSection.color" show-fallback fallback-input-type="color" popover-x="right"></v-swatches>
+              </CCol>
+            </CRow>
+            <CRow>
+              <CCol>
+                <label>Group(s)</label>
+                <div v-for="group in allGroups" :key="group.id">
+                    <input type="checkbox" :value="group.id" v-model="group.selected"/> <label>{{group.name}}</label>
+                </div>
+              </CCol>
+            </CRow>
           </CCardBody>
           <CCardFooter>
               <CButtonGroup class="float-right">
                 <CButton color="primary" v-on:click="endEditSection">Ok <CIcon :content="$options.freeSet.cilCheck"/></CButton>
+              </CButtonGroup>
+            </CCardFooter>
+        </CCard>
+        <CCard v-if="editor=='skill'">
+          <CCardHeader>Edit Skill</CCardHeader>
+          <CCardBody>
+            <CSelect v-if="editSkill.id"
+                label="Skill"
+                :value.sync="editSkill.id"
+                :options="allSkillsOptions"
+                placeholder="None"></CSelect>
+             <CButton size="sm" v-on:click="editSkill.id=null"><CIcon :content="$options.freeSet.cilPlus"/></CButton>
+             <CInput v-model="newSkillName"></CInput>
+             <CButton size="sm" v-on:click="editSkill.id=allSkills[0].id"><CIcon :content="$options.freeSet.cilX"/></CButton>
+          </CCardBody>
+          <CCardFooter>
+              <CButtonGroup class="float-right">
+                <CButton v-if="editSkill.id || newSkillName.length>0" color="primary" v-on:click="endEditSkill">Ok <CIcon :content="$options.freeSet.cilCheck"/></CButton>
+              </CButtonGroup>
+            </CCardFooter>
+        </CCard>
+        <CCard v-if="editor=='level'">
+          <CCardHeader>Edit Level</CCardHeader>
+          <CCardBody>
+            
+          </CCardBody>
+          <CCardFooter>
+              <CButtonGroup class="float-right">
+                <CButton color="primary" v-on:click="endEditLevel">Ok <CIcon :content="$options.freeSet.cilCheck"/></CButton>
               </CButtonGroup>
             </CCardFooter>
         </CCard>
@@ -119,19 +148,31 @@ export default {
   props: ['planId'],
   data () {
     return {
-        plan:{},
+        //picklists used by all
         allLevels:[],
         allSkills:[],
         allGroups:[],
+
+        //select editor mode
+        editor:'plan',
         
+        //plan editor
+        plan:{},
         sortedSections:[],
         signOffTable:[],
         levels:[],
         edit:true,
 
+        //section editor
         editSection:{},
-        editor:'plan'
+        
+        //skill editor
+        editSkill:{},
+        newSkillName:'',
 
+        //level editor
+        editLevel:{},
+        newLevelName:''
     }
   },
   methods: {
@@ -158,7 +199,7 @@ export default {
             this.addSection(0,1,0,1);
           }
         },
-        editSectionMode(section){
+        beginEditSection(section){
           this.editSection = section;
           this.editor='section';
 
@@ -174,7 +215,22 @@ export default {
           this.editSection.groups = _.map(selectedGroups,function(g){
             return {groupId:g.id};
           });
-
+        },
+        beginEditLevel(level){
+          this.editLevel = level;
+          this.editor='level';
+        },
+        endEditLevel(){
+          //save a new level
+          this.editor='plan';
+        },
+        beginEditSkill(skill){
+          this.editSkill = skill;
+          this.editor='skill';
+        },
+        endEditSkill(){
+          //save a new level
+          this.editor='plan';
         },
         getGroups() {
           this.$http.get('user/groups/'+this.plan.patrolId)

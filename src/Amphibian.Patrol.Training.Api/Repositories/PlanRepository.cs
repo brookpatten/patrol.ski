@@ -219,5 +219,15 @@ namespace Amphibian.Patrol.Training.Api.Repositories
             group.Id = id;
             return group;
         }
+
+        public async Task UpdateSectionGroup(SectionGroup sectionGroup)
+        {
+            await _connection.UpdateAsync(sectionGroup);
+        }
+
+        public async Task<IEnumerable<SectionGroup>> GetSectionGroups(int sectionId)
+        {
+            return await _connection.SelectAsync<SectionGroup>(x => x.SectionId == sectionId);
+        }
     }
 }

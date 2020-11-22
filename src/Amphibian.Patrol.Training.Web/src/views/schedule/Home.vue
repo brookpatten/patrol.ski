@@ -59,7 +59,6 @@
                             :value="(Math.round((data.item.signatures / data.item.signaturesRequired) * 100))"
                             color="success"
                             striped
-                            :animated="animate"
                             show-percentage
                             />
                     </td>
@@ -135,7 +134,6 @@
                             :value="(Math.round((data.item.signatures / data.item.signaturesRequired) * 100))"
                             color="success"
                             striped
-                            :animated="animate"
                             show-percentage
                             />
                     </td>
@@ -171,7 +169,6 @@
                             :value="(Math.round((data.item.signatures / data.item.signaturesRequired) * 100))"
                             color="success"
                             striped
-                            :animated="animate"
                             show-percentage
                             />
                     </td>
@@ -231,7 +228,6 @@
             </CDataTable>
             </CCardBody>
         </CCard>
-        <BlockUI :message="'Loading'">Hello world</BlockUI>
     </div>
     
 </template>

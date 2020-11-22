@@ -15,7 +15,7 @@ import VueBlockUI from 'vue-blockui'
 
 Vue.config.performance = true
 Vue.use(CoreuiVue)
-Vue.use(VueLodash, lodash)
+Vue.use(lodash,VueLodash)
 Vue.use(VueBlockUI)
 Vue.use(VueAxios, Axios)
 
