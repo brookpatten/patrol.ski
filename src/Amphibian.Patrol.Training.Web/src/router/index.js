@@ -75,8 +75,8 @@ const Plans = () => import('@/views/administration/Plans')
 const EditPlan = () => import('@/views/administration/EditPlan')
 const Skills = () => import('@/views/administration/Skills')
 const Levels = () => import('@/views/administration/Levels')
-const ManageUser = () => import('@/views/administration/ManageUser')
-const ManageGroup = () => import('@/views/administration/ManageGroup')
+const EditUser = () => import('@/views/administration/EditUser')
+const EditGroup = () => import('@/views/administration/EditGroup')
 const Assignments = () => import('@/views/administration/Assignments')
 
 Vue.use(Router)
@@ -217,18 +217,18 @@ function configRoutes () {
               }
             },
             {
-              path: 'manage-user/:userId',
-              name: 'ManageUser',
-              component: ManageUser,
+              path: 'user/:userId',
+              name: 'EditUser',
+              component: EditUser,
               meta: {
                 requiresAuth: true
               },
               props: true
             },
             {
-              path: 'manage-group/:groupId',
-              name: 'ManageGroup',
-              component: ManageGroup,
+              path: 'group/:groupId',
+              name: 'EditGroup',
+              component: EditGroup,
               meta: {
                 requiresAuth: true
               },

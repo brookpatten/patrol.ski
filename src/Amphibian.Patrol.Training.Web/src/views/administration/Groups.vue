@@ -18,13 +18,13 @@
                 <template #buttons="data">
                   <td>
                     <CButtonGroup size="sm">
-                      <CButton color="primary" :to="{ name: 'ManageGroup', params: { groupId: data.item.id } }">Edit</CButton>
+                      <CButton color="primary" :to="{ name: 'EditGroup', params: { groupId: data.item.id } }">Edit</CButton>
                       <CButton color="danger" v-on:click="removeGroup(data.item.id)">Remove</CButton>
                     </CButtonGroup>
                   </td>
                 </template>
                 <template #buttons-header>
-                  <CButton color="primary" size="sm" :to="{name:'ManageGroup',params:{groupId:null}}">New</CButton>
+                  <CButton color="primary" size="sm" :to="{name:'EditGroup',params:{groupId:null}}">New</CButton>
                 </template>
             </CDataTable>
             </CCardBody>

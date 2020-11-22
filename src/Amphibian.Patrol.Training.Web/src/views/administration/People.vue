@@ -27,14 +27,14 @@
                 <template #buttons="data">
                   <td>
                     <CButtonGroup size="sm">
-                      <CButton color="primary" :to="{ name: 'ManageUser', params: { userId: data.item.id } }">Edit</CButton>
+                      <CButton color="primary" :to="{ name: 'EditUser', params: { userId: data.item.id } }">Edit</CButton>
                       <CButton color="danger" v-on:click="removeUser(data.item.id)">Remove</CButton>
                       <CButton v-if="hasPermission('MaintainAssignments')" color="warning" :to="{ name: 'Assignments', params: { userId: data.item.id } }">Assignments</CButton>
                     </CButtonGroup>
                   </td>
                 </template>
                 <template #buttons-header>
-                  <CButton color="primary" size="sm" :to="{name:'ManageUser',params:{userId:null}}">New</CButton>
+                  <CButton color="primary" size="sm" :to="{name:'EditUser',params:{userId:null}}">New</CButton>
                 </template>
             </CDataTable>
             </CCardBody>

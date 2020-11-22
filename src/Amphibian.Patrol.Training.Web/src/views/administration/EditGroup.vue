@@ -69,7 +69,7 @@
                 <template #buttons="data">
                   <td>
                     <CButtonGroup size="sm">
-                      <CButton v-if="hasPermission('MaintainUsers')" color="primary" :to="{ name: 'ManageUser', params: { userId: data.item.id } }">Edit</CButton>
+                      <CButton v-if="hasPermission('MaintainUsers')" color="primary" :to="{ name: 'EditUser', params: { userId: data.item.id } }">Edit</CButton>
                     </CButtonGroup>
                   </td>
                 </template>
@@ -82,7 +82,7 @@
 <script>
 
 export default {
-  name: 'ManageGroup',
+  name: 'EditGroup',
   components: {
   },
   props: ['groupId'],
