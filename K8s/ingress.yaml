@@ -9,7 +9,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /api
+      - path: /api, /swagger
         pathType: Prefix
         backend:
           serviceName: api

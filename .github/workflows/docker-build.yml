@@ -40,3 +40,18 @@ jobs:
         repository: api
         tags: latest
         path: ./src/Amphibian.Patrol.Training.Api
+  build_onestop:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        lfs: true
+    - name: Build Onestop
+      uses: docker/build-push-action@v1
+      with:
+        username: patroltraining
+        password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+        registry: patroltraining.azurecr.io
+        repository: onestop
+        tags: latest
+        path: ./src
