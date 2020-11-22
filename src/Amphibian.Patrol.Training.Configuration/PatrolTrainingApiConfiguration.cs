@@ -76,7 +76,9 @@ namespace Amphibian.Patrol.Training.Configuration
                 builder = new ConfigurationBuilder();
             }
 
-            builder = new ConfigurationBuilder()
+            builder.Sources.Clear();
+
+            builder = builder
                 .SetBasePath(configBasePath)
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{environmentName}.json", optional: false)
@@ -85,17 +87,29 @@ namespace Amphibian.Patrol.Training.Configuration
                 .AddEnvironmentVariables();
 
             IConfiguration config = builder.Build();
+            
             var serviceConfiguration = config.Get<PatrolTrainingApiConfiguration>();
 
             //if config specifies an azure secret url, we need to load those secrets into config too
             if (!string.IsNullOrEmpty(serviceConfiguration.Azure.KeyVaultUrl))
             {
-                Console.Write("Configuring from Key Vault " + serviceConfiguration.Azure.KeyVaultUrl);
-                builder.AddAzureKeyVault(serviceConfiguration.Azure.KeyVaultUrl);
-                
+                Console.WriteLine("Configuring from Key Vault " + serviceConfiguration.Azure.KeyVaultUrl);
+                builder = builder.AddAzureKeyVault(serviceConfiguration.Azure.KeyVaultUrl);
+
                 //do it again, this time with azure keyvault
                 config = builder.Build();
                 serviceConfiguration = config.Get<PatrolTrainingApiConfiguration>();
+
+                Console.WriteLine("Configuration Complete");
+
+                if (string.IsNullOrEmpty(serviceConfiguration.Database.ConnectionString))
+                {
+                    throw new KeyNotFoundException("Database.ConnectionString cannot be null or empty, please verify configuration");
+                }
+                if (string.IsNullOrEmpty(serviceConfiguration.Email.SendGridApiKey))
+                {
+                    throw new KeyNotFoundException("Email.SendGridApiKey cannot be null or empty, please verify configuration");
+                }
             }
 
             return (config,serviceConfiguration);

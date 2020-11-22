@@ -27,7 +27,8 @@ namespace Amphibian.Patrol.Training.Api
             var builder = Host.CreateDefaultBuilder(args)
             .ConfigureAppConfiguration((hostingContext, config) =>
             {
-                PatrolTrainingApiConfiguration.LoadFromJsonConfig(config);
+                var configurations = PatrolTrainingApiConfiguration.LoadFromJsonConfig(config);
+
             }).ConfigureWebHostDefaults(webBuilder =>
             {
                 webBuilder.UseStartup<Startup>();
