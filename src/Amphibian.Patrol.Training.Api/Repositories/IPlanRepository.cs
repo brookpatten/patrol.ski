@@ -6,5 +6,6 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 {
     public interface IPlanRepository
     {
+        public Task<IEnumerable<Plan>> GetPlansForPatrol(int patrolId);
     }
 }

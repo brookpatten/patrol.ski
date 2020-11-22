@@ -6,7 +6,7 @@
     @update:show="(value) => $store.commit('set', ['sidebarShow', value])"
   >
     <CSidebarBrand class="d-md-down-none" to="/">
-      <h2>Training</h2>
+      <h2>Patrol.Training</h2>
     </CSidebarBrand>
 
     <CRenderFunction flat :content-to-render="$options.nav"/>

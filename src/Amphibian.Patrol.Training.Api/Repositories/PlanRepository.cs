@@ -20,5 +20,10 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         {
             _connection = connection;
         }
+
+        public Task<IEnumerable<Plan>> GetPlansForPatrol(int patrolId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
