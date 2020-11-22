@@ -137,5 +137,19 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
             Assert.AreEqual(signature.SignedAt, signatures.First(x => x.Id == signature.Id).SignedAt);
             Assert.AreEqual(_user.FirstName, signatures.First(x => x.Id == signature.Id).SignedBy.FirstName);
         }
+
+        [Test]
+        public async Task CanUpdateAssignmentCompletedAt()
+        {
+            var before = await _assignmentRepository.GetAssignment(1);
+
+            before.CompletedAt = new DateTime(2020, 10, 4);
+
+            await _assignmentRepository.UpdateAssignment(before);
+
+            var after = await _assignmentRepository.GetAssignment(1);
+
+            Assert.AreEqual(before.CompletedAt, after.CompletedAt);
+        }
     }
 }

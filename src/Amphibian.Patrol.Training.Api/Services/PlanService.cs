@@ -25,14 +25,18 @@ namespace Amphibian.Patrol.Training.Api.Services
             _groupRepository = groupRepository;
         }
 
-        public async Task<PlanDto> GetPlan(int id, int currentUserId)
+        public async Task<PlanDto> GetPlan(int id, int? currentUserId=null)
         {
             var plan = await _planRepository.GetPlan(id);
             var sections = await _planRepository.GetSectionsForPlan(plan.Id);
             var sectionSkills = await _planRepository.GetSectionSkillsForPlan(plan.Id);
             var sectionLevels = await _planRepository.GetSectionLevelsForPlan(plan.Id);
 
-            var sectionIdsCanSign = await _groupRepository.GetSectionIdsInPlanThatUserCanSign(currentUserId, id);
+            var sectionIdsCanSign = new List<int>();
+            if (currentUserId.HasValue)
+            {
+                sectionIdsCanSign = (await _groupRepository.GetSectionIdsInPlanThatUserCanSign(currentUserId.Value, id)).ToList();
+            }
 
             var planDto = _mapper.Map<Plan, PlanDto>(plan);
             planDto.Sections = _mapper.Map<IEnumerable<Section>, IEnumerable<SectionDto>>(sections);

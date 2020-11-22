@@ -12,5 +12,6 @@ namespace Amphibian.Patrol.Training.Api.Models
         public int UserId { get; set; }
         public DateTime AssignedAt { get; set; }
         public DateTime? DueAt { get; set; }
+        public DateTime? CompletedAt { get; set; }
     }
 }

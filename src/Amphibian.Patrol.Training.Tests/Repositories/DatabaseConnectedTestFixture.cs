@@ -34,7 +34,7 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
             this._configuration = configurations.Item2;
 
             //reformat the existing connection string to connect to the master db (not strictly necassary, but mast always exists, the app db doesn't)
-            _connectionStringBuilder = new SqlConnectionStringBuilder(_configuration.Database.ConnectionString);
+            _connectionStringBuilder = new SqlConnectionStringBuilder(_configuration.Test.ConnectionString);
             _runTime = DateTime.Now;
         }
 

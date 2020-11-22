@@ -14,6 +14,7 @@
     <None Remove="Scripts\0006-Assignments.sql" />
     <None Remove="Scripts\0007-Signatures.sql" />
     <None Remove="Scripts\0008-Groups.sql" />
+    <None Remove="Scripts\0009-CompleteAssignments.sql" />
     <None Remove="Scripts\1001-TestData.sql" />
   </ItemGroup>
 
@@ -26,6 +27,7 @@
     <EmbeddedResource Include="Scripts\0006-Assignments.sql" />
     <EmbeddedResource Include="Scripts\0007-Signatures.sql" />
     <EmbeddedResource Include="Scripts\0008-Groups.sql" />
+    <EmbeddedResource Include="Scripts\0009-CompleteAssignments.sql" />
     <EmbeddedResource Include="Scripts\1001-TestData.sql" />
   </ItemGroup>
 

@@ -114,6 +114,7 @@ namespace Amphibian.Patrol.Training.Configuration
     {
         public enum PersistenceTestCompletionAction { DropOnComplete, RenameOnComplete, DropIfSuccessRenameIfFailures, DropIfSuccess }
         public PersistenceTestCompletionAction OnPersistenceTestCompletion { get; set; }
+        public string ConnectionString { get; set; }
 
         public TestConfiguration()
         {

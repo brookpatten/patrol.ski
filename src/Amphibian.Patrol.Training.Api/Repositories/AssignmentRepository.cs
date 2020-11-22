@@ -114,5 +114,10 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         {
             signature.Id=(int)await _connection.InsertAsync(signature);
         }
+
+        public async Task UpdateAssignment(Assignment assignment)
+        {
+            await _connection.UpdateAsync(assignment);
+        }
     }
 }
