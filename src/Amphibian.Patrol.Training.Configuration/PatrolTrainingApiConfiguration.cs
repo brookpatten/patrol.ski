@@ -31,9 +31,9 @@ namespace Amphibian.Patrol.Training.Configuration
         public static (IConfiguration,PatrolTrainingApiConfiguration) LoadFromJsonConfig(IConfigurationBuilder builder=null, params string[] basePaths)
         {
             var checkPaths = basePaths.ToList();
-            if (!checkPaths.Any())
+            if (!checkPaths.Any(x=>x==""))
             {
-                checkPaths.Add(Directory.GetCurrentDirectory());
+                checkPaths.Add("");
             }
 
             string configBasePath = null;
@@ -42,6 +42,7 @@ namespace Amphibian.Patrol.Training.Configuration
                 if (File.Exists(Path.Combine(path, "appsettings.json")))
                 {
                     configBasePath = path;
+                    Console.WriteLine("Found appsettings.json in " + path);
                     //logger.LogInformation($"Found Configuration in {configBasePath}");
                     break;
                 }
@@ -61,7 +62,9 @@ namespace Amphibian.Patrol.Training.Configuration
             {
                 environmentName = "Local";
             }
+            Console.WriteLine("Environment: "+environmentName);
             var machineName = System.Environment.MachineName;
+            Console.WriteLine("Machine: " + machineName);
 
             //logger.LogInformation($"Loading Configuration For Environment {environmentName} Machine {machineName}");
 
@@ -84,6 +87,7 @@ namespace Amphibian.Patrol.Training.Configuration
             //if config specifies an azure secret url, we need to load those secrets into config too
             if (!string.IsNullOrEmpty(serviceConfiguration.Azure.KeyVaultUrl))
             {
+                Console.Write("Configuring from Key Vault " + serviceConfiguration.Azure.KeyVaultUrl);
                 //logger.LogInformation($"Loading Additional Secret Configuration from Azure Key Vault {serviceConfiguration.SecretAzureKeyVaultUrl}");
                 var azureServiceTokenProvider = new AzureServiceTokenProvider();
                 var keyVaultClient = new KeyVaultClient(
