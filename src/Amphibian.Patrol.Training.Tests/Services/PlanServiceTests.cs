@@ -123,6 +123,8 @@ namespace Amphibian.Patrol.Training.Tests.Services
                     }
                 }
             };
+            var sectioNGroups = new List<SectionGroupDto>()
+            { };
 
             var existingLevels = sectionLevels.Select(x => x.Level).ToList();
             var existingSkills = sectionSkills.Select(x => x.Skill).ToList();
@@ -155,6 +157,9 @@ namespace Amphibian.Patrol.Training.Tests.Services
                 .Verifiable();
 
             _planRepositoryMock.Setup(x => x.GetSkills(patrolId)).Returns(Task.FromResult(existingSkills.AsEnumerable()))
+                .Verifiable();
+
+            _planRepositoryMock.Setup(x => x.GetSectionGroupsForPlan(2)).Returns(Task.FromResult(sectioNGroups.AsEnumerable()))
                 .Verifiable();
 
             await _planService.CreatePlan(name, patrolId, 2);

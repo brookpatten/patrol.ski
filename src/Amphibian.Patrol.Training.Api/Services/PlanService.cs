@@ -273,12 +273,15 @@ namespace Amphibian.Patrol.Training.Api.Services
                         return false;
                     }
 
-                    //ensure all groups are in the patrol
-                    foreach(var sectionGroup in section.Groups)
+                    if (section.Groups!=null)
                     {
-                        if(!allGroups.Any(x=>x.Id==sectionGroup.GroupId))
+                        //ensure all groups are in the patrol
+                        foreach (var sectionGroup in section.Groups)
                         {
-                            return false;
+                            if (!allGroups.Any(x => x.Id == sectionGroup.GroupId))
+                            {
+                                return false;
+                            }
                         }
                     }
                 }
