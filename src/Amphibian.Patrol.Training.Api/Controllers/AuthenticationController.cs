@@ -22,9 +22,9 @@ namespace Amphibian.Patrol.Training.Api.Controllers
     {
         private readonly ILogger<ScheduleController> _logger;
         private readonly UserRepository _userRepository;
-        private readonly AuthenticationService _authenticationService;
+        private readonly PasswordService _authenticationService;
 
-        public AuthenticationController(ILogger<ScheduleController> logger, UserRepository userRepository, AuthenticationService authenticationService)
+        public AuthenticationController(ILogger<ScheduleController> logger, UserRepository userRepository, PasswordService authenticationService)
         {
             _logger = logger;
             _userRepository = userRepository;

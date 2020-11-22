@@ -7,12 +7,12 @@ using System.Threading.Tasks;
 
 namespace Amphibian.Patrol.Training.Api.Services
 {
-    public class AuthenticationService
+    public class PasswordService
     {
         private readonly int _defaultIterations = 2;
         private readonly int _hashLength = 32;
 
-        public AuthenticationService(int defaultIterations, int defaultHashLength)
+        public PasswordService(int defaultIterations, int defaultHashLength)
         {
             _defaultIterations = defaultIterations;
             _hashLength = defaultHashLength;

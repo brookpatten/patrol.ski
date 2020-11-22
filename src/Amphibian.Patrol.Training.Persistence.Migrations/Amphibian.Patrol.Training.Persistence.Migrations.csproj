@@ -8,11 +8,13 @@
   <ItemGroup>
     <None Remove="Scripts\0001-Skills.sql" />
     <None Remove="Scripts\0002-Users.sql" />
+    <None Remove="Scripts\0003-Tokens.sql" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Scripts\0001-Skills.sql" />
     <EmbeddedResource Include="Scripts\0002-Users.sql" />
+    <EmbeddedResource Include="Scripts\0003-Tokens.sql" />
   </ItemGroup>
 
   <ItemGroup>

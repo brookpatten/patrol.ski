@@ -8,14 +8,14 @@ namespace Amphibian.Patrol.Training.Tests.Services
     {
         private int _defaultIterations = 5;
         private int _defaultHashLength = 32;
-        private AuthenticationService _service;
+        private PasswordService _service;
         private User _user;
         private string _password = "password123456";
 
         [SetUp]
         public void Setup()
         {
-            _service = new AuthenticationService(_defaultIterations, _defaultHashLength);
+            _service = new PasswordService(_defaultIterations, _defaultHashLength);
             _user = new User();
         }
 
@@ -40,7 +40,7 @@ namespace Amphibian.Patrol.Training.Tests.Services
         public void TestPasswordShouldMatchSetPasswordEvenIfDefaultIterationIsDifferent()
         {
             _service.SetPassword(_user, _password);
-            var differentXervice = new AuthenticationService(_defaultIterations+1, _defaultHashLength);
+            var differentXervice = new PasswordService(_defaultIterations+1, _defaultHashLength);
             Assert.True(differentXervice.CheckPassword(_user, _password));
         }
 
@@ -48,7 +48,7 @@ namespace Amphibian.Patrol.Training.Tests.Services
         public void TestPasswordShouldMatchSetPasswordEvenIfDefaultHashLengthIsDifferent()
         {
             _service.SetPassword(_user, _password);
-            var differentXervice = new AuthenticationService(_defaultIterations, _defaultHashLength + 32);
+            var differentXervice = new PasswordService(_defaultIterations, _defaultHashLength + 32);
             Assert.True(differentXervice.CheckPassword(_user, _password));
         }
     }

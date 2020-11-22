@@ -22,6 +22,7 @@ using System.Security.Claims;
 using Amphibian.Patrol.Training.Api.Repositories;
 using System.Data;
 using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace Amphibian.Patrol.Training.Api
 {
@@ -48,15 +49,14 @@ namespace Amphibian.Patrol.Training.Api
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
             });
 
-            services.AddAuthentication()
-                .AddCookie("PatrolTraining");
+            services.AddAuthentication();
 
             services.AddScoped<IDbConnection,SqlConnection>(sp=>
             {
                 return new SqlConnection(serviceConfiguration.Database.ConnectionString);
             });
             services.AddScoped<UserRepository,UserRepository>();
-            services.AddScoped<Amphibian.Patrol.Training.Api.Services.AuthenticationService, Amphibian.Patrol.Training.Api.Services.AuthenticationService>(sp=>new Amphibian.Patrol.Training.Api.Services.AuthenticationService(5,32));
+            services.AddScoped<Amphibian.Patrol.Training.Api.Services.PasswordService, Amphibian.Patrol.Training.Api.Services.PasswordService>(sp=>new Amphibian.Patrol.Training.Api.Services.PasswordService(5,32));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -76,6 +76,7 @@ namespace Amphibian.Patrol.Training.Api
                     FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "../Amphibian.Patrol.Training.Web/dist")),
                     RequestPath = ""
                 });
+                
             }
             else
             {
