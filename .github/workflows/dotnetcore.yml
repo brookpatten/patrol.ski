@@ -21,21 +21,42 @@ jobs:
       run: dotnet build src/schedule.sln --configuration Release
     - name: Run Tests
       run: dotnet test src/schedule.sln
-    - name: Create Nuget Package
-      run: dotnet pack src/Schedule.Api/Schedule.Api.csproj
-    - name: Push Nupkg to GitHub Packages
-      uses: tanaka-takayoshi/nuget-publish-to-github-packages-action@v2.1
-      with:
+    - name: Setup Node.js for use with actions
+      uses: actions/setup-node@v1.1.0
+      # with:
+        # Version Spec of the version to use.  Examples: 10.x, 10.15.1, >=10.15.0, lts
+        # version: # optional, default is 10.x
+        # Optional registry to set up for auth. Will set the registry in a project level .npmrc and .yarnrc file, and set up auth to read in from env.NODE_AUTH_TOKEN
+        # registry-url: # optional
+        # Optional scope for authenticating against scoped registries
+        # scope: # optional
+    - name: Install Node Frontend Dependencies
+      run: npm install --prefix src/Schedule.Web src/Schedule.Web
+    - name: Build Node Frontend
+      run: npm run --prefix src/Schedule.Web build
+    # - name: Create Nuget Package
+      # run: dotnet pack src/Schedule.Api/Schedule.Api.csproj
+    # - name: Push Nupkg to GitHub Packages
+      # uses: tanaka-takayoshi/nuget-publish-to-github-packages-action@v2.1
+      # with:
         # Path of NuPkg
-        nupkg-path: src/Schedule.Api/bin/Debug/TrainingOrganizer.Api.0.0.1.nupkg
+        # nupkg-path: src/Schedule.Api/bin/Debug/TrainingOrganizer.Api.0.0.1.nupkg
         # package repository owner
-        repo-owner: brookpatten
+        # repo-owner: brookpatten
         # user account
-        gh-user: brookpatten
+        # gh-user: brookpatten
         # access token
-        token: ${{ secrets.GITHUB_TOKEN }}
+        # token: ${{ secrets.GITHUB_TOKEN }}
         # skip publishing duplicated package(s)
-        skip-duplicate: false
+        # skip-duplicate: false
+    - name: Create Deployment Folder
+      run: mkdir deployment
+    - name: Copy .Net App to Deployment Folder
+      run: cp src/Schedule.Api/bin deployment/bin
+    - name: Copy .Net App Config to Deployment Folder
+      run: cp src/Schedule.Api/*.json deployment
+    - name: Copy Node Frontend to Deployment Folder
+      run: cp src/Schedule.Web/dist/**/* deployment
     - name: Login to Azure
       uses: Azure/login@v1
       with:
@@ -46,11 +67,11 @@ jobs:
         # Name of the Azure Web App
         app-name: TrainingSchedule
         # Applies to Web App only: Publish profile (*.publishsettings) file contents with Web Deploy secrets
-        publish-profile: Azure
+        # publish-profile: Azure
         # Enter an existing Slot other than the Production slot
         # slot-name: # optional, default is production
         # Applies to Web App only: Path to package or folder. *.zip, *.war, *.jar or a folder to deploy
-        package: src/Schedule.Api
+        package: deployment
         # Applies to Web App Containers only: Specify the fully qualified container image(s) name. For example, 'myregistry.azurecr.io/nginx:latest' or 'python:3.7.2-alpine/'. For multi-container scenario multiple container image names can be provided (multi-line separated)
         # images: not sure if we should use this?
         # Applies to Web App Containers only: Path of the Docker-Compose file. Should be a fully qualified path or relative to the default working directory. Required for multi-container scenario
