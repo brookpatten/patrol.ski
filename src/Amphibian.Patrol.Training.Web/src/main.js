@@ -23,6 +23,18 @@ if (token) {
   Vue.prototype.$http.defaults.headers.common['Authorization'] = 'Bearer '+token
 }
 
+//globally configure axios so that any time an api call returns a 401, we redirect to login
+Axios.interceptors.response.use(function (response) {
+  return response
+}, function (error) {
+  console.log(error.response.data)
+  if (error.response.data.status === 401) {
+    store.dispatch('logout')
+    router.push({name:'Login',params:{originalRoute:router.currentRoute}})
+  }
+  return Promise.reject(error)
+})
+
 new Vue({
   el: '#app',
   router,

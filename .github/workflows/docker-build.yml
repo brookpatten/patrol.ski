@@ -17,10 +17,10 @@ jobs:
     - name: Build frontend
       uses: docker/build-push-action@v1
       with:
-        username: patroltraining
-        password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
-        registry: patroltraining.azurecr.io
-        repository: frontend
+        username: brookpatten
+        password: ${{ secrets.BROOK_PAT }}
+        registry: docker.pkg.github.com
+        repository: brookpatten/patrol.training/frontend
         tags: latest
         path: ./src/Amphibian.Patrol.Training.Web
   build_api:
@@ -31,13 +31,13 @@ jobs:
         lfs: true
     - name: Build with dotnet
       run: dotnet publish src/Amphibian.Patrol.Training.sln --runtime=linux-x64
-    - name: Build Api
+    - name: Build frontend
       uses: docker/build-push-action@v1
       with:
-        username: patroltraining
-        password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
-        registry: patroltraining.azurecr.io
-        repository: api
+        username: brookpatten
+        password: ${{ secrets.BROOK_PAT }}
+        registry: docker.pkg.github.com
+        repository: brookpatten/patrol.training/api
         tags: latest
         path: ./src/Amphibian.Patrol.Training.Api
   build_onestop:
@@ -48,10 +48,12 @@ jobs:
         lfs: true
     - name: Build Onestop
       uses: docker/build-push-action@v1
+      - name: Build frontend
+      uses: docker/build-push-action@v1
       with:
-        username: patroltraining
-        password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
-        registry: patroltraining.azurecr.io
-        repository: onestop
+        username: brookpatten
+        password: ${{ secrets.BROOK_PAT }}
+        registry: docker.pkg.github.com
+        repository: brookpatten/patrol.training/onestop
         tags: latest
         path: ./src
