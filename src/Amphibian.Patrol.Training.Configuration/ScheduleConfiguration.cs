@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using System.Reflection;
 using System.IO;
 
-namespace Schedule.Configuration
+namespace Amphibian.Patrol.Training.Configuration
 {
     public class ScheduleConfiguration
     {

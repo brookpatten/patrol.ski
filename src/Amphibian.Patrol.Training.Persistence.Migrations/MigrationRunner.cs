@@ -7,9 +7,9 @@ using System.Reflection;
 
 using DbUp;
 
-using Schedule.Configuration;
+using Amphibian.Patrol.Training.Configuration;
 
-namespace Schedule.Persistence.Migrations
+namespace Amphibian.Patrol.Training.Persistence.Migrations
 {
     public static class MigrationRunner
     {

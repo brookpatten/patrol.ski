@@ -1,11 +1,11 @@
-﻿using Schedule.Api.Models;
+﻿using Amphibian.Patrol.Training.Api.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
-namespace Schedule.Api.Services
+namespace Amphibian.Patrol.Training.Api.Services
 {
     public class AuthenticationService
     {

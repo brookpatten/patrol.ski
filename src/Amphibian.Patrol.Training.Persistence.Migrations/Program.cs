@@ -5,9 +5,9 @@ using System.IO;
 using DbUp;
 using DbUp.SqlServer;
 
-using Schedule.Configuration;
+using Amphibian.Patrol.Training.Configuration;
 
-namespace Schedule.Persistence.Migrations
+namespace Amphibian.Patrol.Training.Persistence.Migrations
 {
     public class Program
     {

@@ -10,7 +10,7 @@ using Dapper.Contrib.Extensions;
 
 using Microsoft.Data.SqlClient;
 
-namespace Schedule.Api.Controllers
+namespace Amphibian.Patrol.Training.Api.Controllers
 {
     public class Schedule
     {

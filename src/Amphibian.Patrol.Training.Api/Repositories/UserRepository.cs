@@ -1,4 +1,4 @@
-﻿using Schedule.Api.Models;
+﻿using Amphibian.Patrol.Training.Api.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +11,7 @@ using Dapper.Contrib;
 using Dapper.Contrib.Extensions;
 using System.Runtime.InteropServices.WindowsRuntime;
 
-namespace Schedule.Api.Repositories
+namespace Amphibian.Patrol.Training.Api.Repositories
 {
     public class UserRepository
     {

@@ -8,7 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace Schedule.Api
+namespace Amphibian.Patrol.Training.Api
 {
     public class Program
     {

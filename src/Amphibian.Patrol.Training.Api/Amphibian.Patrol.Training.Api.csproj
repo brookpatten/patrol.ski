@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Schedule.Configuration\Schedule.Configuration.csproj" />
+    <ProjectReference Include="..\Amphibian.Patrol.Training.Configuration\Amphibian.Patrol.Training.Configuration.csproj" />
   </ItemGroup>
 
 

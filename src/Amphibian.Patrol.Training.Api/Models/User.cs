@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Schedule.Api.Models
+namespace Amphibian.Patrol.Training.Api.Models
 {
     public class User
     {

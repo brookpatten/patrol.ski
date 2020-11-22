@@ -7,12 +7,12 @@ using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
 
 using NUnit.Framework;
-using Schedule.Configuration;
+using Amphibian.Patrol.Training.Configuration;
 using Dapper;
-using Schedule.Persistence.Migrations;
+using Amphibian.Patrol.Training.Persistence.Migrations;
 using System.Data;
 
-namespace Schedule.Tests
+namespace Amphibian.Patrol.Training.Tests
 {
     public abstract class DatabaseConnectedTestFixture
     {

@@ -16,14 +16,14 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 
-using Schedule.Configuration;
+using Amphibian.Patrol.Training.Configuration;
 using Microsoft.AspNetCore.Authentication;
 using System.Security.Claims;
-using Schedule.Api.Repositories;
+using Amphibian.Patrol.Training.Api.Repositories;
 using System.Data;
 using Microsoft.Data.SqlClient;
 
-namespace Schedule.Api
+namespace Amphibian.Patrol.Training.Api
 {
     public class Startup
     {
@@ -56,7 +56,7 @@ namespace Schedule.Api
                 return new SqlConnection(serviceConfiguration.Database.ConnectionString);
             });
             services.AddScoped<UserRepository,UserRepository>();
-            services.AddScoped<Schedule.Api.Services.AuthenticationService, Schedule.Api.Services.AuthenticationService>(sp=>new Schedule.Api.Services.AuthenticationService(5,32));
+            services.AddScoped<Amphibian.Patrol.Training.Api.Services.AuthenticationService, Amphibian.Patrol.Training.Api.Services.AuthenticationService>(sp=>new Amphibian.Patrol.Training.Api.Services.AuthenticationService(5,32));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

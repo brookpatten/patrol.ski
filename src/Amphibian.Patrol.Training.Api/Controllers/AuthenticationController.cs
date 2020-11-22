@@ -10,11 +10,11 @@ using Dapper.Contrib.Extensions;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Authorization;
-using Schedule.Api.Repositories;
-using Schedule.Api.Models;
-using Schedule.Api.Services;
+using Amphibian.Patrol.Training.Api.Repositories;
+using Amphibian.Patrol.Training.Api.Models;
+using Amphibian.Patrol.Training.Api.Services;
 
-namespace Schedule.Api.Controllers
+namespace Amphibian.Patrol.Training.Api.Controllers
 {
     [Authorize]
     [ApiController]

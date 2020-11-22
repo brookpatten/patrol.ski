@@ -1,8 +1,8 @@
 using NUnit.Framework;
-using Schedule.Api.Models;
-using Schedule.Api.Services;
+using Amphibian.Patrol.Training.Api.Models;
+using Amphibian.Patrol.Training.Api.Services;
 
-namespace Schedule.Tests
+namespace Amphibian.Patrol.Training.Tests
 {
     public class Tests
     {

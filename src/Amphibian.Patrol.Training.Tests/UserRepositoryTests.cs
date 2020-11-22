@@ -4,10 +4,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 using NUnit.Framework;
-using Schedule.Api.Models;
-using Schedule.Api.Repositories;
+using Amphibian.Patrol.Training.Api.Models;
+using Amphibian.Patrol.Training.Api.Repositories;
 
-namespace Schedule.Tests
+namespace Amphibian.Patrol.Training.Tests
 {
     [TestFixture(Category ="Persistence")]
     public class UserRepositoryTests: DatabaseConnectedTestFixture

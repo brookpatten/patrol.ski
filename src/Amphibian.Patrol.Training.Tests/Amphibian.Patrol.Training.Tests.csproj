@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -15,8 +15,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Schedule.Api\Schedule.Api.csproj" />
-    <ProjectReference Include="..\Schedule.Persistence.Migrations\Schedule.Persistence.Migrations.csproj" />
+    <ProjectReference Include="..\Amphibian.Patrol.Training.Api\Amphibian.Patrol.Training.Api.csproj" />
+    <ProjectReference Include="..\Amphibian.Patrol.Training.Persistence.Migrations\Amphibian.Patrol.Training.Persistence.Migrations.csproj" />
   </ItemGroup>
 
 </Project>
