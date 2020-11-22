@@ -14,7 +14,7 @@ namespace Schedule.Api.Controllers
     public class Schedule
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string Name { get; set; } 
     }
 
     [ApiController]
