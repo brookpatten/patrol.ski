@@ -33,17 +33,20 @@ namespace Amphibian.Patrol.Training.Configuration
             var checkPaths = basePaths.ToList();
             if (!checkPaths.Any(x=>x==""))
             {
+                Console.WriteLine("Adding Default Path");
                 checkPaths.Add("");
             }
             var assemblyDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             if (!checkPaths.Any(x=>x== assemblyDirectory))
             {
+                Console.WriteLine("Adding " + assemblyDirectory);
                 checkPaths.Add(assemblyDirectory);
             }
 
             string configBasePath = null;
             foreach (var path in basePaths)
             {
+                Console.WriteLine("Checking " + path);
                 if (File.Exists(Path.Combine(path, "appsettings.json")))
                 {
                     configBasePath = path;
