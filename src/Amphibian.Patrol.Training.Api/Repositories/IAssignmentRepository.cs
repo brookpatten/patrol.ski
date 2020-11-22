@@ -14,5 +14,6 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         Task<IEnumerable<SignatureDto>> GetSignaturesWithUsersForAssignment(int assignmentId);
         Task InsertSignature(Signature signature);
         Task UpdateAssignment(Assignment assignment);
+        Task<IEnumerable<AssignmentHeaderDto>> GetIncompleteAssignments(int patrolId);
     }
 }

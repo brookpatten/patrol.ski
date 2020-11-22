@@ -9,6 +9,8 @@ namespace Amphibian.Patrol.Training.Api.Dtos
     {
         public int Id { get; set; }
         public int UserId { get; set; }
+        public string UserFirstName { get; set; }
+        public string UserLastName { get; set; }
         public int PlanId { get; set; }
         public string PlanName { get; set; }
         public int SignaturesRequired { get; set; }

@@ -31,6 +31,8 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     a.Id
                     ,a.planid
                     ,a.userid
+                    ,u.firstname userfirstname
+                    ,u.lastname userlastname
                     ,a.assignedat
                     ,a.dueat
                     ,p2.name planname
@@ -47,6 +49,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     ) signatures
                     from assignments a
                     inner join plans p2 on p2.id=a.planid
+                    inner join users u on u.id=a.userid
                     where a.userid=@userId", new { userId });
         }
 
@@ -57,7 +60,10 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     a.Id
                     ,a.planid
                     ,a.userid
+                    ,u.firstname userfirstname
+                    ,u.lastname userlastname
                     ,a.assignedat
+                    ,p.name planname
                     ,a.dueat 
                     ,(
                         select count(p.id)
@@ -71,7 +77,40 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                         select count(id) from signatures s where s.assignmentid=a.id
                     ) signatures
                     from assignments a
+                    inner join users u on u.id=a.userid
+                    inner join plans p on p.patrolid=@patrolId
                     where a.planid=@planId", new { planId });
+        }
+
+        public Task<IEnumerable<AssignmentHeaderDto>> GetIncompleteAssignments(int patrolId)
+        {
+            return _connection.QueryAsync<AssignmentHeaderDto>(
+                @"select 
+                    a.Id
+                    ,a.planid
+                    ,a.userid
+                    ,u.firstname userfirstname
+                    ,u.lastname userlastname
+                    ,a.assignedat
+                    ,p.name planname
+                    ,a.dueat 
+                    ,(
+                        select count(p.id)
+	                    from plans p 
+	                    inner join plansections ps on ps.planid=p.id
+	                    inner join sectionskills ss on ss.sectionid=ps.sectionid
+	                    inner join sectionlevels sl on sl.sectionid=ps.sectionid
+	                    where p.id=a.planid
+                    ) signaturesrequired
+                    ,(
+                        select count(id) from signatures s where s.assignmentid=a.id
+                    ) signatures
+                    from assignments a
+                    inner join users u on u.id=a.userid
+                    inner join plans p on p.patrolid=@patrolId
+                    where a.completedat is null
+                    order by u.lastname,p.name
+                    ", new { patrolId });
         }
 
         public Task<Assignment> GetAssignment(int assignmentId)

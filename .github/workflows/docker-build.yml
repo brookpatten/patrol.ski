@@ -1,4 +1,4 @@
-name: Build Docker images and push to Azure Container Registry
+name: Build Container, Push to Github, Trigger Deploy
 
 on:
   push:
