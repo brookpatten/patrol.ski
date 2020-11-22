@@ -40,7 +40,7 @@ const mutations = {
   },
   logout(state){
     state.status = '';
-    state.token = '';
+    state.token = null;
   },
   change_patrol(state,data){
     state.selectedPatrolId = data;
