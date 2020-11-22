@@ -54,11 +54,11 @@ jobs:
     - name: Create Deployment Folder
       run: mkdir deployment
     - name: Copy .Net App to Deployment Folder
-      run: cp src/Schedule.Api/bin deployment/bin
+      run: cp src/Schedule.Api/bin deployment/bin -r
     - name: Copy .Net App Config to Deployment Folder
       run: cp src/Schedule.Api/*.json deployment
     - name: Copy Node Frontend to Deployment Folder
-      run: cp src/Schedule.Web/dist deployment
+      run: cp src/Schedule.Web/dist/* deployment -r
     - name: Login to Azure
       uses: Azure/login@v1
       with:
