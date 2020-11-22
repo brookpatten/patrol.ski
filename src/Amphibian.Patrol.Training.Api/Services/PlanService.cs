@@ -33,6 +33,7 @@ namespace Amphibian.Patrol.Training.Api.Services
             var sections = await _planRepository.GetSectionsForPlan(plan.Id);
             var sectionSkills = await _planRepository.GetSectionSkillsForPlan(plan.Id);
             var sectionLevels = await _planRepository.GetSectionLevelsForPlan(plan.Id);
+            var sectionGroups = await _planRepository.GetSectionGroupsForPlan(plan.Id);
 
             var sectionIdsCanSign = new List<int>();
             if (currentUserId.HasValue)
@@ -48,6 +49,7 @@ namespace Amphibian.Patrol.Training.Api.Services
                 section.CurrentUserCanSign = sectionIdsCanSign.Contains(section.Id);
                 section.Skills = sectionSkills.Where(x => x.SectionId == section.Id);
                 section.Levels = sectionLevels.Where(x => x.SectionId == section.Id);
+                section.Groups = sectionGroups.Where(x => x.SectionId == section.Id);
             }
 
             return planDto;

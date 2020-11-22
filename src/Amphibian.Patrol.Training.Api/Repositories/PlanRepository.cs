@@ -117,6 +117,27 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                 },splitOn:"id",param:new { planId }).ConfigureAwait(false);
         }
 
+        public async Task<IEnumerable<SectionGroupDto>> GetSectionGroupsForPlan(int planId)
+        {
+            return await _connection.QueryAsync<SectionGroup, Group, SectionGroupDto>(
+                @"select 
+                    ss.id
+                    ,ss.sectionid
+                    ,ss.groupid
+                    ,l.id
+                    ,l.patrolid
+                    ,l.name
+                from sectiongroups ss
+                inner join sections s on s.id=ss.sectionid 
+                inner join groups l on l.id=ss.groupid
+                inner join plansections ps on ps.sectionid=s.id and ps.planid=@planId", (sl, l) =>
+                {
+                    var dto = _mapper.Map<SectionGroup, SectionGroupDto>(sl);
+                    dto.Group = l;
+                    return dto;
+                }, splitOn: "id", param: new { planId }).ConfigureAwait(false);
+        }
+
         public async Task<IEnumerable<Level>> GetLevels(int patrolId)
         {
             return await _connection.SelectAsync<Level>(x => x.PatrolId == patrolId).ConfigureAwait(false);

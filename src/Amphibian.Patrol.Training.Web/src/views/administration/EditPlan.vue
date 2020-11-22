@@ -1,6 +1,6 @@
 <template>
     <div>
-        <CCard>
+        <CCard v-if="editor=='plan'">
             <CCardHeader>{{plan.name}}</CCardHeader>
             <CCardBody v-if="signOffTable.length>0">
                 <table class="table table-responsive table-bordered">
@@ -30,10 +30,9 @@
                           <tr v-if="signOffRow.header" :key="signOffRow.index+'-header-row'">
                             <td></td>
                             <th v-for="section in signOffRow.header.sections" :key="section.columnIndex+'-'+section.rowIndex+'-header'" :colspan="section.columnCount">
-                              <span v-if="!edit">{{section.name}}</span>
-                              <CInput v-if="edit && (section.id || section.id==0)" v-model="section.name"></CInput>
-                              <v-swatches v-if="edit && (section.id || section.id==0)" v-model="section.color" show-fallback fallback-input-type="color" popover-x="left" class="float-right"></v-swatches>
+                              <span>{{section.name}}</span>
                               <CButtonGroup class="float-right" v-if="edit">
+                                <CButton v-on:click="editSectionMode(section)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
                                 <CButton v-if="section.id || section.id==0" v-on:click="removeSection(section)" size="sm" color="danger"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
                                 <CButton v-if="section.id || section.id==0" size="sm" color="primary">Add Level <CIcon :content="$options.freeSet.cilArrowThickRight"/></CButton>
                                 <CButton v-if="section.id || section.id==0 && (last(signOffRow.header.sections)==section)" size="sm" color="primary" v-on:click="addSection(section.rowIndex,section.rowCount,section.columnIndex + section.columnCount,1,section)">Add Section <CIcon :content="$options.freeSet.cilArrowThickRight"/></CButton>
@@ -88,6 +87,22 @@
               
             </CCardFooter>
         </CCard>
+        <CCard v-if="editor=='section'">
+          <CCardHeader>Edit Section</CCardHeader>
+          <CCardBody>
+            <CInput v-model="editSection.name"></CInput>
+            <label>Color</label><v-swatches v-model="editSection.color" show-fallback fallback-input-type="color" popover-x="right"></v-swatches>
+            <label>Group(s)</label>
+            <div v-for="group in allGroups" :key="group.id">
+                <input type="checkbox" :value="group.id" v-model="group.selected"/> <label>{{group.name}}</label>
+            </div>
+          </CCardBody>
+          <CCardFooter>
+              <CButtonGroup class="float-right">
+                <CButton color="primary" v-on:click="endEditSection">Ok <CIcon :content="$options.freeSet.cilCheck"/></CButton>
+              </CButtonGroup>
+            </CCardFooter>
+        </CCard>
     </div>
 </template>
 
@@ -112,13 +127,18 @@ export default {
         sortedSections:[],
         signOffTable:[],
         levels:[],
-        edit:true
+        edit:true,
+
+        editSection:{},
+        editor:'plan'
+
     }
   },
   methods: {
         //fetch data
         getPlan(planId) {
           if(planId){
+            this.edit=false;
             this.$http.get('plan/'+planId)
                 .then(response => {
                     console.log(response);
@@ -132,10 +152,29 @@ export default {
                 });
           }
           else{
+            this.edit=true;
             this.plan.name="New Plan";
             this.plan.patrolId=this.selectedPatrolId;
             this.addSection(0,1,0,1);
           }
+        },
+        editSectionMode(section){
+          this.editSection = section;
+          this.editor='section';
+
+          for(var i=0;i<this.allGroups.length;i++){
+            var selected = _.find(this.editSection.groups,{groupId:this.allGroups[i].id}) !=null;
+            this.allGroups[i].selected = selected;
+          }
+        },
+        endEditSection(){
+          this.editor='plan';
+          var selectedGroups = _.filter(this.allGroups,{selected:true});
+          
+          this.editSection.groups = _.map(selectedGroups,function(g){
+            return {groupId:g.id};
+          });
+
         },
         getGroups() {
           this.$http.get('user/groups/'+this.plan.patrolId)

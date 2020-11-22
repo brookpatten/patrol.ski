@@ -28,6 +28,7 @@ namespace Amphibian.Patrol.Training.Api.Mappings
                 cfg.CreateMap<SectionLevel, SectionLevelDto>();
                 cfg.CreateMap<Signature, SignatureDto>();
                 cfg.CreateMap<User, PatrolUserDto>();
+                cfg.CreateMap<SectionGroup, SectionGroupDto>();
             });
             return configuration;
         }

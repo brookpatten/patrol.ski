@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Amphibian.Patrol.Training.Api.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,5 +14,6 @@ namespace Amphibian.Patrol.Training.Api.Dtos
         public IEnumerable<SectionSkillDto> Skills { get; set; }
         public bool CurrentUserCanSign { get; set; }
         public string Color { get; set; }
+        public IEnumerable<SectionGroupDto> Groups { get; set; }
     }
 }

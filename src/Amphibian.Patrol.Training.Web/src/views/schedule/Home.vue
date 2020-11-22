@@ -5,7 +5,7 @@
                 <CCard v-if="hasPermission('MaintainAssignments') && assignmentCountsByDay.length>0">
                     <CCardHeader>
                     <slot name="header">
-                        <CIcon name="cil-grid"/>Incomplete Assignments, Last 30 Days
+                        <CIcon name="cil-grid"/># Incomplete Assignments, Last 30 Days
                     </slot>
                     </CCardHeader>
                     <CCardBody>
@@ -21,7 +21,7 @@
                 <CCard v-if="hasPermission('MaintainAssignments') && assignmentProgressByDay.length>0">
                     <CCardHeader>
                     <slot name="header">
-                        <CIcon name="cil-grid"/>Assignment % Complete, Last 30 Days
+                        <CIcon name="cil-grid"/>Assignments % Complete, Last 30 Days
                     </slot>
                     </CCardHeader>
                     <CCardBody>
@@ -231,15 +231,18 @@
             </CDataTable>
             </CCardBody>
         </CCard>
+        <BlockUI :message="'Loading'">Hello world</BlockUI>
     </div>
+    
 </template>
 
 <script>
 import { CChartLine } from '@coreui/vue-chartjs'
+import BlockUI from 'vue-blockui'
 
 export default {
   name: 'Home',
-  components: { CChartLine
+  components: { CChartLine, BlockUI
   },
   computed: {
     selectedPatrolId: function () {
