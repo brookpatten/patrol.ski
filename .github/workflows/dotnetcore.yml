@@ -27,5 +27,5 @@ jobs:
       uses: rohith/publish-nuget@v2.2.0
       with:
         PROJECT_FILE_PATH: src/Schedule.Api/Schedule.Api.csproj
-        NUGET_KEY: ${{secrets.NUGET_API_KEY}}
+        NUGET_KEY: ${{ secrets.GITHUB_TOKEN }}
         TAG_COMMIT: false
