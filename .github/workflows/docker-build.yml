@@ -7,7 +7,17 @@ on:
     branches: [ master ]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Build with dotnet
+        run: dotnet test ./src --filter TestCategory!=persistence
+        
   build_frontend:
+    needs: [test]    
     runs-on: ubuntu-latest
 
     steps:
@@ -40,6 +50,7 @@ jobs:
           ghcr.io/brookpatten/patrol-training-frontend:v1.0.${{ github.run_number }}
         
   build_api:
+    needs: [test]    
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -71,6 +82,7 @@ jobs:
           ghcr.io/brookpatten/patrol-training-api:v1.0.${{ github.run_number }}
           
   build_onestop:
+    needs: [test]    
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -102,7 +114,6 @@ jobs:
           ghcr.io/brookpatten/patrol-training-onestop:v1.0.${{ github.run_number }}
         
   azure-dev-update:
-  
     needs: [build_onestop]
     runs-on: ubuntu-latest
     steps:

@@ -112,5 +112,23 @@ namespace Amphibian.Patrol.Training.Api.Controllers
                 return Forbid();
             }
         }
+
+        [HttpGet]
+        [Route("assignments/incomplete-for-trainer/{patrolId}")]
+        [Authorize]
+        public async Task<IActionResult> GetIncompleteAssignmentForTrainer(int patrolId)
+        {
+            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
+            //TODO: also make sure the user has the right to create these signatures
+            if (patrols.Any(x => x.Id == patrolId))
+            {
+                var assignments = await _assignmentRepository.GetIncompleteAssignments(patrolId, User.GetUserId());
+                return Ok(assignments);
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
     }
 }

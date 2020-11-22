@@ -82,6 +82,49 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     where a.planid=@planId", new { planId });
         }
 
+        public Task<IEnumerable<AssignmentHeaderDto>> GetIncompleteAssignments(int patrolId,int userId)
+        {
+            return _connection.QueryAsync<AssignmentHeaderDto>(
+                @"select 
+                    a.Id
+                    ,a.planid
+                    ,a.userid
+                    ,u.firstname userfirstname
+                    ,u.lastname userlastname
+                    ,a.assignedat
+                    ,p.name planname
+                    ,a.dueat 
+                    ,(
+                        select count(p.id)
+	                    from plans p 
+	                    inner join plansections ps on ps.planid=p.id
+	                    inner join sectionskills ss on ss.sectionid=ps.sectionid
+	                    inner join sectionlevels sl on sl.sectionid=ps.sectionid
+	                    where p.id=a.planid
+                    ) signaturesrequired
+                    ,(
+                        select count(id) from signatures s where s.assignmentid=a.id
+                    ) signatures
+                    from assignments a
+                    inner join users u on u.id=a.userid
+                    inner join plans p on p.patrolid=@patrolId
+                    where a.completedat is null
+                    and (
+                        case when exists(
+                        select * from plans p
+                        inner join plansections ps on ps.planid=p.id
+                        inner join sections s on s.id=ps.SectionId
+                        inner join sectiongroups sg on sg.SectionId=s.id
+                        inner join groups g on g.id=sg.GroupId
+                        inner join groupusers gu on gu.GroupId=g.id
+                        inner join users u on u.id=gu.UserId
+                        where p.PatrolId=@patrolId and u.id=@userId
+                        ) then 1 else 0 end
+                    ) = 1
+                    order by u.lastname,p.name
+                    ", new { patrolId,userId });
+        }
+
         public Task<IEnumerable<AssignmentHeaderDto>> GetIncompleteAssignments(int patrolId)
         {
             return _connection.QueryAsync<AssignmentHeaderDto>(

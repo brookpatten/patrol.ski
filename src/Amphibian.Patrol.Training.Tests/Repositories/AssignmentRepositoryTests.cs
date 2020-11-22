@@ -159,5 +159,13 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
 
             Assert.AreEqual(2, assignments.Count());
         }
+
+        [Test]
+        public async Task CanGetIncompleteAssignmentsForTrainer()
+        {
+            var assignments = await _assignmentRepository.GetIncompleteAssignments(1,2);
+
+            Assert.AreEqual(2, assignments.Count());
+        }
     }
 }
