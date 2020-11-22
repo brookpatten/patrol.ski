@@ -35,5 +35,15 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         {
             return _connection.GetAsync<Assignment>(assignmentId);
         }
+
+        public Task<IEnumerable<Signature>> GetSignaturesForAssignment(int assignmentId)
+        {
+            return _connection.QueryAsync<Signature>(@"select id,assignmentid,sectionskillid,sectionlevelid,signedbyuserid,signedat from signatures where assignmentid=@assignmentId", new { assignmentId });
+        }
+
+        public async Task InsertSignature(Signature signature)
+        {
+            await _connection.InsertAsync(signature);
+        }
     }
 }

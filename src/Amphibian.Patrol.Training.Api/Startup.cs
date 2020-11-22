@@ -36,6 +36,7 @@ using Amphibian.Patrol.Training.Api.Services;
 using Amphibian.Patrol.Training.Api.Controllers;
 using Amphibian.Patrol.Training.Api.Validations;
 using Amphibian.Patrol.Training.Api.Models;
+using Amphibian.Patrol.Training.Api.Mappings;
 
 namespace Amphibian.Patrol.Training.Api
 {
@@ -81,23 +82,7 @@ namespace Amphibian.Patrol.Training.Api
                     {
                         new OpenApiSecurityScheme
                         {
-                            //Type = SecuritySchemeType.Http,
-                            //Flows = new OpenApiOAuthFlows()
-                            //{
-                            //    ClientCredentials = new OpenApiOAuthFlow(){
-                            //        AuthorizationUrl = new Uri("/user/authenticate", UriKind.Relative),
-                            //        TokenUrl = new Uri("/user/authenticate", UriKind.Relative),
-                            //        Scopes = new Dictionary<string, string>
-                            //        {
-                            //            { "readAccess", "Access read operations" },
-                            //            { "writeAccess", "Access write operations" }
-                            //        },
-                                    
-                            //    }
-                            //},
-                            //Scheme = "Bearer",
-                            //In = ParameterLocation.Header,
-                            Reference = new OpenApiReference {
+                                Reference = new OpenApiReference {
                                 Type = ReferenceType.SecurityScheme,
                                 Id = "Authorization"
                             }
@@ -115,6 +100,10 @@ namespace Amphibian.Patrol.Training.Api
             {
                 return new SqlConnection(serviceConfiguration.Database.ConnectionString);
             });
+
+            //automapper config
+            services.AddMappings();
+
             //persistence
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ITokenRepository, TokenRepository>();
@@ -125,13 +114,12 @@ namespace Amphibian.Patrol.Training.Api
             //validations
             services.AddScoped<IValidator<AuthenticationController.RegistrationRequest>, RegistrationValidator>();
 
-            //security
-            //services.AddTransient<ClaimsPrincipal>(provider => provider.GetService<IHttpContextAccessor>().HttpContext.User);
-
             //services
             services.AddScoped<Services.IAuthenticationService, Services.AuthenticationService>();
             services.AddScoped<Services.IPasswordService, Services.PasswordService>(sp=>new Services.PasswordService(5,32));
             services.AddScoped<EmailService, EmailService>(provider => new EmailService(serviceConfiguration.Email.SendGridApiKey, serviceConfiguration.Email.SendAllEmailsTo,serviceConfiguration.Email.FromName,serviceConfiguration.Email.FromEmail,serviceConfiguration.App.RootUrl));
+            services.AddScoped<IPlanService, PlanService>();
+            services.AddScoped<IAssignmentService, AssignmentService>();
         }
 
         private void SetFromEnvVarIfAvailable<T>(T config, Action<T,string> set,string name)

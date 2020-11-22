@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Amphibian.Patrol.Training.Api.Models
 {
-    public class UserIdentifiers
+    public class UserIdentifier
     {
         public int Id { get; set; }
         public string Email { get; set; }
@@ -17,7 +17,7 @@ namespace Amphibian.Patrol.Training.Api.Models
             return $"{FirstName} {LastName}";
         }
     }
-    public class User: UserIdentifiers
+    public class User: UserIdentifier
     {
         public byte[] PasswordSalt { get; set; }
         public byte[] PasswordHash { get; set; }

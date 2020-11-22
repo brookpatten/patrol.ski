@@ -63,6 +63,19 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                 where sectionid=@sectionId",new { sectionId });
         }
 
+        public async Task<IEnumerable<SectionSkill>> GetSectionSkillsForPlan(int planId)
+        {
+            return await _connection.QueryAsync<SectionSkill>(
+                @"select 
+                    ss.id
+                    ,ss.sectionid
+                    ,ss.skillid
+                    ,ss.[order] 
+                from sectionskills ss
+                inner join sections s on s.id=ss.sectionid 
+                inner join plansections ps on ps.sectionid=s.id and ps.planid=@planId", new { planId });
+        }
+
         public async Task<IEnumerable<Skill>> GetSkills(int patrolId)
         {
             return await _connection.QueryAsync<Skill>(
@@ -85,6 +98,19 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     ,[order] 
                 from sectionlevels 
                 where sectionid=@sectionId", new { sectionId });
+        }
+
+        public async Task<IEnumerable<SectionLevel>> GetSectionLevelsForPlan(int planId)
+        {
+            return await _connection.QueryAsync<SectionLevel>(
+                @"select 
+                    ss.id
+                    ,ss.sectionid
+                    ,ss.levelid
+                    ,ss.[order] 
+                from sectionlevels ss
+                inner join sections s on s.id=ss.sectionid 
+                inner join plansections ps on ps.sectionid=s.id and ps.planid=@planId", new { planId });
         }
 
         public async Task<IEnumerable<Level>> GetLevels(int patrolId)

@@ -57,7 +57,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
                 var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
                 return Ok(new
                 {
-                    User = (UserIdentifiers)user,
+                    User = (UserIdentifier)user,
                     Token = token.TokenGuid,
                     Patrols = patrols
                 });
@@ -97,7 +97,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
 
             return Ok(new
             {
-                User = (UserIdentifiers)user,
+                User = (UserIdentifier)user,
                 Token = token.TokenGuid,
                 Patrols = patrols
             });

@@ -22,13 +22,18 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         private readonly IPatrolRepository _patrolRepository;
         private readonly IPlanRepository _planRepository;
         private readonly IAssignmentRepository _assignmentRepository;
+        private IPlanService _planService;
+        private IAssignmentService _assignmentService;
 
-        public AssignmentController(ILogger<AssignmentController> logger, IPatrolRepository patrolRepository, IPlanRepository planRepository, IAssignmentRepository assignmentRepository)
+        public AssignmentController(ILogger<AssignmentController> logger, IPatrolRepository patrolRepository, IPlanRepository planRepository, 
+            IAssignmentRepository assignmentRepository, IPlanService planService, IAssignmentService assignmentService)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
             _planRepository = planRepository;
             _assignmentRepository = assignmentRepository;
+            _planService = planService;
+            _assignmentService = assignmentService;
         }
 
         [HttpGet]
@@ -63,12 +68,17 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetAssignment(int assignmentId)
         {
-            var assignment = await _assignmentRepository.GetAssignment(assignmentId);
-            var plan = await _planRepository.GetPlan(assignment.PlanId);
+            var assignment = await _assignmentService.GetAssignment(assignmentId);
+            var plan = await _planService.GetPlan(assignment.PlanId);
             var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
             if (patrols.Any(x => x.Id == plan.PatrolId))
             {
-                return Ok(assignment);
+                return Ok(
+                    new
+                    {
+                        Plan = plan,
+                        Assignment = assignment
+                    });
             }
             else
             {

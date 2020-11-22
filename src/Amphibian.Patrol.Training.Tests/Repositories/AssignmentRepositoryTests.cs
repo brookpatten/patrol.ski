@@ -15,6 +15,7 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
     class AssignmentRepositoryTests : DatabaseConnectedTestFixture
     {
         private AssignmentRepository _assignmentRepository;
+        private PlanRepository _planRepository;
         private UserRepository _userRepository;
         private User _user;
         
@@ -23,6 +24,7 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         {
             _userRepository = new UserRepository(_connection);
             _assignmentRepository = new AssignmentRepository(_connection);
+            _planRepository = new PlanRepository(_connection);
             _user = _userRepository.GetUser(1).Result;
         }
 
@@ -48,6 +50,58 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
             var assignment = await _assignmentRepository.GetAssignment(1);
 
             Assert.AreEqual(1, assignment.Id);
+        }
+
+        [Test]
+        public async Task CanInsertSignature()
+        {
+            var assignment = await _assignmentRepository.GetAssignment(1);
+            var plan = await _planRepository.GetPlan(assignment.PlanId);
+            var sections = await _planRepository.GetSectionsForPlan(plan.Id);
+            var levels = await _planRepository.GetSectionLevels(sections.First().Id);
+            var skills = await _planRepository.GetSectionSkills(sections.First().Id);
+
+            var signature = new Signature()
+            {
+                AssignmentId = assignment.Id,
+                SectionLevelId = levels.First().Id,
+                SectionSkillId = skills.First().Id,
+                SignedAt = new DateTime(2020, 1, 1,0,0,0),
+                SignedByUserId = _user.Id
+            };
+
+            await _assignmentRepository.InsertSignature(signature);
+        }
+
+        [Test]
+        public async Task CanGetSignaturesForAssignment()
+        {
+            var assignment = await _assignmentRepository.GetAssignment(1);
+            var plan = await _planRepository.GetPlan(assignment.PlanId);
+            var sections = await _planRepository.GetSectionsForPlan(plan.Id);
+            var levels = await _planRepository.GetSectionLevels(sections.First().Id);
+            var skills = await _planRepository.GetSectionSkills(sections.First().Id);
+
+            var signature = new Signature()
+            {
+                AssignmentId = assignment.Id,
+                SectionLevelId = levels.First().Id,
+                SectionSkillId = skills.First().Id,
+                SignedAt = new DateTime(2020, 1, 1, 0, 0, 0),
+                SignedByUserId = _user.Id
+            };
+
+            await _assignmentRepository.InsertSignature(signature);
+
+            var signatures = await _assignmentRepository.GetSignaturesForAssignment(1);
+
+            Assert.AreEqual(1, signatures.Count());
+
+            Assert.AreEqual(signature.AssignmentId, signatures.First().AssignmentId);
+            Assert.AreEqual(signature.SectionLevelId, signatures.First().SectionLevelId);
+            Assert.AreEqual(signature.SectionSkillId, signatures.First().SectionSkillId);
+            Assert.AreEqual(signature.SignedAt, signatures.First().SignedAt);
+            Assert.AreEqual(signature.SignedByUserId, signatures.First().SignedByUserId);
         }
     }
 }

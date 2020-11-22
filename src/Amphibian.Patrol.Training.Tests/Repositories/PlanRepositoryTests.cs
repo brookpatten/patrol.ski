@@ -86,6 +86,14 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         }
 
         [Test]
+        public async Task CanGetSectionSkillsForPlan()
+        {
+            var skills = await _planRepository.GetSectionSkillsForPlan(_plan.Id);
+
+            Assert.AreEqual(11, skills.Count());
+        }
+
+        [Test]
         public async Task CanGetLevelsForSection()
         {
             var sections = await _planRepository.GetSectionsForPlan(_plan.Id);
@@ -93,6 +101,14 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
             var skills = await _planRepository.GetSectionLevels(section.Id);
 
             Assert.AreEqual(4, skills.Count());
+        }
+
+        [Test]
+        public async Task CanGetSectionLevelsForPlan()
+        {
+            var skills = await _planRepository.GetSectionLevelsForPlan(_plan.Id);
+
+            Assert.AreEqual(8, skills.Count());
         }
 
         [Test]
