@@ -235,6 +235,15 @@ insert into sectiongroups (sectionid,groupid) values (2,1);
 insert into sectiongroups (sectionid,groupid) values (3,1);
 insert into sectiongroups (sectionid,groupid) values (4,2);
 
+--training shift
+--big patrol
+insert into trainingshifts (patrolid,startsat,endsat) values (1,dateadd(MONTH,6,getdate()),dateadd(hour,8,dateadd(MONTH,6,getdate())));
+insert into shifttrainers (trainingshiftid,traineruserid) values (1,2);
+--tiny patrol
+insert into trainingshifts (patrolid,startsat,endsat) values (2,dateadd(MONTH,6,getdate()),dateadd(hour,8,dateadd(MONTH,6,getdate())));
+insert into shifttrainers (trainingshiftid,traineruserid) values (2,2);
+
+
 --sanity check
 --select
 --p.name patrol,

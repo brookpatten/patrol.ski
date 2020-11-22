@@ -62,7 +62,6 @@ const User = () => import('@/views/users/User')
 
 // Schedule
 const Plan = () => import('@/views/schedule/Plan')
-const Schedule = () => import('@/views/schedule/Schedule')
 const Home = () => import('@/views/schedule/Home')
 const Test = () => import('@/views/schedule/Test')
 const Assignment = () => import('@/views/schedule/Assignment')
@@ -141,14 +140,6 @@ function configRoutes () {
             requiresAuth: true
           },
           props: true
-        },
-        {
-          path: 'schedule',
-          name: 'Schedule',
-          component: Schedule,
-          meta: { 
-            requiresAuth: true
-          }
         },
         {
           path: 'test',

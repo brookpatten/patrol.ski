@@ -6,10 +6,10 @@ using System.Data;
 
 using Dapper;
 using Dommel;
+using AutoMapper;
 
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Dtos;
-using AutoMapper;
 
 namespace Amphibian.Patrol.Training.Api.Repositories
 {

@@ -60,7 +60,6 @@ jobs:
           ghcr.io/brookpatten/patrol-training-frontend:ci
           ghcr.io/brookpatten/patrol-training-frontend:dev
           ghcr.io/brookpatten/patrol-training-frontend:build-${{ github.run_number }}
-          ghcr.io/brookpatten/patrol-training-frontend:v1.0.${{ github.run_number }}
         
   build_api:
     needs: [test]    
@@ -92,7 +91,6 @@ jobs:
           ghcr.io/brookpatten/patrol-training-api:ci
           ghcr.io/brookpatten/patrol-training-api:dev
           ghcr.io/brookpatten/patrol-training-api:build-${{ github.run_number }}
-          ghcr.io/brookpatten/patrol-training-api:v1.0.${{ github.run_number }}
           
   build_onestop:
     needs: [test]    
@@ -124,7 +122,6 @@ jobs:
           ghcr.io/brookpatten/patrol-training-onestop:ci
           ghcr.io/brookpatten/patrol-training-onestop:dev
           ghcr.io/brookpatten/patrol-training-onestop:build-${{ github.run_number }}
-          ghcr.io/brookpatten/patrol-training-onestop:v1.0.${{ github.run_number }}
         
   azure-dev-update:
     needs: [build_onestop]

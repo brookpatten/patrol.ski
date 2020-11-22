@@ -24,21 +24,21 @@ ALTER TABLE dbo.TrainingShifts ADD CONSTRAINT
 	
 GO
 
-CREATE TABLE dbo.Trainers
+CREATE TABLE dbo.ShiftTrainers
 	(
 	Id int NOT NULL IDENTITY (1, 1),
 	TrainingShiftId int NOT NULL,
 	TrainerUserId int NOT NULL
 	)  ON [PRIMARY];
 GO
-ALTER TABLE dbo.Trainers ADD CONSTRAINT
-	PK_Trainers PRIMARY KEY CLUSTERED 
+ALTER TABLE dbo.ShiftTrainers ADD CONSTRAINT
+	PK_ShiftTrainers PRIMARY KEY CLUSTERED 
 	(
 	Id
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY];
 GO;
-ALTER TABLE dbo.Trainers ADD CONSTRAINT
-	FK_Trainers_TrainingShifts FOREIGN KEY
+ALTER TABLE dbo.ShiftTrainers ADD CONSTRAINT
+	FK_ShiftTrainers_TrainingShifts FOREIGN KEY
 	(
 	TrainingShiftId
 	) REFERENCES dbo.TrainingShifts
@@ -48,8 +48,8 @@ ALTER TABLE dbo.Trainers ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
-ALTER TABLE dbo.Trainers ADD CONSTRAINT
-	FK_Trainers_Users FOREIGN KEY
+ALTER TABLE dbo.ShiftTrainers ADD CONSTRAINT
+	FK_ShiftTrainers_Users FOREIGN KEY
 	(
 	TrainerUserId
 	) REFERENCES dbo.Users
@@ -62,7 +62,7 @@ GO
 CREATE TABLE dbo.Trainees
 	(
 	Id int NOT NULL IDENTITY (1, 1),
-	TrainerId int NOT NULL,
+	ShiftTrainerId int NOT NULL,
 	TraineeUserId int NOT NULL
 	)  ON [PRIMARY];
 GO
@@ -73,10 +73,10 @@ ALTER TABLE dbo.Trainees ADD CONSTRAINT
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY];
 GO;
 ALTER TABLE dbo.Trainees ADD CONSTRAINT
-	FK_Trainees_Trainers FOREIGN KEY
+	FK_Trainees_ShiftTrainers FOREIGN KEY
 	(
-	TrainerId
-	) REFERENCES dbo.Trainers
+	ShiftTrainerId
+	) REFERENCES dbo.ShiftTrainers
 	(
 	Id
 	) ON UPDATE  NO ACTION 
