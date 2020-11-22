@@ -17,5 +17,6 @@ namespace Amphibian.Patrol.Training.Api.Dtos
         public int Signatures { get; set; }
         public DateTime AssignedAt { get; set; }
         public DateTime? DueAt { get; set; }
+        public DateTime? CompletedAt { get; set; }
     }
 }

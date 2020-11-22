@@ -9,5 +9,6 @@ namespace Amphibian.Patrol.Training.Api.Services
     public interface IPatrolService
     {
         Task<Role?> GetUserRoleInPatrol(int userId, int patrolId);
+        Task DeleteGroup(int groupId);
     }
 }

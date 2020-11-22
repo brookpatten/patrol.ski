@@ -29,5 +29,8 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         Task UpdateSectionSkill(SectionSkill sectionSkill);
         Task InsertLevel(Level level);
         Task InsertSkill(Skill skill);
+        Task<IEnumerable<SectionGroup>> GetSectionGroupsForGroup(int groupId);
+        Task DeleteSectionGroup(SectionGroup sectionGroup);
+        Task<IEnumerable<Plan>> GetPlansWithSectionsAllowedByGroup(int groupId);
     }
 }

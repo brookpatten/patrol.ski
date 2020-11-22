@@ -173,5 +173,22 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         {
             await _connection.UpdateAsync(sectionSkill);
         }
+
+        public async Task<IEnumerable<SectionGroup>> GetSectionGroupsForGroup(int groupId)
+        {
+            return await _connection.SelectAsync<SectionGroup>(x => x.GroupId == groupId);
+        }
+        public async Task DeleteSectionGroup(SectionGroup sectionGroup)
+        {
+            await _connection.DeleteAsync(sectionGroup);
+        }
+        public async Task<IEnumerable<Plan>> GetPlansWithSectionsAllowedByGroup(int groupId)
+        {
+            return await _connection.QueryAsync<Plan>(@"select distinct p.* 
+                                                 from plans p 
+                                                 inner join plansections sp on sp.planid=p.id
+                                                 inner join sectiongroups sg on sg.sectionid=sp.sectionid and sg.groupid=@groupId
+                                                 order by p.name asc", new { groupId });
+        }
     }
 }

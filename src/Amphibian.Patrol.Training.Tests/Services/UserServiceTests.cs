@@ -21,6 +21,7 @@ namespace Amphibian.Patrol.Training.Tests.Services
         private Mock<IEmailService> _emailServiceMock;
         private Mock<IPatrolRepository> _patrolRepositoryMock;
         private Mock<ILogger<UserService>> _loggerMock;
+        private IMapper _mapper;
 
         [SetUp]
         public void Setup()
@@ -30,7 +31,8 @@ namespace Amphibian.Patrol.Training.Tests.Services
             _userRepositoryMock = new Mock<IUserRepository>();
             _emailServiceMock = new Mock<IEmailService>();
             _patrolRepositoryMock = new Mock<IPatrolRepository>();
-            _userService = new UserService(_loggerMock.Object,_userRepositoryMock.Object,_emailServiceMock.Object, _groupRepositoryMock.Object, _patrolRepositoryMock.Object);
+            _mapper = DtoMappings.GetMapperConfiguration().CreateMapper();
+            _userService = new UserService(_loggerMock.Object, _userRepositoryMock.Object, _emailServiceMock.Object, _groupRepositoryMock.Object, _patrolRepositoryMock.Object, _mapper);
         }
 
         [Test]

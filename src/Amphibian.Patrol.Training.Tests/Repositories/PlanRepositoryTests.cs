@@ -20,7 +20,7 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         private PatrolRepository _patrolRepository;
         private UserRepository _userRepository;
         private User _user;
-        private PatrolUserDto _patrol;
+        private CurrentUserPatrolDto _patrol;
         private Plan _plan;
         private IMapper _mapper;
 

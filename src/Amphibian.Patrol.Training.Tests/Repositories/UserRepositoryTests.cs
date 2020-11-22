@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Repositories;
+using System.Linq;
 
 namespace Amphibian.Patrol.Training.Tests.Repositories
 {
@@ -53,6 +54,14 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
             var user2 = await _userRepository.GetUser(user.Id);
 
             Assert.AreEqual(user.FirstName, user2.FirstName);
+        }
+
+        [Test]
+        public async Task CanGetUsersByIds()
+        {
+            var users = await _userRepository.GetUsers(new List<int>() { 1, 2, 3 });
+
+            Assert.AreEqual(3,users.Count());
         }
     }
 }

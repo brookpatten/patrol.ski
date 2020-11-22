@@ -8,14 +8,8 @@
             </CCardHeader>
             <CCardBody>
             <CDataTable
-                :hover="hover"
-                :striped="true"
-                :bordered="true"
-                :small="small"
-                :fixed="fixed"
                 :items="trainerShifts"
-                :fields="trainerShiftFields"
-                :dark="dark">
+                :fields="trainerShiftFields">
                 <template #at="data">
                     <td>{{(new Date(data.item.startsAt)).toLocaleDateString()}} {{(new Date(data.item.startsAt)).toLocaleTimeString()}}</td>
                 </template>
@@ -34,14 +28,8 @@
             </CCardHeader>
             <CCardBody>
             <CDataTable
-                :hover="hover"
-                :striped="true"
-                :bordered="true"
-                :small="small"
-                :fixed="fixed"
                 :items="myAssignments"
-                :fields="myAssignmentsFields"
-                :dark="dark">
+                :fields="myAssignmentsFields">
                 <template #planName="data">
                     <td><router-link :to="{ name: 'Assignment', params: {assignmentId:JSON.stringify(data.item.id)}}">{{data.item.planName}}</router-link></td>
                 </template>
@@ -76,14 +64,8 @@
             </CCardHeader>
             <CCardBody>
             <CDataTable
-                :hover="hover"
-                :striped="true"
-                :bordered="true"
-                :small="small"
-                :fixed="fixed"
                 :items="trainerIncompleteAssignments"
-                :fields="trainerIncompleteAssignmentFields"
-                :dark="dark">
+                :fields="trainerIncompleteAssignmentFields">
                 <template #planName="data">
                     <td><router-link :to="{ name: 'Assignment', params: {assignmentId:JSON.stringify(data.item.id)}}">{{data.item.planName}}</router-link></td>
                 </template>
@@ -118,14 +100,8 @@
             </CCardHeader>
             <CCardBody>
             <CDataTable
-                :hover="hover"
-                :striped="true"
-                :bordered="true"
-                :small="small"
-                :fixed="fixed"
                 :items="committedShifts"
-                :fields="committedShiftFields"
-                :dark="dark">
+                :fields="committedShiftFields">
                 <template #at="data">
                     <td>{{(new Date(data.item.startsAt)).toLocaleDateString()}} {{(new Date(data.item.startsAt)).toLocaleTimeString()}}</td>
                 </template>
@@ -147,14 +123,8 @@
             </CCardHeader>
             <CCardBody>
             <CDataTable
-                :hover="hover"
-                :striped="true"
-                :bordered="true"
-                :small="small"
-                :fixed="fixed"
                 :items="availableShifts"
-                :fields="availableShiftFields"
-                :dark="dark">
+                :fields="availableShiftFields">
                 <template #at="data">
                     <td>{{(new Date(data.item.startsAt)).toLocaleDateString()}} {{(new Date(data.item.startsAt)).toLocaleTimeString()}}</td>
                 </template>

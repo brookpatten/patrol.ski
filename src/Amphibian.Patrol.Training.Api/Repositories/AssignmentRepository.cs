@@ -25,9 +25,9 @@ namespace Amphibian.Patrol.Training.Api.Repositories
             _mapper = mapper;
         }
 
-        public Task<IEnumerable<AssignmentHeaderDto>> GetAssignmentsForUser(int userId)
+        public async Task<IEnumerable<AssignmentHeaderDto>> GetAssignmentsForUser(int userId)
         {
-            return _connection.QueryAsync<AssignmentHeaderDto>(
+            return await _connection.QueryAsync<AssignmentHeaderDto>(
                 @"select 
                     a.Id
                     ,a.planid
@@ -36,6 +36,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     ,u.lastname userlastname
                     ,a.assignedat
                     ,a.dueat
+                    ,a.completedat
                     ,p2.name planname
                     ,(
                         select count(p.id)
@@ -51,12 +52,12 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     from assignments a
                     inner join plans p2 on p2.id=a.planid
                     inner join users u on u.id=a.userid
-                    where a.userid=@userId", new { userId });
+                    where a.userid=@userId", new { userId }).ConfigureAwait(false);
         }
 
-        public Task<IEnumerable<AssignmentHeaderDto>> GetAssignmentsForPlan(int planId)
+        public async Task<IEnumerable<AssignmentHeaderDto>> GetAssignmentsForPlan(int planId)
         {
-            return _connection.QueryAsync<AssignmentHeaderDto>(
+            return await _connection.QueryAsync<AssignmentHeaderDto>(
                 @"select 
                     a.Id
                     ,a.planid
@@ -65,7 +66,8 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     ,u.lastname userlastname
                     ,a.assignedat
                     ,p.name planname
-                    ,a.dueat 
+                    ,a.dueat
+                    ,a.completedat
                     ,(
                         select count(p.id)
 	                    from plans p 
@@ -80,12 +82,12 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     from assignments a
                     inner join users u on u.id=a.userid
                     inner join plans p on p.id=a.planid
-                    where a.planid=@planId", new { planId });
+                    where a.planid=@planId", new { planId }).ConfigureAwait(false);
         }
 
-        public Task<IEnumerable<AssignmentHeaderDto>> GetIncompleteAssignments(int patrolId,int userId)
+        public async Task<IEnumerable<AssignmentHeaderDto>> GetAssignments(int patrolId, int? planId, int? assignedToUserId, bool? complete)
         {
-            return _connection.QueryAsync<AssignmentHeaderDto>(
+            return await _connection.QueryAsync<AssignmentHeaderDto>(
                 @"select 
                     a.Id
                     ,a.planid
@@ -94,7 +96,43 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     ,u.lastname userlastname
                     ,a.assignedat
                     ,p.name planname
-                    ,a.dueat 
+                    ,a.dueat
+                    ,a.completedat
+                    ,(
+                        select count(p.id)
+	                    from plans p 
+	                    inner join plansections ps on ps.planid=p.id
+	                    inner join sectionskills ss on ss.sectionid=ps.sectionid
+	                    inner join sectionlevels sl on sl.sectionid=ps.sectionid
+	                    where p.id=a.planid
+                    ) signaturesrequired
+                    ,(
+                        select count(id) from signatures s where s.assignmentid=a.id
+                    ) signatures
+                    from assignments a
+                    inner join users u on u.id=a.userid
+                    inner join plans p on p.id=a.planid
+                    where (@planId is null or a.planid=@planId)
+                    and p.patrolid=@patrolId
+                    and (@assignedToUserId is null or a.userid=@assignedToUserId)
+                    and (@complete is null or (a.completedat is not null and @complete=1) or (a.completedat is null and @complete=0))
+                 order by u.lastname,p.name
+                ", new { patrolId,planId, assignedToUserId, complete }).ConfigureAwait(false);
+        }
+
+        public async Task<IEnumerable<AssignmentHeaderDto>> GetIncompleteAssignments(int patrolId,int userId)
+        {
+            return await _connection.QueryAsync<AssignmentHeaderDto>(
+                @"select 
+                    a.Id
+                    ,a.planid
+                    ,a.userid
+                    ,u.firstname userfirstname
+                    ,u.lastname userlastname
+                    ,a.assignedat
+                    ,p.name planname
+                    ,a.dueat
+                    ,a.completedat
                     ,(
                         select count(p.id)
 	                    from plans p 
@@ -123,7 +161,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                         ) then 1 else 0 end
                     ) = 1
                     order by u.lastname,p.name
-                    ", new { patrolId,userId });
+                    ", new { patrolId,userId }).ConfigureAwait(false);
         }
 
         public Task<IEnumerable<AssignmentHeaderDto>> GetIncompleteAssignments(int patrolId)
@@ -137,7 +175,8 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     ,u.lastname userlastname
                     ,a.assignedat
                     ,p.name planname
-                    ,a.dueat 
+                    ,a.dueat
+                    ,a.completedat
                     ,(
                         select count(p.id)
 	                    from plans p 

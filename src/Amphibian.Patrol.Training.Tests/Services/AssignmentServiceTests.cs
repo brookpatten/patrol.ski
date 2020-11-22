@@ -216,9 +216,9 @@ namespace Amphibian.Patrol.Training.Tests.Services
                 .Returns(Task.FromResult((new List<int>() { sectionId }).AsEnumerable()));
 
             _patrolRepository.Setup(x => x.GetPatrolsForUser(userId))
-                .Returns(Task.FromResult((new List<PatrolUserDto>()
+                .Returns(Task.FromResult((new List<CurrentUserPatrolDto>()
             {
-                new PatrolUserDto()
+                new CurrentUserPatrolDto()
                 {
                     Id = patrolId,
                     Name = "Patrol"
@@ -294,9 +294,9 @@ namespace Amphibian.Patrol.Training.Tests.Services
                 .Returns(Task.FromResult((new List<int>() { sectionId }).AsEnumerable()));
 
             _patrolRepository.Setup(x => x.GetPatrolsForUser(userId))
-                .Returns(Task.FromResult((new List<PatrolUserDto>()
+                .Returns(Task.FromResult((new List<CurrentUserPatrolDto>()
             {
-                new PatrolUserDto()
+                new CurrentUserPatrolDto()
                 {
                     Id = patrolId+1,
                     Name = "Patrol"
@@ -372,9 +372,9 @@ namespace Amphibian.Patrol.Training.Tests.Services
                 .Returns(Task.FromResult((new List<int>() { sectionId }).AsEnumerable()));
 
             _patrolRepository.Setup(x => x.GetPatrolsForUser(userId))
-                .Returns(Task.FromResult((new List<PatrolUserDto>()
+                .Returns(Task.FromResult((new List<CurrentUserPatrolDto>()
             {
-                new PatrolUserDto()
+                new CurrentUserPatrolDto()
                 {
                     Id = patrolId,
                     Name = "Patrol"
@@ -450,9 +450,9 @@ namespace Amphibian.Patrol.Training.Tests.Services
                 .Returns(Task.FromResult((new List<int>() { }).AsEnumerable()));
 
             _patrolRepository.Setup(x => x.GetPatrolsForUser(userId))
-                .Returns(Task.FromResult((new List<PatrolUserDto>()
+                .Returns(Task.FromResult((new List<CurrentUserPatrolDto>()
             {
-                new PatrolUserDto()
+                new CurrentUserPatrolDto()
                 {
                     Id = patrolId,
                     Name = "Patrol"

@@ -9,6 +9,7 @@ using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Controllers;
 using Amphibian.Patrol.Training.Api.Repositories;
 using System.Data;
+using Amphibian.Patrol.Training.Api.Dtos;
 
 namespace Amphibian.Patrol.Training.Api.Validations
 {

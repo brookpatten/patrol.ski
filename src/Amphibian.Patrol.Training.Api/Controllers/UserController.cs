@@ -24,15 +24,18 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         private IUserService _userService;
         private IPatrolRepository _patrolRepository;
         private IGroupRepository _groupRepository;
+        private IPlanRepository _planRepository;
         
 
         public UserController(ILogger<UserController> logger, IPatrolService patrolService,IUserRepository userRepository,IEmailService emailService
-            , IPatrolRepository patrolRepository, IGroupRepository groupRepository)
+            , IPatrolRepository patrolRepository, IGroupRepository groupRepository, IUserService userService, IPlanRepository planRepository)
         {
             _logger = logger;
             _patrolService = patrolService;
             _patrolRepository = patrolRepository;
             _groupRepository = groupRepository;
+            _userService = userService;
+            _planRepository = planRepository;
         }
 
         [HttpGet]
@@ -42,7 +45,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         {
             if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainUsers())
             {
-                var users = await _patrolRepository.GetUsersForPatrol(patrolId);
+                var users = await _userService.GetPatrolUsers(patrolId);
                 return Ok(users);
             }
             else
@@ -51,24 +54,155 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             }
         }
 
-        public class AddUserDto
+        [HttpGet]
+        [Route("user/{patrolId}/{userId}")]
+        [Authorize]
+        public async Task<IActionResult> Get(int patrolId, int userId)
         {
-            public int PatrolId { get; set; }
-            public Role? Role { get; set; }
-            public string FirstName { get; set; }
-            public string LastName { get; set; }
-            public string Email { get; set; }
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainUsers())
+            {
+                var user = await _userService.GetPatrolUser(patrolId,userId);
+                return Ok(user);
+            }
+            else
+            {
+                return Forbid();
+            }
         }
-        [HttpPost]
-        [Route("user/add-to-patrol")]
+
+        [HttpGet]
+        [Route("user/groups/{patrolId}")]
+        [Authorize]
+        public async Task<IActionResult> GetGroups(int patrolId)
+        {
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainUsers())
+            {
+                var groups = await _groupRepository.GetGroupsForPatrol(patrolId);
+                return Ok(groups);
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        [HttpGet]
+        [Route("user/group/{groupId}")]
+        [Authorize]
+        public async Task<IActionResult> GetGroup(int groupId)
+        {
+            var group = await _groupRepository.GetGroup(groupId);
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), group.PatrolId)).CanMaintainGroups())
+            {
+                var memebers = await _groupRepository.GetUsersInGroup(groupId);
+                var plans = await _planRepository.GetPlansWithSectionsAllowedByGroup(groupId);
+                return Ok(new
+                {
+                    Group = group,
+                    Members = memebers,
+                    Plans = plans
+                });
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        [HttpPut]
+        [Route("user/group")]
         [Authorize]
         [UnitOfWork]
-        public async Task<IActionResult> AddToPatrol(AddUserDto dto)
+        public async Task<IActionResult> UpdateGroup(Group newGroup)
         {
-            if((await _patrolService.GetUserRoleInPatrol(User.GetUserId(),dto.PatrolId)).CanMaintainUsers())
+            Group existing = null;
+            if(newGroup.Id==default(int))
             {
-                _userService.AddUserToPatrol(dto.PatrolId, dto.Role, dto.FirstName, dto.LastName, dto.Email);
+                existing = new Group()
+                {
+                    Name = newGroup.Name,
+                    PatrolId = newGroup.PatrolId
+                };
+            }
+            else
+            {
+                existing = await _groupRepository.GetGroup(newGroup.Id);
+                if(existing.PatrolId!=newGroup.PatrolId)
+                {
+                    return Forbid();
+                }
+                existing.Name = newGroup.Name;
+            }
+
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), newGroup.PatrolId)).CanMaintainGroups())
+            {
+                if (existing.Id == default(int))
+                {
+                    await _groupRepository.InsertGroup(existing);
+                }
+                else
+                {
+                    await _groupRepository.UpdateGroup(existing);
+                }
+
                 return Ok();
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        [HttpDelete]
+        [Route("user/groups/{patrolId}/{groupId}")]
+        [Authorize]
+        [UnitOfWork]
+        public async Task<IActionResult> RemoveGroup(int patrolId,int groupId)
+        {
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainGroups())
+            {
+                var groups = await _groupRepository.GetGroupsForPatrol(patrolId);
+                if(groups.Any(y=>y.Id==groupId))
+                {
+                    await _patrolService.DeleteGroup(groupId);
+                    return Ok();
+                }
+                else
+                {
+                    return Forbid();
+                }
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        [HttpPut]
+        [Route("user")]
+        [Authorize]
+        [UnitOfWork]
+        public async Task<IActionResult> Save(PatrolUserDto dto)
+        {
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainUsers())
+            {
+                //ensure the groups specified match the specified patrol
+                var validGroups = await _groupRepository.GetGroupsForPatrol(dto.PatrolId);
+                if (dto.Groups.All(x => validGroups.Any(y => y.Id == x.Id)))
+                {
+                    if(dto.Id==default(int))
+                    {
+                        var user = await _userService.AddUserToPatrol(dto.PatrolId, dto.Role, dto.FirstName, dto.LastName, dto.Email);
+                        dto.Id = user.Id;
+                    }
+
+                    await _userService.UpdatePatrolUser(dto);
+                    return Ok();
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
             else
             {
@@ -85,51 +219,11 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [Route("user/remove-from-patrol")]
         [Authorize]
         [UnitOfWork]
-        public async Task<IActionResult> RemoveFrompatrol(RemoveUserDto dto)
+        public async Task<IActionResult> RemoveFromPatrol(RemoveUserDto dto)
         {
             if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainUsers())
             {
-                await _patrolRepository.DeletePatrolUser(dto.UserId, dto.PatrolId);
-                return Ok();
-            }
-            else
-            {
-                return Forbid();
-            }
-        }
-
-        public class GroupUserDto
-        {
-            public int UserId { get; set; }
-            public int GroupId { get; set; }
-        }
-        [HttpPost]
-        [Route("user/add-user-to-group")]
-        [Authorize]
-        [UnitOfWork]
-        public async Task<IActionResult> AddUserToGroup(GroupUserDto dto)
-        {
-            var group = await _groupRepository.GetGroup(dto.GroupId);
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), group.PatrolId)).CanMaintainUsers())
-            {
-                await _userService.AddUserToGroup(dto.UserId, dto.GroupId);
-                return Ok();
-            }
-            else
-            {
-                return Forbid();
-            }
-        }
-        [HttpPost]
-        [Route("user/remove-user-from-group")]
-        [Authorize]
-        [UnitOfWork]
-        public async Task<IActionResult> RemoveUserFromGroup(GroupUserDto dto)
-        {
-            var group = await _groupRepository.GetGroup(dto.GroupId);
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), group.PatrolId)).CanMaintainUsers())
-            {
-                await _userService.RemoveUserFromGroup(dto.UserId, dto.GroupId);
+                await _patrolRepository.DeletePatrolUser(dto.PatrolId,dto.UserId);
                 return Ok();
             }
             else

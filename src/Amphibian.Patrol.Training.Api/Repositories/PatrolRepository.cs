@@ -42,7 +42,8 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task<IEnumerable<PatrolUser>> GetPatrolUsersForPatrol(int patrolId)
         {
-            return await _connection.SelectAsync<PatrolUser>(x => x.PatrolId == patrolId);
+            return await _connection.SelectAsync<PatrolUser>(x => x.PatrolId == patrolId)
+                .ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<User>> GetUsersForPatrol(int patrolId)
@@ -61,9 +62,9 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                 .ConfigureAwait(false);
         }
 
-        public async Task<IEnumerable<PatrolUserDto>> GetPatrolsForUser(int userId)
+        public async Task<IEnumerable<CurrentUserPatrolDto>> GetPatrolsForUser(int userId)
         {
-            return await _connection.QueryAsync<PatrolUserDto>(
+            return await _connection.QueryAsync<CurrentUserPatrolDto>(
                 @$"select 
                     p.id
                     ,p.name
@@ -77,12 +78,14 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task<IEnumerable<PatrolUser>> GetPatrolUsersForUser(int userId)
         {
-            return await _connection.SelectAsync<PatrolUser>(x => x.UserId == userId);
+            return await _connection.SelectAsync<PatrolUser>(x => x.UserId == userId)
+                .ConfigureAwait(false);
         }
 
         public async Task<PatrolUser> GetPatrolUser(int userId, int patrolId)
         {
-            var pus = await _connection.SelectAsync<PatrolUser>(x => x.UserId == userId && x.PatrolId == patrolId);
+            var pus = await _connection.SelectAsync<PatrolUser>(x => x.UserId == userId && x.PatrolId == patrolId)
+                .ConfigureAwait(false);
             if(pus.Any())
             {
                 return pus.First();
@@ -95,7 +98,8 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task<PatrolUser> GetPatrolUser(int id)
         {
-            return await _connection.GetAsync<PatrolUser>(id);
+            return await _connection.GetAsync<PatrolUser>(id)
+                .ConfigureAwait(false);
         }
 
         public async Task InsertPatrolUser(PatrolUser patrolUser)
@@ -106,7 +110,14 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task DeletePatrolUser(int patrolId, int userId)
         {
-            await _connection.DeleteMultipleAsync<PatrolUser>(x => x.PatrolId == patrolId && x.UserId == userId);
+            await _connection.DeleteMultipleAsync<PatrolUser>(x => x.PatrolId == patrolId && x.UserId == userId)
+                .ConfigureAwait(false);
+        }
+
+        public async Task UpdatePatrolUser(PatrolUser patrolUser)
+        {
+            await _connection.UpdateAsync(patrolUser)
+                .ConfigureAwait(false);
         }
     }
 }

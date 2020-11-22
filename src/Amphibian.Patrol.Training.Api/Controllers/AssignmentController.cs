@@ -25,9 +25,10 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         private IPlanService _planService;
         private IAssignmentService _assignmentService;
         private IUserRepository _userRepository;
+        private IPatrolService _patrolService;
 
         public AssignmentController(ILogger<AssignmentController> logger, IPatrolRepository patrolRepository, IPlanRepository planRepository, 
-            IAssignmentRepository assignmentRepository, IPlanService planService, IAssignmentService assignmentService, IUserRepository userRepository)
+            IAssignmentRepository assignmentRepository, IPlanService planService, IAssignmentService assignmentService, IUserRepository userRepository, IPatrolService patrolService)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
@@ -36,6 +37,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             _planService = planService;
             _assignmentService = assignmentService;
             _userRepository = userRepository;
+            _patrolService = patrolService;
         }
 
         [HttpGet]
@@ -83,6 +85,29 @@ namespace Amphibian.Patrol.Training.Api.Controllers
                         Plan = plan,
                         Assignment = assignment
                     });
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        public class AssignmentSearch
+        {
+            public int PatrolId { get; set; }
+            public int? UserId { get; set; }
+            public int? PlanId { get; set; }
+            public bool? Completed { get; set; }
+        }
+        [HttpPost]
+        [Route("assignment/search")]
+        [Authorize]
+        public async Task<IActionResult> SearchAssignments(AssignmentSearch search)
+        {
+            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), search.PatrolId)).CanMaintainAssignments())
+            {
+                var assignments = await _assignmentRepository.GetAssignments(search.PatrolId, search.PlanId, search.UserId, search.Completed);
+                return Ok(assignments);
             }
             else
             {

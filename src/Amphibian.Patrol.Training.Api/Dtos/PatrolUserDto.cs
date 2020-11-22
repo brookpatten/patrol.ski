@@ -9,14 +9,12 @@ namespace Amphibian.Patrol.Training.Api.Dtos
     public class PatrolUserDto
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public int PatrolUserId { get; set; }
+        public int PatrolId { get; set; }
+        public string Email { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
         public Role? Role { get; set; }
-        public IList<Permission> Permissions
-        {
-            get
-            {
-                return this.Role.Permissions();
-            }
-        }
+        public IList<Group> Groups { get; set; }
     }
 }

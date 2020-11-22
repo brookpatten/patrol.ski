@@ -32,8 +32,8 @@ export default [
       },
       {
         _name: 'CSidebarNavItem',
-        name: 'Organization',
-        to: '/administration/organization',
+        name: 'Groups',
+        to: '/administration/groups',
         icon: 'cil-chart-pie'
       },
       {

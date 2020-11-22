@@ -9,7 +9,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
     {
         Task DeletePatrolUser(int patrolId, int userId);
         Task<Models.Patrol> GetPatrol(int id);
-        Task<IEnumerable<PatrolUserDto>> GetPatrolsForUser(int userId);
+        Task<IEnumerable<CurrentUserPatrolDto>> GetPatrolsForUser(int userId);
         Task<IEnumerable<PatrolUser>> GetPatrolUsersForPatrol(int patrolId);
         Task<IEnumerable<PatrolUser>> GetPatrolUsersForUser(int userId);
         Task<PatrolUser> GetPatrolUser(int userId, int patrolId);
@@ -18,5 +18,6 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         Task InsertPatrolUser(PatrolUser patrolUser);
         Task UpdatePatrol(Models.Patrol patrol);
         Task<PatrolUser> GetPatrolUser(int id);
+        Task UpdatePatrolUser(PatrolUser patrolUser);
     }
 }

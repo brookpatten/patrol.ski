@@ -1,5 +1,8 @@
-﻿using Amphibian.Patrol.Training.Api.Models;
+﻿using Amphibian.Patrol.Training.Api.Dtos;
+using Amphibian.Patrol.Training.Api.Extensions;
+using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Repositories;
+using AutoMapper;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -8,24 +11,26 @@ using System.Threading.Tasks;
 
 namespace Amphibian.Patrol.Training.Api.Services
 {
-    public class UserService: IUserService
+    public class UserService : IUserService
     {
         private ILogger<UserService> _logger;
         private IUserRepository _userRepository;
         private IEmailService _emailService;
         private IGroupRepository _groupRepository;
         private IPatrolRepository _patrolRepository;
+        private IMapper _mapper;
 
-        public UserService(ILogger<UserService> logger,IUserRepository userRepository, IEmailService emailService, IGroupRepository groupRepository, IPatrolRepository patrolRepository)
+        public UserService(ILogger<UserService> logger, IUserRepository userRepository, IEmailService emailService, IGroupRepository groupRepository, IPatrolRepository patrolRepository, IMapper mapper)
         {
             _logger = logger;
             _userRepository = userRepository;
             _emailService = emailService;
             _groupRepository = groupRepository;
             _patrolRepository = patrolRepository;
+            _mapper = mapper;
         }
 
-        public async Task<User> AddUserToPatrol(int patrolId, Role? role,string firstName,string lastName,string email)
+        public async Task<User> AddUserToPatrol(int patrolId, Role? role, string firstName, string lastName, string email)
         {
             var user = await _userRepository.GetUser(email);
             if (user == null)
@@ -73,12 +78,68 @@ namespace Amphibian.Patrol.Training.Api.Services
 
         public async Task RemoveUserFromGroup(int userId, int groupId)
         {
-            var gu = await _groupRepository.GetGroupUser(userId,groupId);
+            var gu = await _groupRepository.GetGroupUser(userId, groupId);
 
             if (gu != null)
             {
                 await _groupRepository.DeleteGroupUser(gu);
             }
+        }
+
+        public async Task<IEnumerable<PatrolUserDto>> GetPatrolUsers(int patrolId)
+        {
+            var users = await _patrolRepository.GetPatrolUsersForPatrol(patrolId);
+            var patrolUsers = await _userRepository.GetUsers(users.Select(x => x.UserId).Distinct().ToList());
+            var groupUsers = await _groupRepository.GetGroupsForUsers(patrolId, users.Select(x => x.UserId).Distinct().ToList());
+            var groups = await _groupRepository.GetGroupsForPatrol(patrolId);
+
+            var dtos = _mapper.Map<IEnumerable<User>, IEnumerable<PatrolUserDto>>(patrolUsers);
+
+            foreach(var dto in dtos)
+            {
+                dto.PatrolUserId = users.Single(x => x.UserId == dto.Id).Id;
+                dto.PatrolId = patrolId;
+                dto.Role = users.Single(x => x.UserId == dto.Id).Role;
+                dto.Groups = groupUsers.Where(x => x.UserId == dto.Id).Select(x => groups.Single(y => y.Id == x.GroupId)).ToList();
+            }
+
+            return dtos;
+        }
+
+        public async Task<PatrolUserDto> GetPatrolUser(int patrolId, int userId)
+        {
+            var patrolUser = await _patrolRepository.GetPatrolUser(userId, patrolId);
+            var user = await _userRepository.GetUser(userId);
+            var groupUsers = await _groupRepository.GetGroupsForUser(patrolId, userId);
+            
+            var dto = _mapper.Map<User, PatrolUserDto>(user);
+
+            dto.PatrolUserId = patrolUser.Id;
+            dto.PatrolId = patrolId;
+            dto.Role = patrolUser.Role;
+            dto.Groups = groupUsers.ToList();
+
+            return dto;
+        }
+
+        public async Task UpdatePatrolUser(PatrolUserDto dto)
+        {
+            var user = await _userRepository.GetUser(dto.Id);
+            user.Email = dto.Email;
+            user.FirstName = dto.FirstName;
+            user.LastName = dto.LastName;
+            await _userRepository.UpdateUser(user);
+
+            var patrolUser = await _patrolRepository.GetPatrolUser(dto.Id, dto.PatrolId);
+            patrolUser.Role = dto.Role;
+            await _patrolRepository.UpdatePatrolUser(patrolUser);
+
+            var existingGroupUsers = await _groupRepository.GetGroupUsersForUser(dto.PatrolId, dto.Id);
+
+            await existingGroupUsers.DifferenceWith(dto.Groups
+            , (e, c) => e.GroupId == c.Id
+            , c => _groupRepository.InsertGroupUser(new GroupUser() { UserId = dto.Id, GroupId = c.Id })
+            , e => _groupRepository.DeleteGroupUser(e));
         }
     }
 }

@@ -8,22 +8,17 @@
             </CCardHeader>
             <CCardBody>
             <CDataTable
-                :hover="hover"
-                :striped="true"
-                :bordered="true"
-                :small="small"
-                :fixed="fixed"
                 :items="plans"
-                :fields="demoFields"
-                :items-per-page="small ? 10 : 5"
-                :dark="dark"
-                pagination
+                :fields="[{key:'name',label:'Name'},{key:'buttons',label:''}]"
             >
-                <template #status="{item}">
-                <td>
-                    <CBadge :color="getBadge(item.status)">{{item.status}}</CBadge>
-                </td>
-                </template>
+              <template #buttons="data">
+                  <td>
+                    <CButtonGroup size="sm">
+                      <CButton v-if="hasPermission('MaintainPlans')" color="primary" :to="{ name: 'ManagePlan', params: { planId: data.item.id } }">Edit</CButton>
+                      <CButton v-if="hasPermission('MaintainAssignments')" color="primary" :to="{ name: 'Assignments', params: { planId: data.item.id } }">Assignments</CButton>
+                    </CButtonGroup>
+                  </td>
+              </template>
             </CDataTable>
             </CCardBody>
         </CCard>
@@ -38,9 +33,6 @@ export default {
   data () {
     return {
         plans:[],
-        planFields:[
-          {key:'name', label:'Plan', stickyColumn:true}
-        ]
     }
   },
   mounted: function(){
@@ -49,6 +41,9 @@ export default {
   computed: {
     selectedPatrolId: function () {
       return this.$store.state.selectedPatrolId;
+    },
+    selectedPatrol: function (){
+        return this.$store.getters.selectedPatrol;
     }
   },
   methods: {
@@ -61,6 +56,9 @@ export default {
                 }).catch(response => {
                     console.log(response);
                 });
+        },
+        hasPermission: function(permission){
+          return this.selectedPatrol!=null && this.selectedPatrol.permissions!=null && _.indexOf(this.selectedPatrol.permissions,permission) >= 0;
         }
   },
   watch: {

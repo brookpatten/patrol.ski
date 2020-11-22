@@ -10,6 +10,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         Task<Assignment> GetAssignment(int assignmentId);
         Task<IEnumerable<AssignmentHeaderDto>> GetAssignmentsForUser(int userId);
         Task<IEnumerable<AssignmentHeaderDto>> GetAssignmentsForPlan(int planId);
+        Task<IEnumerable<AssignmentHeaderDto>> GetAssignments(int patrolId, int? planId, int? assignedToUserId, bool? complete);
         Task<IEnumerable<Signature>> GetSignaturesForAssignment(int assignmentId);
         Task<IEnumerable<SignatureDto>> GetSignaturesWithUsersForAssignment(int assignmentId);
         Task InsertSignature(Signature signature);

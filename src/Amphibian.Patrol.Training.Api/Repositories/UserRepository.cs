@@ -37,6 +37,12 @@ namespace Amphibian.Patrol.Training.Api.Repositories
             return user;
         }
 
+        public async Task<IEnumerable<User>> GetUsers(IList<int> userIds)
+        {
+            var users = await _connection.QueryAsync<User>("select * from users where id in @userIds", new { userIds });
+            return users;
+        }
+
         public async Task<User> GetUser(string email)
         {
             var users = await _connection.SelectAsync<User>(x => x.Email == email);

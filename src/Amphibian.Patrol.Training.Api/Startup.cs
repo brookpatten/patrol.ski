@@ -40,6 +40,7 @@ using Amphibian.Patrol.Training.Api.Mappings;
 using Amphibian.Patrol.Training.Api.Infrastructure;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using Amphibian.Patrol.Training.Api.Dtos;
 
 namespace Amphibian.Patrol.Training.Api
 {
@@ -122,6 +123,8 @@ namespace Amphibian.Patrol.Training.Api
 
             //validations
             services.AddScoped<IValidator<AuthenticationController.RegistrationRequest>, RegistrationValidator>();
+            services.AddScoped<IValidator<PatrolUserDto>, PatrolUserValidator>();
+            services.AddScoped<IValidator<Group>, GroupValidator>();
 
             //services
             services.AddScoped<Services.IAuthenticationService, Services.AuthenticationService>();
