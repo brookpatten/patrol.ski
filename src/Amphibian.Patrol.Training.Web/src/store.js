@@ -59,7 +59,7 @@ export default new Vuex.Store({
           commit('auth_success', resp.data);
 
           localStorage.setItem('token', state.token);
-          axios.defaults.headers.common['Authorization'] = 'Token ' + state.token;
+          axios.defaults.headers.common['Authorization'] = 'Bearer ' + state.token;
           localStorage.setItem('patrols', JSON.stringify(state.patrols));
           if(state.patrols && state.patrols.length>0){
             state.selectedPatrolId = state.patrols[0].id;
@@ -94,7 +94,7 @@ export default new Vuex.Store({
           commit('auth_success', resp.data);
           
           localStorage.setItem('token', state.token);
-          axios.defaults.headers.common['Authorization'] = 'Token ' + state.token;
+          axios.defaults.headers.common['Authorization'] = 'Bearer ' + state.token;
           localStorage.setItem('patrols', JSON.stringify(state.patrols));
           if(state.patrols && state.patrols.length>0){
             state.selectedPatrolId = state.patrols[0].id;

@@ -37,6 +37,7 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
         {
             if (!Request.Headers.ContainsKey("Authorization"))
             {
+                Logger.LogError("Missing Authorization Header");
                 return AuthenticateResult.Fail("Missing Authorization Header");
             }
 
@@ -44,6 +45,7 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
             try
             {
                 AuthenticationHeaderValue authenticationHeader;
+                Guid tokenGuid;
 
                 if (AuthenticationHeaderValue.TryParse(Request.Headers["Authorization"], out authenticationHeader))
                 {
@@ -51,8 +53,7 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
                     {
                         var credentialBytes = Convert.FromBase64String(authenticationHeader.Parameter);
                         var credentialString = Encoding.UTF8.GetString(credentialBytes);
-                        Guid tokenGuid;
-
+                        
                         if (credentialString.Contains(":"))
                         {
                             var credentials = credentialString.Split(new[] { ':' }, 2);
@@ -62,42 +63,48 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
                             if (user == null)
                             {
                                 //bad password
+                                Logger.LogError("Invalid Username or password");
                                 return AuthenticateResult.Fail("Invalid Username or Password");
                             }
                             else
                             {
                                 //make a token and put it in the response header?
+                                
                                 var token = await _authenticationService.CreateNewTokenForUser(user);
+                                Logger.LogInformation("Authenticated User via email/password OK", new { user, token });
                                 Response.Headers.Add("Authorization", "Token " + token.TokenGuid);
                             }
                         }
                     }
-                    else if(authenticationHeader.Scheme=="Token")
+                    else if(authenticationHeader.Scheme=="Token" || authenticationHeader.Scheme == "Bearer") //TODO: remove "Token"
                     {
-                        Guid tokenGuid;
                         if(Guid.TryParse(authenticationHeader.Parameter,out tokenGuid))
                         {
                             user = await _authenticationService.AuthenticateUserWithToken(tokenGuid);
                             if (user == null)
                             {
+                                Logger.LogError("Invalid Bearer Token");
                                 return AuthenticateResult.Fail("Invalid Authorization Header");
                             }
                         }
                     }
                     else
                     {
+                        Logger.LogError("Invalid Authorization Header");
                         //it's not a token and it's not a basic, what is it?
                         return AuthenticateResult.Fail("Invalid Authorization Header");
                     }
                 }
                 else
                 {
+                    Logger.LogError("Invalid Authorization Header");
                     //we can't understand the auth header
                     return AuthenticateResult.Fail("Invalid Authorization Header");
                 }
             }
             catch(Exception ex)
             {
+                Logger.LogError(ex,"Invalid Authorization Header");
                 //some exception we weren't ready for, likely a malformed header
                 return AuthenticateResult.Fail("Invalid Authorization Header");
             }
@@ -105,6 +112,7 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
             if (user == null)
             {
                 //this shouldn't actually happen, but just in case
+                Logger.LogError("Invalid Username or Password");
                 return AuthenticateResult.Fail("Invalid Username or Password");
             }
 

@@ -27,6 +27,8 @@ using Swashbuckle;
 using Swashbuckle.AspNetCore;
 using Swashbuckle.AspNetCore.ReDoc;
 using Swashbuckle.AspNetCore.Swagger;
+using Serilog;
+using Serilog.AspNetCore;
 
 using Amphibian.Patrol.Training.Configuration;
 using Amphibian.Patrol.Training.Api.Repositories;
@@ -65,7 +67,26 @@ namespace Amphibian.Patrol.Training.Api
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Api", Version = "v1" });
-                
+                c.AddSecurityDefinition("Authorization", new OpenApiSecurityScheme()
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme="bearer",
+                    BearerFormat="JWT",
+                    In = ParameterLocation.Header,
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Authorization"
+                            }
+                        }, new List<string>()
+                    }
+                });
             });
 
             services.AddAuthentication("BasicOrTokenAuthentication")
@@ -109,7 +130,7 @@ namespace Amphibian.Patrol.Training.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-
+            app.UseSerilogRequestLogging();
             app.UseHttpsRedirection();
 
             string staticFilesPath;

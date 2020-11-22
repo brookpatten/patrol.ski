@@ -41,7 +41,6 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         {
             public string email { get; set; }
             public string password { get; set; }
-            public Guid? token { get; set; }
         }
         [HttpPost]
         [Route("user/authenticate")]
@@ -49,18 +48,12 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         public async Task<IActionResult> Authenticate(AuthenticationRequest request)
         {
             User user;
-            if(request.token.HasValue)
-            {
-                user = await _authenticationService.AuthenticateUserWithToken(request.token.Value);
-            }
-            else
-            {
-                user = await _authenticationService.AuthenticateUserWithPassword(request.email, request.password);
-            }
+            user = await _authenticationService.AuthenticateUserWithPassword(request.email, request.password);
 
-            if(user!=null)
+            if (user!=null)
             {
                 var token = await _authenticationService.CreateNewTokenForUser(user);
+                _logger.LogInformation("Authenticated {@email} via email/password OK, Created Token {@token}", user.Email, token);
                 var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
                 return Ok(new
                 {
@@ -71,6 +64,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             }
             else
             {
+                _logger.LogInformation("Username or password is incorrect");
                 return BadRequest(new { message = "Username or password is incorrect" });
             }
         }

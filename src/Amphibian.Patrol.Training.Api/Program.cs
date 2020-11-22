@@ -8,12 +8,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+using Serilog;
+using Serilog.AspNetCore;
+using Serilog.Events;
+
 namespace Amphibian.Patrol.Training.Api
 {
     public class Program
     {
         public static void Main(string[] args)
-        { 
+        {
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -48,6 +52,11 @@ namespace Amphibian.Patrol.Training.Api
             builder = builder.ConfigureWebHostDefaults(webBuilder =>
             {
                 webBuilder.UseStartup<Startup>();
+            })
+            .UseSerilog((hostingContext, loggerConfiguration) =>
+            {
+                loggerConfiguration.ReadFrom.Configuration(hostingContext.Configuration)
+                .Enrich.FromLogContext();
             });
 
             return builder;
