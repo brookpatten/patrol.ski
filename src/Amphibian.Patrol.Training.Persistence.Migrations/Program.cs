@@ -13,7 +13,7 @@ namespace Amphibian.Patrol.Training.Persistence.Migrations
     {
         static void Main(string[] args)
         {
-            var configuration = ScheduleConfiguration.LoadFromJsonConfig(Path.Combine(Directory.GetCurrentDirectory(), "../../../../Schedule.Api"));
+            var configuration = ScheduleConfiguration.LoadFromJsonConfig(Path.Combine(Directory.GetCurrentDirectory(), "../../../../Amphibian.Patrol.Training.Api"));
             var result = MigrationRunner.RunMigrations(configuration.Database.ConnectionString,true,false);
 
             if (!result.Successful)

@@ -28,7 +28,7 @@ namespace Amphibian.Patrol.Training.Tests
         public void BaseOneTimeSetUp()
         {
             //find the config for the app
-            _configuration = ScheduleConfiguration.LoadFromJsonConfig(Path.Combine(Directory.GetCurrentDirectory(), "../../../../Schedule.Api"));
+            _configuration = ScheduleConfiguration.LoadFromJsonConfig(Path.Combine(Directory.GetCurrentDirectory(), "../../../../Amphibian.Patrol.Training.Api"));
 
             //reformat the existing connection string to connect to the master db (not strictly necassary, but mast always exists, the app db doesn't)
             _connectionStringBuilder = new SqlConnectionStringBuilder(_configuration.Database.ConnectionString);
