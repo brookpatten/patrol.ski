@@ -1,0 +1,35 @@
+name: Integration Tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2017-CU8-ubuntu
+        env:
+          SA_PASSWORD: ${{ secrets.BROOK_PAT }}
+          ACCEPT_EULA: Y
+          MSSQL_PID: Express
+        ports:
+          - 1433:1433
+        # Set health checks to wait until db has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 10s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: run tests
+        run: dotnet test ./src --verbosity normal --filter TestCategory=persistence
+        env:
+          ASPNETCORE_ENVIRONMENT: ci
+          Test__ConnectionString: 'Server=localhost;Initial Catalog=master;Trusted_Connection=True;User ID=sa;Password=${{ secrets.BROOK_PAT }};'
