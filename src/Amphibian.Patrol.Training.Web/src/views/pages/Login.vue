@@ -54,6 +54,7 @@
           >
             <h2>Sign up</h2>
             <p>Create, Manage, and Track your Patrol's OET Training Progress</p>
+            <p>A free service for NSP Ski Patrols</p>
             <CButtonGroup class="active mt-3">
             <CButton
               color="success"
