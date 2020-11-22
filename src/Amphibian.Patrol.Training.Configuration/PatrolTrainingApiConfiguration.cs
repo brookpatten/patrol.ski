@@ -44,7 +44,7 @@ namespace Amphibian.Patrol.Training.Configuration
             }
 
             string configBasePath = null;
-            foreach (var path in basePaths)
+            foreach (var path in checkPaths)
             {
                 Console.WriteLine("Checking " + path);
                 if (File.Exists(Path.Combine(path, "appsettings.json")))
