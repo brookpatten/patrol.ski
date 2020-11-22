@@ -6,6 +6,7 @@ using DbUp;
 using DbUp.SqlServer;
 
 using Amphibian.Patrol.Training.Configuration;
+using Microsoft.Extensions.Configuration;
 
 namespace Amphibian.Patrol.Training.Persistence.Migrations
 {
@@ -13,7 +14,7 @@ namespace Amphibian.Patrol.Training.Persistence.Migrations
     {
         static void Main(string[] args)
         {
-            var configuration = PatrolTrainingApiConfiguration.LoadFromJsonConfig(Path.Combine(Directory.GetCurrentDirectory(), "../../../../Amphibian.Patrol.Training.Api"));
+            var configuration = PatrolTrainingApiConfiguration.LoadFromJsonConfig(new ConfigurationBuilder(),Path.Combine(Directory.GetCurrentDirectory(), "../../../../Amphibian.Patrol.Training.Api"));
 
             if (configuration.Database.MigrateSchema)
             {
