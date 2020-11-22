@@ -54,7 +54,7 @@ jobs:
     - name: Create Deployment Folder
       run: mkdir deployment
     - name: Copy .Net App to Deployment Folder
-      run: cp src/Schedule.Api/bin/Debug/netcoreapp3.1 deployment -r
+      run: cp src/Schedule.Api/bin/Debug/netcoreapp3.1/* deployment -r
     - name: Create Static Content Folder
       run: mkdir deployment/static
     - name: Copy Node Frontend to Deployment Folder
