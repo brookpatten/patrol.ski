@@ -14,8 +14,6 @@ namespace Amphibian.Patrol.Training.Configuration
 {
     public class PatrolTrainingApiConfiguration
     {
-        public AzureConfiguration Azure { get; set; }
-
         public DatabaseConfiguration Database { get; set; }
         public TestConfiguration Test { get; set; }
         public EmailConfiguration Email{get;set;}
@@ -23,7 +21,6 @@ namespace Amphibian.Patrol.Training.Configuration
 
         public PatrolTrainingApiConfiguration()
         {
-            Azure = new AzureConfiguration();
             Database = new DatabaseConfiguration();
             Test = new TestConfiguration();
             Email = new EmailConfiguration();
@@ -91,26 +88,26 @@ namespace Amphibian.Patrol.Training.Configuration
             var serviceConfiguration = config.Get<PatrolTrainingApiConfiguration>();
 
             //if config specifies an azure secret url, we need to load those secrets into config too
-            if (!string.IsNullOrEmpty(serviceConfiguration.Azure.KeyVaultUrl))
-            {
-                Console.WriteLine("Configuring from Key Vault " + serviceConfiguration.Azure.KeyVaultUrl);
-                builder = builder.AddAzureKeyVault(serviceConfiguration.Azure.KeyVaultUrl);
+            //if (!string.IsNullOrEmpty(serviceConfiguration.Azure.KeyVaultUrl))
+            //{
+            //    Console.WriteLine("Configuring from Key Vault " + serviceConfiguration.Azure.KeyVaultUrl);
+            //    builder = builder.AddAzureKeyVault(serviceConfiguration.Azure.KeyVaultUrl);
 
-                //do it again, this time with azure keyvault
-                config = builder.Build();
-                serviceConfiguration = config.Get<PatrolTrainingApiConfiguration>();
+            //    //do it again, this time with azure keyvault
+            //    config = builder.Build();
+            //    serviceConfiguration = config.Get<PatrolTrainingApiConfiguration>();
 
-                Console.WriteLine("Configuration Complete");
+            //    Console.WriteLine("Configuration Complete");
 
-                if (string.IsNullOrEmpty(serviceConfiguration.Database.ConnectionString))
-                {
-                    throw new KeyNotFoundException("Database.ConnectionString cannot be null or empty, please verify configuration");
-                }
-                if (string.IsNullOrEmpty(serviceConfiguration.Email.SendGridApiKey))
-                {
-                    throw new KeyNotFoundException("Email.SendGridApiKey cannot be null or empty, please verify configuration");
-                }
-            }
+            //    if (string.IsNullOrEmpty(serviceConfiguration.Database.ConnectionString))
+            //    {
+            //        throw new KeyNotFoundException("Database.ConnectionString cannot be null or empty, please verify configuration");
+            //    }
+            //    if (string.IsNullOrEmpty(serviceConfiguration.Email.SendGridApiKey))
+            //    {
+            //        throw new KeyNotFoundException("Email.SendGridApiKey cannot be null or empty, please verify configuration");
+            //    }
+            //}
 
             return (config,serviceConfiguration);
         }
