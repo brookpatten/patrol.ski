@@ -24,15 +24,15 @@ jobs:
     - name: Create Nuget Package
       run: dotnet pack src/Schedule.Api/Schedule.Api.csproj
     - name: Push Nupkg to GitHub Packages
-        uses: tanaka-takayoshi/nuget-publish-to-github-packages-action@v2.1
-        with:
-          # Path of NuPkg
-          nupkg-path: src/Schedule.Api/bin/Debug/TrainingOrganizer.Api.0.0.1.nupkg
-          # package repository owner
-          repo-owner: brookpatten
-          # user account
-          gh-user: brookpatten
-          # access token
-          token: ${{ secrets.GITHUB_TOKEN }}
-          # skip publishing duplicated package(s)
-          skip-duplicate: false
+      uses: tanaka-takayoshi/nuget-publish-to-github-packages-action@v2.1
+      with:
+        # Path of NuPkg
+        nupkg-path: src/Schedule.Api/bin/Debug/TrainingOrganizer.Api.0.0.1.nupkg
+        # package repository owner
+        repo-owner: brookpatten
+        # user account
+        gh-user: brookpatten
+        # access token
+        token: ${{ secrets.GITHUB_TOKEN }}
+        # skip publishing duplicated package(s)
+        skip-duplicate: false
