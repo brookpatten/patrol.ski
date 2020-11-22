@@ -1,21 +1,22 @@
 <template>
     <div>
         <CCard>
-            <CCardHeader><span class="display-3">{{plan.name}}</span></CCardHeader>
+            <CCardHeader>{{plan.name}}</CCardHeader>
             <CCardBody v-if="signOffTable.length>0">
-                <table>
-                    <thead>
+                <table class="table table-responsive table-bordered">
+                    <thead class="thead-dark">
                         <tr>
-                            <td>Skill</td>
-                            <td v-for="level in levels" :key="level.id">{{level.name}}</td>
+                            <th scope="col">Skill</th>
+                            <th scope="col" v-for="level in levels" :key="level.id">{{level.name}}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="signOffRow in signOffTable" :key="signOffRow.skill.id">
                             <td>{{signOffRow.skill.name}}</td>
-                            <td v-for="signOff in signOffRow.signOffs" :key="signOff.id">
-                                <span v-if="signOff!=null && signOff.signature!=null">Signed</span>
-                                <span v-if="signOff!=null && signOff.signature==null">Needed</span>
+                            <td v-for="signOff in signOffRow.signOffs" :key="signOff.id" v-bind:class="{'table-dark':signOff==null,  'table-success': signOff!=null && signOff.signature!=null}">
+                                <span v-if="signOff!=null && signOff.signature!=null">{{signOff.signature.signedBy.firstName}} {{signOff.signature.signedBy.lastName}} {{new Date(signOff.signature.signedAt).toLocaleDateString()}}</span>
+                                <span v-if="signOff!=null && signOff.signature==null && !signOff.currentUserCanSign"><input type="checkbox" disabled/></span>
+                                <span v-if="signOff!=null && signOff.signature==null && signOff.currentUserCanSign"><input type="checkbox"/></span>
                             </td>
                         </tr>
                     </tbody>
@@ -67,6 +68,7 @@ export default {
             this.sortedSections = _.orderBy(this.plan.sections,['rowIndex','columnIndex']);
         },
         tabelize(){
+            //convert the list of sections into a 2 dimensional array for easy html formatting
             this.signOffTable=[];
             this.levels=[];
             var signOffId=1;
@@ -103,6 +105,7 @@ export default {
                         this.signOffTable[s].signOffs[l].sectionlevel= sectionLevel;
                         this.signOffTable[s].signOffs[l].sectionSkill= sectionSkill;
                         this.signOffTable[s].signOffs[l].signature= signature;
+                        this.signOffTable[s].signOffs[l].currentUserCanSign = this.sortedSections[i].currentUserCanSign;
                         
                     }
                 }
