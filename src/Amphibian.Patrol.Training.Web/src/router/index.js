@@ -3,6 +3,7 @@ import Router from 'vue-router'
 
 // Containers
 const TheContainer = () => import('@/containers/TheContainer')
+const PublicContainer = () => import('@/containers/PublicContainer')
 
 // Views
 const Dashboard = () => import('@/views/Dashboard')
@@ -52,6 +53,7 @@ const Page404 = () => import('@/views/pages/Page404')
 const Page500 = () => import('@/views/pages/Page500')
 const Login = () => import('@/views/pages/Login')
 const Register = () => import('@/views/pages/Register')
+const Landing = () => import('@/views/pages/Landing')
 
 // Users
 const Users = () => import('@/views/users/Users')
@@ -86,7 +88,7 @@ function configRoutes () {
   return [
     {
       path: '/',
-      redirect: '/dashboard',
+      redirect: '/pages/landing',
       name: '',
       component: TheContainer,
       children: [
@@ -397,10 +399,13 @@ function configRoutes () {
       path: '/pages',
       redirect: '/pages/404',
       name: 'Pages',
-      component: {
-        render (c) { return c('router-view') }
-      },
+      component: PublicContainer,
       children: [
+        {
+          path: 'landing',
+          name: 'Landing',
+          component: Landing
+        },
         {
           path: '404',
           name: 'Page404',
