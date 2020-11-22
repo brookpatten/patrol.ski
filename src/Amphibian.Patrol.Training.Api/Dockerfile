@@ -7,4 +7,4 @@ FROM mcr.microsoft.com/dotnet/core/aspnet:3.1
 WORKDIR /app
 COPY  --from=api-build  /app/Amphibian.Patrol.Training.Api/bin/Debug/netcoreapp3.1/linux-x64/publish/ .
 ENTRYPOINT ["/app/Amphibian.Patrol.Training.Api"]
-LABEL org.opencontainers.image.source https://github.com/brookpatten/patrol.training
+LABEL org.opencontainers.image.source https://github.com/brookpatten/patrol.ski
