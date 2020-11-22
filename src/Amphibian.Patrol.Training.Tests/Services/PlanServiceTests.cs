@@ -162,6 +162,9 @@ namespace Amphibian.Patrol.Training.Tests.Services
             _planRepositoryMock.Setup(x => x.GetSectionGroupsForPlan(2)).Returns(Task.FromResult(sectioNGroups.AsEnumerable()))
                 .Verifiable();
 
+            _planRepositoryMock.Setup(x => x.GetPlan(2)).Returns(Task.FromResult(new Plan() { Id=2,Name="Test",PatrolId=patrolId}))
+                .Verifiable();
+
             await _planService.CreatePlan(name, patrolId, 2);
 
             _planRepositoryMock.Verify();

@@ -77,7 +77,7 @@ jobs:
         tags: |
           ghcr.io/brookpatten/patrol.ski:ci
           ghcr.io/brookpatten/patrol.ski:build-${{ github.run_number }}
-          ghcr.io/brookpatten/patrol.ski:v1.0.${{ github.run_number }}
+          ghcr.io/brookpatten/patrol.ski:v2020.0.${{ github.run_number }}
         
     #- name: Login to Azure
     #  uses: Azure/login@v1
