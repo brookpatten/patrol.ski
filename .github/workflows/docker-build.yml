@@ -48,14 +48,6 @@ jobs:
           name: test-coverage-report
           path: ./test-coverage-report
           
-      - name: Push Wiki Changes
-        uses: Andrew-Chen-Wang/github-wiki-action@v2
-        env:
-          WIKI_DIR: test-coverage-report/
-          GH_TOKEN: ${{ secrets.BROOK_PAT }}
-          GH_NAME: brookpatten
-          GH_MAIL: ${{ secrets.EMAIL }}
-
   build_frontend:
     needs: [test]    
     runs-on: ubuntu-latest
