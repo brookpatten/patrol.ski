@@ -11,5 +11,15 @@
             <param name="dto"></param>
             <returns></returns>
         </member>
+        <member name="M:Amphibian.Patrol.Training.Api.Services.PlanService.CreatePlan(System.String,System.Int32,System.Nullable{System.Int32})">
+            <summary>
+            create a training plan in the designated patrol, clone the designated plan contents if specified
+            specified plan can be from any patrol, relevant skills/levels will be copied to target patrol as needed
+            </summary>
+            <param name="name"></param>
+            <param name="patrolId"></param>
+            <param name="copyFromPlanId"></param>
+            <returns></returns>
+        </member>
     </members>
 </doc>

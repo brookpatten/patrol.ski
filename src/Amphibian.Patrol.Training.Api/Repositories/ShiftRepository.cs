@@ -10,14 +10,15 @@ using AutoMapper;
 
 using Amphibian.Patrol.Training.Api.Dtos;
 using Amphibian.Patrol.Training.Api.Models;
+using System.Data.Common;
 
 namespace Amphibian.Patrol.Training.Api.Repositories
 {
     public class ShiftRepository: IShiftRepository
     {
-        private readonly IDbConnection _connection;
+        private readonly DbConnection _connection;
         
-        public ShiftRepository(IDbConnection connection)
+        public ShiftRepository(DbConnection connection)
         {
             _connection = connection;
         }

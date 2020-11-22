@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Amphibian.Patrol.Training.Api.Extensions;
 using Amphibian.Patrol.Training.Api.Dtos;
 using Microsoft.Extensions.Logging;
+using Amphibian.Patrol.Training.Api.Infrastructure;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
@@ -61,6 +62,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [HttpPost]
         [Route("user/add-to-patrol")]
         [Authorize]
+        [UnitOfWork]
         public async Task<IActionResult> AddToPatrol(AddUserDto dto)
         {
             if((await _patrolService.GetUserRoleInPatrol(User.GetUserId(),dto.PatrolId)).CanMaintainUsers())
@@ -82,6 +84,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [HttpPost]
         [Route("user/remove-from-patrol")]
         [Authorize]
+        [UnitOfWork]
         public async Task<IActionResult> RemoveFrompatrol(RemoveUserDto dto)
         {
             if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainUsers())
@@ -103,6 +106,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [HttpPost]
         [Route("user/add-user-to-group")]
         [Authorize]
+        [UnitOfWork]
         public async Task<IActionResult> AddUserToGroup(GroupUserDto dto)
         {
             var group = await _groupRepository.GetGroup(dto.GroupId);
@@ -119,6 +123,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [HttpPost]
         [Route("user/remove-user-from-group")]
         [Authorize]
+        [UnitOfWork]
         public async Task<IActionResult> RemoveUserFromGroup(GroupUserDto dto)
         {
             var group = await _groupRepository.GetGroup(dto.GroupId);

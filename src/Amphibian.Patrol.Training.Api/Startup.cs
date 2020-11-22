@@ -37,6 +37,8 @@ using Amphibian.Patrol.Training.Api.Controllers;
 using Amphibian.Patrol.Training.Api.Validations;
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Mappings;
+using Amphibian.Patrol.Training.Api.Infrastructure;
+using System.Reflection;
 
 namespace Amphibian.Patrol.Training.Api
 {
@@ -96,11 +98,11 @@ namespace Amphibian.Patrol.Training.Api
 
             
             //db
-            services.AddScoped<IDbConnection,SqlConnection>(sp=>
+            services.AddScoped<System.Data.Common.DbConnection, SqlConnection>(sp=>
             {
                 return new SqlConnection(serviceConfiguration.Database.ConnectionString);
             });
-
+            services.AddScoped<IUnitOfWork, DbUnitOfWork>();
             //automapper config
             services.AddMappings();
 
@@ -176,6 +178,9 @@ namespace Amphibian.Patrol.Training.Api
                 .AllowAnyOrigin()
                 .AllowAnyMethod()
                 .AllowAnyHeader());
+
+
+            app.UseUnitOfWorkMiddleware(Assembly.GetAssembly(typeof(AuthenticationController)));
 
             app.UseEndpoints(endpoints =>
             {

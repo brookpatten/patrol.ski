@@ -84,6 +84,11 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
             _connection = new SqlConnection(_connectionString);
         }
 
+        internal SqlConnection CreateAdditionalConnection()
+        {
+            return new SqlConnection(_connectionString);
+        }
+
         [TearDown]
         public void BaseTearDown()
         {

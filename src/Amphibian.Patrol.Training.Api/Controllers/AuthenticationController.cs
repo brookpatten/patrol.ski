@@ -25,10 +25,10 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         private readonly IAuthenticationService _authenticationService;
         private readonly IUserRepository _userRepository;
         private readonly IPatrolRepository _patrolRepository;
-        private readonly EmailService _emailService;
+        private readonly IEmailService _emailService;
         
         public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, 
-            IUserRepository userRepository, IPatrolRepository patrolRepository, EmailService emailService)
+            IUserRepository userRepository, IPatrolRepository patrolRepository, IEmailService emailService)
         {
             _logger = logger;
             _authenticationService = authenticationService;

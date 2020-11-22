@@ -17,6 +17,7 @@ using Amphibian.Patrol.Training.Api.Extensions;
 using Amphibian.Patrol.Training.Api.Repositories;
 using Microsoft.AspNetCore.Authentication;
 using Amphibian.Patrol.Training.Api.Models;
+using Amphibian.Patrol.Training.Api.Infrastructure;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
@@ -66,6 +67,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [HttpPost]
         [Route("trainingshifts/commit/{shiftTrainerId}")]
         [Authorize]
+        [UnitOfWork]
         public async Task<IActionResult> Commit(int shiftTrainerId)
         {
             var shiftTrainer = await _shiftRepository.GetShiftTrainer(shiftTrainerId);
@@ -92,6 +94,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [HttpPost]
         [Route("trainingshifts/cancel/{traineeId}")]
         [Authorize]
+        [UnitOfWork]
         public async Task<IActionResult> Cancel(int traineeId)
         {
             var trainee = await _shiftRepository.GetTrainee(traineeId);

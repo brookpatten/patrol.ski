@@ -9,14 +9,15 @@ using Dapper;
 using Dommel;
 
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Data.Common;
 
 namespace Amphibian.Patrol.Training.Api.Repositories
 {
     public class TokenRepository : ITokenRepository
     {
-        private readonly IDbConnection _connection;
+        private readonly DbConnection _connection;
 
-        public TokenRepository(IDbConnection connection)
+        public TokenRepository(DbConnection connection)
         {
             _connection = connection;
         }

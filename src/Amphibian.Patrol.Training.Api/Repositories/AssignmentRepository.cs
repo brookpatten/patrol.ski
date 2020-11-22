@@ -10,15 +10,16 @@ using AutoMapper;
 
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Dtos;
+using System.Data.Common;
 
 namespace Amphibian.Patrol.Training.Api.Repositories
 {
     public class AssignmentRepository : IAssignmentRepository
     {
-        private readonly IDbConnection _connection;
+        private readonly DbConnection _connection;
         private readonly IMapper _mapper;
 
-        public AssignmentRepository(IDbConnection connection, IMapper mapper)
+        public AssignmentRepository(DbConnection connection, IMapper mapper)
         {
             _connection = connection;
             _mapper = mapper;

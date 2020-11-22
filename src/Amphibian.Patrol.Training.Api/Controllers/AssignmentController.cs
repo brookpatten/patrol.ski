@@ -11,6 +11,7 @@ using Amphibian.Patrol.Training.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Amphibian.Patrol.Training.Api.Extensions;
 using Amphibian.Patrol.Training.Api.Dtos;
+using Amphibian.Patrol.Training.Api.Infrastructure;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
@@ -103,6 +104,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [HttpPost]
         [Route("assignment/sign")]
         [Authorize]
+        [UnitOfWork]
         public async Task<IActionResult> CreateSignatures(CreateSignaturesDto dto)
         {
             if(await _assignmentService.AllowCreateSignatures(dto.AssignmentId,User.GetUserId(),dto.Signatures))

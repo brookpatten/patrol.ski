@@ -10,15 +10,16 @@ using Dommel;
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Dtos;
 using AutoMapper;
+using System.Data.Common;
 
 namespace Amphibian.Patrol.Training.Api.Repositories
 {
     public class PlanRepository: IPlanRepository
     {
-        private readonly IDbConnection _connection;
+        private readonly DbConnection _connection;
         private readonly IMapper _mapper;
 
-        public PlanRepository(IDbConnection connection, IMapper mapper)
+        public PlanRepository(DbConnection connection, IMapper mapper)
         {
             _connection = connection;
             _mapper = mapper;
@@ -26,7 +27,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task<IEnumerable<Plan>> GetPlansForPatrol(int patrolId)
         {
-            return await _connection.SelectAsync<Plan>(x => x.PatrolId == patrolId);
+            return await _connection.SelectAsync<Plan>(x => x.PatrolId == patrolId).ConfigureAwait(false);
         }
 
         public async Task InsertPlan(Plan plan)
@@ -51,12 +52,12 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     ,s.patrolid 
                 from sections s 
                 inner join plansections ps on 
-                    ps.sectionid=s.id and ps.planid=@planId", new { planId });
+                    ps.sectionid=s.id and ps.planid=@planId", new { planId }).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<SectionSkill>> GetSectionSkills(int sectionId)
         {
-            return await _connection.SelectAsync<SectionSkill>(x => x.SectionId == sectionId);
+            return await _connection.SelectAsync<SectionSkill>(x => x.SectionId == sectionId).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<SectionSkillDto>> GetSectionSkillsForPlan(int planId)
@@ -79,17 +80,17 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     var dto = _mapper.Map<SectionSkill, SectionSkillDto>(ss);
                     dto.Skill = s;
                     return dto;
-                },splitOn:"id",param:new { planId });
+                },splitOn:"id",param:new { planId }).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<Skill>> GetSkills(int patrolId)
         {
-            return await _connection.SelectAsync<Skill>(x => x.PatrolId == patrolId);
+            return await _connection.SelectAsync<Skill>(x => x.PatrolId == patrolId).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<SectionLevel>> GetSectionLevels(int sectionId)
         {
-            return await _connection.SelectAsync<SectionLevel>(x => x.SectionId == sectionId);
+            return await _connection.SelectAsync<SectionLevel>(x => x.SectionId == sectionId).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<SectionLevelDto>> GetSectionLevelsForPlan(int planId)
@@ -112,12 +113,37 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     var dto = _mapper.Map<SectionLevel, SectionLevelDto>(sl);
                     dto.Level = l;
                     return dto;
-                },splitOn:"id",param:new { planId });
+                },splitOn:"id",param:new { planId }).ConfigureAwait(false);
         }
 
         public async Task<IEnumerable<Level>> GetLevels(int patrolId)
         {
-            return await _connection.SelectAsync<Level>(x => x.PatrolId == patrolId);
+            return await _connection.SelectAsync<Level>(x => x.PatrolId == patrolId).ConfigureAwait(false);
+        }
+
+        public async Task InsertSection(Section section)
+        {
+            section.Id = (int)await _connection.InsertAsync(section).ConfigureAwait(false);
+        }
+        public async Task InsertPlanSection(PlanSection planSection)
+        {
+            planSection.Id = (int)await _connection.InsertAsync(planSection).ConfigureAwait(false);
+        }
+        public async Task InsertSectionLevel(SectionLevel sectionLevel)
+        {
+            sectionLevel.Id = (int)await _connection.InsertAsync(sectionLevel).ConfigureAwait(false);
+        }
+        public async Task InsertSectionSkill(SectionSkill sectionSkill)
+        {
+            sectionSkill.Id = (int)await _connection.InsertAsync(sectionSkill).ConfigureAwait(false);
+        }
+        public async Task InsertLevel(Level level)
+        {
+            level.Id = (int)await _connection.InsertAsync(level).ConfigureAwait(false);
+        }
+        public async Task InsertSkill(Skill skill)
+        {
+            skill.Id = (int)await _connection.InsertAsync(skill).ConfigureAwait(false);
         }
     }
 }

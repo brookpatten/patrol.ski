@@ -10,14 +10,15 @@ using Dommel;
 
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Dtos;
+using System.Data.Common;
 
 namespace Amphibian.Patrol.Training.Api.Repositories
 {
     public class GroupRepository : IGroupRepository
     {
-        private readonly IDbConnection _connection;
+        private readonly DbConnection _connection;
         
-        public GroupRepository(IDbConnection connection)
+        public GroupRepository(DbConnection connection)
         {
             _connection = connection;
         }

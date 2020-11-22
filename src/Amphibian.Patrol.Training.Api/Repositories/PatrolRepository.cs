@@ -8,14 +8,15 @@ using Dapper;
 using Dommel;
 
 using Amphibian.Patrol.Training.Api.Models;
+using System.Data.Common;
 
 namespace Amphibian.Patrol.Training.Api.Repositories
 {
     public class PatrolRepository : IPatrolRepository
     {
-        private readonly IDbConnection _connection;
+        private readonly DbConnection _connection;
 
-        public PatrolRepository(IDbConnection connection)
+        public PatrolRepository(DbConnection connection)
         {
             _connection = connection;
         }
