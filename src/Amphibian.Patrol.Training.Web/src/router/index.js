@@ -160,6 +160,14 @@ function configRoutes () {
           }
         },
         {
+          path: 'test',
+          name: 'Test',
+          component: Test,
+          meta: { 
+            requiresAuth: false
+          }
+        },
+        {
           path: 'administration',
           redirect: '/administration/Administration',
           name: 'Administration',
