@@ -479,7 +479,7 @@ namespace Amphibian.Patrol.Training.Api.Services
 
             
 
-            var patrol = await CreateNewPatrol(user.Id, "Mt. Landfill Ski Patrol");
+            var patrol = await CreateNewPatrol(user.Id, "Mt. Rumpke Ski Patrol");
 
             await CreateDemoInitialSetup(patrol.Id);
             return new Tuple<User, Models.Patrol>(user, patrol);

@@ -13,7 +13,7 @@ const state = {
   status: '',
   token: localStorage.getItem('token') || '',
   user: {},
-  patrols:  [],//localStorage.getItem('patrols')!=null ? (JSON.parse(localStorage.getItem('patrols'))) :
+  patrols:  localStorage.getItem('patrols')!=null ? (JSON.parse(localStorage.getItem('patrols')).patrols) :[],
   selectedPatrolId: localStorage.getItem('selectedPatrolId') !=null ? parseInt(localStorage.getItem('selectedPatrolId')) : 0,
 }
 
@@ -63,7 +63,7 @@ export default new Vuex.Store({
   actions: {
     update_patrols({commit},patrols){
       return new Promise((resolve, reject) => {
-        localStorage.setItem('patrols', patrols.patrols);
+        localStorage.setItem('patrols', {patrols:patrols.patrol});
         commit('update_patrols', patrols);
         resolve();
       });
@@ -77,7 +77,7 @@ export default new Vuex.Store({
 
           localStorage.setItem('token', state.token);
           axios.defaults.headers.common['Authorization'] = 'Bearer ' + state.token;
-          localStorage.setItem('patrols', JSON.stringify(state.patrols));
+          localStorage.setItem('patrols', JSON.stringify({patrols:state.patrols}));
           if(state.patrols && state.patrols.length>0){
             state.selectedPatrolId = state.patrols[0].id;
             localStorage.setItem('selectedPatrolId', state.selectedPatrolId);
@@ -116,7 +116,7 @@ export default new Vuex.Store({
           
           localStorage.setItem('token', state.token);
           axios.defaults.headers.common['Authorization'] = 'Bearer ' + state.token;
-          localStorage.setItem('patrols', JSON.stringify(state.patrols));
+          localStorage.setItem('patrols', JSON.stringify({patrols:state.patrols}));
           if(state.patrols && state.patrols.length>0){
             state.selectedPatrolId = state.patrols[0].id;
             localStorage.setItem('selectedPatrolId', state.selectedPatrolId);

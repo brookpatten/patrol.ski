@@ -12,7 +12,7 @@
 
     <!--<CRenderFunction flat :content-to-render="$options.nav"/>-->
     <CSidebarNav>
-      <CSidebarNavItem name='Home' to='/home' icon='cil-home'/>
+      <CSidebarNavItem name='Dashboard' to='/home' icon='cil-speedometer'/>
       <!--<CSidebarNavItem name='Plan'  to='/plan'  icon='cil-grid'/>
       <CSidebarNavItem name='Schedule' to='/schedule' icon='cil-calendar'/>-->
       <CSidebarNavTitle v-if="showAdministration">

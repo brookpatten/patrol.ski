@@ -520,9 +520,9 @@ export default {
             }
 
             //index levels
-              for(var i=0;i<this.levels.length;i++){
-                this.levels[i].index=i;
-              }
+            for(var i=0;i<this.levels.length;i++){
+              this.levels[i].index=i;
+            }
         }
   },
   mounted: function(){
