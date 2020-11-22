@@ -15,3 +15,4 @@ WORKDIR /app
 COPY  --from=api-build  /app/Amphibian.Patrol.Training.Api/bin/Debug/netcoreapp3.1/linux-x64/publish/ .
 COPY  --from=frontend-build  /source/dist ./static
 ENTRYPOINT ["/app/Amphibian.Patrol.Training.Api"]
+LABEL org.opencontainers.image.source https://github.com/brookpatten/patrol.training

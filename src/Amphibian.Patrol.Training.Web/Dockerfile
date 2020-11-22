@@ -9,3 +9,4 @@ RUN npm run build
 FROM nginx
 WORKDIR /app
 COPY --from=build /source/dist /usr/share/nginx/html
+LABEL org.opencontainers.image.source https://github.com/brookpatten/patrol.training
