@@ -18,6 +18,7 @@ namespace Amphibian.Patrol.Training.Tests.Services
     {
         private PlanService _planService;
         private Mock<IPlanRepository> _planRepositoryMock;
+        private Mock<IGroupRepository> _groupRepositoryMock;
         private IMapper _mapper;
         private Mock<ILogger<PlanService>> _loggerMock;
 
@@ -27,7 +28,8 @@ namespace Amphibian.Patrol.Training.Tests.Services
             _planRepositoryMock = new Mock<IPlanRepository>();
             _mapper = DtoMappings.GetMapperConfiguration().CreateMapper();
             _loggerMock = new Mock<ILogger<PlanService>>();
-            _planService = new PlanService(_planRepositoryMock.Object, _loggerMock.Object, _mapper);
+            _groupRepositoryMock = new Mock<IGroupRepository>();
+            _planService = new PlanService(_planRepositoryMock.Object, _loggerMock.Object, _mapper,_groupRepositoryMock.Object);
         }
 
         [Test]
@@ -47,8 +49,15 @@ namespace Amphibian.Patrol.Training.Tests.Services
                 .Returns(Task.FromResult((new List<SectionSkillDto>() { new SectionSkillDto() { Id = 1, SectionId = 1, Order = 1 } }).AsEnumerable()))
                 .Verifiable();
 
+            var user = new User()
+            {
+                Id = 1,
+                Email = "Email",
+                FirstName = "FirstName",
+                LastName = "LastName"
+            };
 
-            var plan = await _planService.GetPlan(planId);
+            var plan = await _planService.GetPlan(planId,user.Id);
 
             Assert.AreEqual(1, plan.Sections.Count());
             Assert.AreEqual(1, plan.Sections.First().Levels.Count());
