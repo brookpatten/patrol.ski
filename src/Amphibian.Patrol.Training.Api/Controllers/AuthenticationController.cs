@@ -11,6 +11,7 @@ using Amphibian.Patrol.Training.Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using Amphibian.Patrol.Training.Api.Extensions;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
@@ -20,14 +21,15 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         private readonly ILogger<AuthenticationController> _logger;
         private readonly IAuthenticationService _authenticationService;
         private readonly IUserRepository _userRepository;
-        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IPatrolRepository _patrolRepository;
 
-        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, IUserRepository userRepository, IHttpContextAccessor httpContextAccessor)
+        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, 
+            IUserRepository userRepository, IPatrolRepository patrolRepository)
         {
             _logger = logger;
             _authenticationService = authenticationService;
             _userRepository = userRepository;
-            _httpContextAccessor = httpContextAccessor;
+            _patrolRepository = patrolRepository;
         }
 
         public class AuthenticationRequest
@@ -108,9 +110,19 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [Authorize]
         public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
         {
-            var email = _httpContextAccessor.HttpContext.User.FindFirst(ClaimTypes.Email).Value;
+            var email = User.FindFirst(ClaimTypes.Email).Value;
             await _authenticationService.ChangePassword(email, request.Password);
             return Ok();
+        }
+
+        [HttpGet]
+        [Route("user/patrols")]
+        [Authorize]
+        public async Task<IActionResult> GetPatrols()
+        {
+            var userId = User.GetUserId();
+            var patrols = await _patrolRepository.GetPatrolsForUser(userId);
+            return Ok(patrols);
         }
 
     }

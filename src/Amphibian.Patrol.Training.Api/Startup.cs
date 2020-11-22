@@ -57,6 +57,7 @@ namespace Amphibian.Patrol.Training.Api
             {
                 return new SqlConnection(serviceConfiguration.Database.ConnectionString);
             });
+            services.AddTransient<ClaimsPrincipal>(provider => provider.GetService<IHttpContextAccessor>().HttpContext.User);
             services.AddScoped<IUserRepository,UserRepository>();
             services.AddScoped<ITokenRepository, TokenRepository>();
             services.AddScoped<IPatrolRepository, PatrolRepository>();
@@ -101,7 +102,7 @@ namespace Amphibian.Patrol.Training.Api
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "API");
             });
 
             app.UseRouting();

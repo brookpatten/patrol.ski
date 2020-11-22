@@ -14,6 +14,7 @@ using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Services;
 using Amphibian.Patrol.Training.Api.Repositories;
 using IAuthenticationService = Amphibian.Patrol.Training.Api.Services.IAuthenticationService;
+using Microsoft.AspNetCore.Http;
 
 namespace Amphibian.Patrol.Training.Api.Infrastructure
 {
@@ -110,8 +111,9 @@ namespace Amphibian.Patrol.Training.Api.Infrastructure
             var claims = new[] {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
+                new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}"),
             };
+
             var identity = new ClaimsIdentity(claims, Scheme.Name);
             var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
