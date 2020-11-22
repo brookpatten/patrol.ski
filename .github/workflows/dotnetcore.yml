@@ -28,6 +28,7 @@ jobs:
       with: 
         name: Nuget Package
         path: src/Schedule.Api/bin/Debug/
-    - name: Upload package
-      run: dotnet nuget push src/Schedule.Api/bin/Debug/TrainingOrganizer.Api.0.0.1.nupkg --source https://nuget.pkg.github.com/brookpatten/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
-      
+    - name: Publish NuGet
+      uses: rohith/publish-nuget@v2.2.0
+      with:
+        PROJECT_FILE_PATH: src/Schedule.Api/Schedule.Api.csproj
