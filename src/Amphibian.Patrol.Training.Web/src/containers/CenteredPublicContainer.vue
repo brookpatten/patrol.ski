@@ -1,24 +1,11 @@
 <template>
-  <div class="c-app c-dark-theme" :class="{ 'c-dark-theme': $store.state.darkMode }">
+  <div class="c-app c-dark-theme">
     <div class="fullscreen-bg">
       <video autoplay muted loop class="fullscreen-bg__video">
           <source src="/snowmaking.mp4" type="video/mp4">
       </video>
     </div>
-    <TheSidebar/>
-    <CWrapper>
-      <TheHeader/>
-      <div class="c-body">
-        <main class="c-main">
-          <CContainer fluid>
-            <transition name="fade" mode="out-in">
-              <router-view :key="$route.path"></router-view>
-            </transition>
-          </CContainer>
-        </main>
-      </div>
-      <TheFooter/>
-    </CWrapper>
+    <router-view></router-view>
   </div>
 </template>
 
@@ -62,24 +49,9 @@
 
 <script>
 
-import TheHeader from './TheHeader'
-import TheFooter from './TheFooter'
-import TheAside from './TheAside'
-
 export default {
-  name: 'PublicContainer',
+  name: 'CenteredPublicContainer',
   components: {
-    TheHeader,TheFooter,TheAside
-  },
-  computed: {
-    user: function (){
-        return this.$store.getters.user.id ? this.$store.getters.user : null;
-    }
-  },
-  methods: {
-    hasPermission: function(permission){
-      return this.selectedPatrol!=null && this.selectedPatrol.permissions!=null && _.indexOf(this.selectedPatrol.permissions,permission) >= 0;
-    }
   }
 }
 </script>

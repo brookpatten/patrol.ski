@@ -5,8 +5,9 @@
       <span class="ml-1">&copy; {{new Date().getFullYear()}} Amphibian Software</span>
     </div>
     <div class="ml-auto">
+      <CButton color="link" :to="{name:'Help'}">Need Help?</CButton>
       <span class="mr-1">Visit this App on </span>
-      <a href="https://github.com/brookpatten/patrol.ski" target="_blank">Github</a>
+      <a href="https://github.com/brookpatten/patrol.ski" target="_blank">GitHub</a>
     </div>
   </CFooter>
 </template>

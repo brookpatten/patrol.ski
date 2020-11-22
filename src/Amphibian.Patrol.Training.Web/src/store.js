@@ -147,6 +147,7 @@ export default new Vuex.Store({
     isLoggedIn: state => !!state.token,
     authStatus: state => state.status,
     selectedPatrol: state => _.find(state.patrols,{id:state.selectedPatrolId}),
-    patrols: state => state.patrols
+    patrols: state => state.patrols,
+    user: state=> state.user
   }
 })

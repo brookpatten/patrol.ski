@@ -5,6 +5,7 @@ import store from '../store.js'
 // Containers
 const TheContainer = () => import('@/containers/TheContainer')
 const PublicContainer = () => import('@/containers/PublicContainer')
+const CenteredPublicContainer = () => import('@/containers/CenteredPublicContainer')
 
 //error
 const Page404 = () => import('@/views/pages/Page404')
@@ -14,8 +15,10 @@ const Page500 = () => import('@/views/pages/Page500')
 const Login = () => import('@/views/pages/Login')
 const Register = () => import('@/views/pages/Register')
 
-//landing
+//public pages
 const Landing = () => import('@/views/pages/Landing')
+const Help = () => import('@/views/pages/Help')
+const TestDrive = () => import('@/views/pages/TestDrive')
 
 // App
 const Plan = () => import('@/views/schedule/Plan')
@@ -225,15 +228,10 @@ function configRoutes () {
       ]
     },
     {
-      path: '/',
-      name: 'root',
-      component: PublicContainer,
+      path: '/login',
+      name: 'Login',
+      component: CenteredPublicContainer,
       children: [
-        {
-          path: 'landing',
-          name: 'Landing',
-          component: Landing
-        },
         {
           path: '',
           name: 'Login',
@@ -243,7 +241,14 @@ function configRoutes () {
           path: 'register',
           name: 'Register',
           component: Register
-        },
+        }
+      ]
+    },
+    {
+      path: '/error',
+      name: 'Error',
+      component: CenteredPublicContainer,
+      children: [
         {
           path: '404',
           name: 'Page404',
@@ -254,6 +259,28 @@ function configRoutes () {
           name: 'Page500',
           component: Page500
         }
+      ]
+    },
+    {
+      path: '/',
+      name: '',
+      component: PublicContainer,
+      children: [
+        {
+          path: '',
+          name: 'Landing',
+          component: Landing
+        },
+        {
+          path: 'help',
+          name: 'Help',
+          component: Help
+        },
+        {
+          path: 'test-drive',
+          name: 'TestDrive',
+          component: TestDrive
+        },
       ]
     }
   ]
