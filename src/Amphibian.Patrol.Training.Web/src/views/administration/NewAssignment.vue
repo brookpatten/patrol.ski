@@ -23,7 +23,7 @@
 
             <label>User(s)</label>
             <div v-for="user in users" :key="user.id">
-                <input type="checkbox" :value="user.id" v-model="user.selected"/> <label>{{user.lastName}} {{user.firstName}} ({{user.email}})</label>
+                <input type="checkbox" :value="user.id" v-model="user.selected"/> <label>{{user.lastName}} {{user.firstName}}</label>
             </div>
 
             

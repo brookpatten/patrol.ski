@@ -52,7 +52,6 @@ export default {
     return {
       people: [],
       peopleFields:[
-          {key:'email',label:'Email'},
           {key:'lastName',label:'Last'},
           {key:'firstName',label:'First'},
           {key:'role', label:'Role'},
