@@ -40,17 +40,25 @@ namespace Schedule.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseHttpsRedirection();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                app.UseStaticFiles(new StaticFileOptions()
+                {
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "../Schedule.Web/dist")),
+                    RequestPath = ""
+                });
             }
-
-            app.UseHttpsRedirection();
-            app.UseStaticFiles(new StaticFileOptions()
+            else
             {
-                FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "static")),
-                RequestPath = ""
-            });
+                app.UseStaticFiles(new StaticFileOptions()
+                {
+                    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "static")),
+                    RequestPath = ""
+                });
+            }
 
             app.UseRouting();
 
