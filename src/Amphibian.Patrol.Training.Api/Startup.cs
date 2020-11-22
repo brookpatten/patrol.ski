@@ -59,6 +59,8 @@ namespace Amphibian.Patrol.Training.Api
             });
             services.AddScoped<IUserRepository,UserRepository>();
             services.AddScoped<ITokenRepository, TokenRepository>();
+            services.AddScoped<IPatrolRepository, PatrolRepository>();
+            services.AddScoped<IPlanRepository, PlanRepository>();
             services.AddScoped<Amphibian.Patrol.Training.Api.Services.IAuthenticationService, Amphibian.Patrol.Training.Api.Services.AuthenticationService>();
             services.AddScoped<Amphibian.Patrol.Training.Api.Services.IPasswordService, Amphibian.Patrol.Training.Api.Services.PasswordService>(sp=>new Amphibian.Patrol.Training.Api.Services.PasswordService(5,32));
 
@@ -107,10 +109,10 @@ namespace Amphibian.Patrol.Training.Api
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseCors(x => x
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
+            //app.UseCors(x => x
+            //    .AllowAnyOrigin()
+            //    .AllowAnyMethod()
+            //    .AllowAnyHeader());
 
             app.UseEndpoints(endpoints =>
             {

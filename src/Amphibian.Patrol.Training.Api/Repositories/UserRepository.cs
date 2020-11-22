@@ -1,5 +1,4 @@
-﻿using Amphibian.Patrol.Training.Api.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,9 +6,9 @@ using System.Threading.Tasks;
 using System.Data;
 using Dapper;
 using Dapper.Contrib;
-
 using Dapper.Contrib.Extensions;
-using System.Runtime.InteropServices.WindowsRuntime;
+
+using Amphibian.Patrol.Training.Api.Models;
 
 namespace Amphibian.Patrol.Training.Api.Repositories
 {
@@ -24,17 +23,17 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task InsertUser(User user)
         {
-            user.Id = await _connection.InsertAsync(user);
+            user.Id = await _connection.InsertAsync(user).ConfigureAwait(false);
         }
 
         public async Task UpdateUser(User user)
         {
-            await _connection.UpdateAsync(user);
+            await _connection.UpdateAsync(user).ConfigureAwait(false);
         }
 
         public async Task<User> GetUser(int id)
         {
-            var user = await _connection.GetAsync<User>(id);
+            var user = await _connection.GetAsync<User>(id).ConfigureAwait(false);
             return user;
         }
 

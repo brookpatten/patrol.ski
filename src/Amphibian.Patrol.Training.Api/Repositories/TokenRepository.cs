@@ -24,17 +24,17 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task InsertToken(Token token)
         {
-            token.Id = await _connection.InsertAsync(token);
+            token.Id = await _connection.InsertAsync(token).ConfigureAwait(false);
         }
 
         public async Task UpdateToken(Token token)
         {
-            await _connection.UpdateAsync(token);
+            await _connection.UpdateAsync(token).ConfigureAwait(false);
         }
 
         public async Task<Token> GetToken(int id)
         {
-            var token = await _connection.GetAsync<Token>(id);
+            var token = await _connection.GetAsync<Token>(id).ConfigureAwait(false);
             return token;
         }
 
@@ -46,7 +46,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task DeleteToken(Token token)
         {
-            await _connection.DeleteAsync(token);
+            await _connection.DeleteAsync(token).ConfigureAwait(false);
         }
     }
 }
