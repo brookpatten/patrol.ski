@@ -41,10 +41,10 @@ namespace Amphibian.Patrol.Training.Tests.Services
                 .Returns(Task.FromResult((new List<Section>() { new Section() {Id=1,PatrolId=1,Name="Test Section" } }).AsEnumerable()))
                 .Verifiable();
             _planRepositoryMock.Setup(x => x.GetSectionLevelsForPlan(planId))
-                .Returns(Task.FromResult((new List<SectionLevel>() { new SectionLevel() { Id = 1, LevelId=1, SectionId=1,Order=1 } }).AsEnumerable()))
+                .Returns(Task.FromResult((new List<SectionLevelDto>() { new SectionLevelDto() { Id = 1, SectionId=1,Order=1 } }).AsEnumerable()))
                 .Verifiable();
             _planRepositoryMock.Setup(x => x.GetSectionSkillsForPlan(planId))
-                .Returns(Task.FromResult((new List<SectionSkill>() { new SectionSkill() { Id = 1, SkillId = 1, SectionId = 1, Order = 1 } }).AsEnumerable()))
+                .Returns(Task.FromResult((new List<SectionSkillDto>() { new SectionSkillDto() { Id = 1, SectionId = 1, Order = 1 } }).AsEnumerable()))
                 .Verifiable();
 
 

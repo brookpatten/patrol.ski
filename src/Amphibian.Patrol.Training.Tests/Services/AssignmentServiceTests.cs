@@ -42,8 +42,8 @@ namespace Amphibian.Patrol.Training.Tests.Services
             _assignmentRepositoryMock.Setup(x => x.GetAssignment(assignmentId))
                 .Returns(Task.FromResult(new Assignment() { Id=1,PlanId=1,UserId=1}))
                 .Verifiable();
-            _assignmentRepositoryMock.Setup(x => x.GetSignaturesForAssignment(assignmentId))
-                .Returns(Task.FromResult((new List<Signature>() { new Signature() { Id = 1,AssignmentId=1,SectionLevelId=1,SectionSkillId=1,SignedByUserId=1 } }).AsEnumerable()))
+            _assignmentRepositoryMock.Setup(x => x.GetSignaturesWithUsersForAssignment(assignmentId))
+                .Returns(Task.FromResult((new List<SignatureDto>() { new SignatureDto() { Id = 1,SectionLevelId=1,SectionSkillId=1 } }).AsEnumerable()))
                 .Verifiable();
 
             var assignment = await _assignmentService.GetAssignment(assignmentId);

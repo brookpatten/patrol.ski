@@ -35,8 +35,8 @@ namespace Amphibian.Patrol.Training.Api.Services
 
             foreach (var section in planDto.Sections)
             {
-                section.Skills = _mapper.Map<IEnumerable<SectionSkill>, IEnumerable<SectionSkillDto>>(sectionSkills.Where(x => x.SectionId == section.Id));
-                section.Levels = _mapper.Map<IEnumerable<SectionLevel>, IEnumerable<SectionLevelDto>>(sectionLevels.Where(x => x.SectionId == section.Id));
+                section.Skills = sectionSkills.Where(x => x.SectionId == section.Id);
+                section.Levels = sectionLevels.Where(x => x.SectionId == section.Id);
             }
 
             return planDto;

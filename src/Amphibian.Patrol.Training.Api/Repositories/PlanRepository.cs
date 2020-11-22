@@ -9,16 +9,20 @@ using Dapper.Contrib;
 using Dapper.Contrib.Extensions;
 
 using Amphibian.Patrol.Training.Api.Models;
+using Amphibian.Patrol.Training.Api.Dtos;
+using AutoMapper;
 
 namespace Amphibian.Patrol.Training.Api.Repositories
 {
     public class PlanRepository: IPlanRepository
     {
         private readonly IDbConnection _connection;
+        private readonly IMapper _mapper;
 
-        public PlanRepository(IDbConnection connection)
+        public PlanRepository(IDbConnection connection, IMapper mapper)
         {
             _connection = connection;
+            _mapper = mapper;
         }
 
         public Task<IEnumerable<Plan>> GetPlansForPatrol(int patrolId)
@@ -63,17 +67,27 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                 where sectionid=@sectionId",new { sectionId });
         }
 
-        public async Task<IEnumerable<SectionSkill>> GetSectionSkillsForPlan(int planId)
+        public async Task<IEnumerable<SectionSkillDto>> GetSectionSkillsForPlan(int planId)
         {
-            return await _connection.QueryAsync<SectionSkill>(
+            return await _connection.QueryAsync<SectionSkill,Skill,SectionSkillDto>(
                 @"select 
                     ss.id
                     ,ss.sectionid
                     ,ss.skillid
-                    ,ss.[order] 
+                    ,ss.[order]
+                    ,sks.id
+                    ,sks.patrolid
+                    ,sks.name
+                    ,sks.description
                 from sectionskills ss
-                inner join sections s on s.id=ss.sectionid 
-                inner join plansections ps on ps.sectionid=s.id and ps.planid=@planId", new { planId });
+                inner join sections s on s.id=ss.sectionid
+                inner join skills sks on sks.id=ss.skillid
+                inner join plansections ps on ps.sectionid=s.id and ps.planid=@planId",(ss,s)=>
+                {
+                    var dto = _mapper.Map<SectionSkill, SectionSkillDto>(ss);
+                    dto.Skill = s;
+                    return dto;
+                },splitOn:"id",param:new { planId });
         }
 
         public async Task<IEnumerable<Skill>> GetSkills(int patrolId)
@@ -100,17 +114,27 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                 where sectionid=@sectionId", new { sectionId });
         }
 
-        public async Task<IEnumerable<SectionLevel>> GetSectionLevelsForPlan(int planId)
+        public async Task<IEnumerable<SectionLevelDto>> GetSectionLevelsForPlan(int planId)
         {
-            return await _connection.QueryAsync<SectionLevel>(
+            return await _connection.QueryAsync<SectionLevel,Level,SectionLevelDto>(
                 @"select 
                     ss.id
                     ,ss.sectionid
                     ,ss.levelid
-                    ,ss.[order] 
+                    ,ss.[order]
+                    ,l.id
+                    ,l.patrolid
+                    ,l.name
+                    ,l.description
                 from sectionlevels ss
                 inner join sections s on s.id=ss.sectionid 
-                inner join plansections ps on ps.sectionid=s.id and ps.planid=@planId", new { planId });
+                inner join levels l on l.id=ss.levelid
+                inner join plansections ps on ps.sectionid=s.id and ps.planid=@planId",(sl,l)=>
+                {
+                    var dto = _mapper.Map<SectionLevel, SectionLevelDto>(sl);
+                    dto.Level = l;
+                    return dto;
+                },splitOn:"id",param:new { planId });
         }
 
         public async Task<IEnumerable<Level>> GetLevels(int patrolId)

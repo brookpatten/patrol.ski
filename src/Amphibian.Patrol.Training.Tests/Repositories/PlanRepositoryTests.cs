@@ -8,6 +8,8 @@ using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Repositories;
 using Dapper.Contrib.Extensions;
 using System.Linq;
+using AutoMapper;
+using Amphibian.Patrol.Training.Api.Mappings;
 
 namespace Amphibian.Patrol.Training.Tests.Repositories
 {
@@ -19,11 +21,13 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         private User _user;
         private Amphibian.Patrol.Training.Api.Models.Patrol _patrol;
         private Plan _plan;
+        private IMapper _mapper;
 
         [SetUp]
         public void SetUp()
         {
-            _planRepository = new PlanRepository(_connection);
+            _mapper = DtoMappings.GetMapperConfiguration().CreateMapper();
+            _planRepository = new PlanRepository(_connection,_mapper);
             _patrolRepository = new PatrolRepository(_connection);
             _userRepository = new UserRepository(_connection);
 

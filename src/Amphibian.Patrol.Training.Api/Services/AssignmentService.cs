@@ -26,10 +26,10 @@ namespace Amphibian.Patrol.Training.Api.Services
         public async Task<AssignmentDto> GetAssignment(int id)
         {
             var assignment = await _assignmentRepository.GetAssignment(id);
-            var signatures = await _assignmentRepository.GetSignaturesForAssignment(id);
+            var signatures = await _assignmentRepository.GetSignaturesWithUsersForAssignment(id);
 
             var assignmentDto = _mapper.Map<Assignment, AssignmentDto>(assignment);
-            assignmentDto.Signatures = _mapper.Map<IEnumerable<Signature>, IEnumerable<SignatureDto>>(signatures);
+            assignmentDto.Signatures = signatures;
 
             return assignmentDto;
         }
