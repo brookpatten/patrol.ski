@@ -27,12 +27,12 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task<IEnumerable<User>> GetUsersInGroup(int groupId)
         {
-
+            return await _connection.QueryAsync<User>(@"");
         }
 
         public async Task<IEnumerable<Group>> GetGroupsForUser(int patrolId, int userId)
         {
-            return _connection.QueryAsync<Group>(@"select distinct g.* from groupusers gu inner join groups g on g.id=gu.groupid and gu.userid=@userId where g.patrolid=@patrolId", new { patrolId, userId });
+            return await _connection.QueryAsync<Group>(@"select distinct g.* from groupusers gu inner join groups g on g.id=gu.groupid and gu.userid=@userId where g.patrolid=@patrolId", new { patrolId, userId });
         }
     }
 }
