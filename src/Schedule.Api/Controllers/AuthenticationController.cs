@@ -9,7 +9,6 @@ using Dapper;
 using Dapper.Contrib.Extensions;
 
 using Microsoft.Data.SqlClient;
-using Microsoft.Data.Sqlite;
 using Microsoft.AspNetCore.Authorization;
 using Schedule.Api.Repositories;
 using Schedule.Api.Models;

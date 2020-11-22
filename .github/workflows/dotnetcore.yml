@@ -20,7 +20,7 @@ jobs:
     - name: Build with dotnet
       run: dotnet build src/schedule.sln
     - name: Run Tests
-      run: dotnet test src/schedule.sln
+      run: dotnet test src/schedule.sln --filter TestCategory!=Persistence
     - name: Setup Node.js for use with actions
       uses: actions/setup-node@v1.1.0
       # with:

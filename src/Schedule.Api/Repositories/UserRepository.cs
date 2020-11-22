@@ -8,7 +8,6 @@ using System.Data;
 using Dapper;
 using Dapper.Contrib;
 
-using Schedule.Api.Models;
 using Dapper.Contrib.Extensions;
 using System.Runtime.InteropServices.WindowsRuntime;
 
