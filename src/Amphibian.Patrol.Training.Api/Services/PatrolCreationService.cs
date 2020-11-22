@@ -481,9 +481,6 @@ namespace Amphibian.Patrol.Training.Api.Services
 
             var patrol = await CreateNewPatrol(user.Id, "Mt. Landfill Ski Patrol");
 
-            var patrolUser = new PatrolUser() { PatrolId = patrol.Id, UserId = user.Id, Role = Role.Administrator };
-            await _patrolRepository.InsertPatrolUser(patrolUser);
-
             await CreateDemoInitialSetup(patrol.Id);
             return new Tuple<User, Models.Patrol>(user, patrol);
         }

@@ -1,5 +1,5 @@
 <template>
-  <div class="c-app">
+  <div class="c-app c-dark-theme">
     <div class="fullscreen-bg">
       <video autoplay muted loop class="fullscreen-bg__video">
           <source src="/snowmaking.mp4" type="video/mp4">
@@ -17,11 +17,11 @@
     .fullscreen-bg {
         background: url('/snowmaking.png');
         background-size: cover;
-        -webkit-filter: blur(5px);
+        /*-webkit-filter: blur(5px);
         -moz-filter: blur(5px);
         -o-filter: blur(5px);
         -ms-filter: blur(5px);
-        filter: blur(5px);
+        filter: blur(5px);*/
     }
   }
   

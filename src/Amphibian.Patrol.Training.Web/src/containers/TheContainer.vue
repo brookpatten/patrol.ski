@@ -31,6 +31,14 @@ export default {
     TheHeader,
     TheFooter,
     TheAside
+  },
+  computed: {
+    selectedPatrolId: function () {
+      return this.$store.state.selectedPatrolId;
+    },
+    selectedPatrol: function (){
+        return this.$store.getters.selectedPatrol;
+    }
   }
 }
 </script>
