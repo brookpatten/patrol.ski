@@ -31,11 +31,11 @@ namespace Amphibian.Patrol.Training.Configuration
         public static (IConfiguration,PatrolTrainingApiConfiguration) LoadFromJsonConfig(IConfigurationBuilder builder=null, params string[] basePaths)
         {
             var checkPaths = basePaths.ToList();
-            if (!checkPaths.Any(x=>x==""))
-            {
-                Console.WriteLine("Adding Default Path");
-                checkPaths.Add("");
-            }
+            //if (!checkPaths.Any(x=>x==""))
+            //{
+            //    Console.WriteLine("Adding Default Path");
+            //    checkPaths.Add("");
+            //}
             var assemblyDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             if (!checkPaths.Any(x=>x== assemblyDirectory))
             {
