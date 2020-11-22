@@ -58,7 +58,7 @@ jobs:
     - name: Copy .Net App Config to Deployment Folder
       run: cp src/Schedule.Api/*.json deployment
     - name: Copy Node Frontend to Deployment Folder
-      run: cp src/Schedule.Web/dist/* deployment -r
+      run: cp src/Schedule.Web/dist/* deployment/static -r
     - name: Login to Azure
       uses: Azure/login@v1
       with:
