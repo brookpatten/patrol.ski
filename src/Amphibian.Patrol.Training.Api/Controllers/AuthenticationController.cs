@@ -14,6 +14,7 @@ using System.Security.Claims;
 using Amphibian.Patrol.Training.Api.Extensions;
 using Amphibian.Patrol.Training.Api.Validations;
 using FluentValidation.AspNetCore;
+using FluentValidation;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
@@ -38,9 +39,9 @@ namespace Amphibian.Patrol.Training.Api.Controllers
 
         public class AuthenticationRequest
         {
-            public string Email { get; set; }
-            public string Password { get; set; }
-            public Guid? Token { get; set; }
+            public string email { get; set; }
+            public string password { get; set; }
+            public Guid? token { get; set; }
         }
         [HttpPost]
         [Route("user/authenticate")]
@@ -48,13 +49,13 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         public async Task<IActionResult> Authenticate(AuthenticationRequest request)
         {
             User user;
-            if(request.Token.HasValue)
+            if(request.token.HasValue)
             {
-                user = await _authenticationService.AuthenticateUserWithToken(request.Token.Value);
+                user = await _authenticationService.AuthenticateUserWithToken(request.token.Value);
             }
             else
             {
-                user = await _authenticationService.AuthenticateUserWithPassword(request.Email, request.Password);
+                user = await _authenticationService.AuthenticateUserWithPassword(request.email, request.password);
             }
 
             if(user!=null)
@@ -76,17 +77,17 @@ namespace Amphibian.Patrol.Training.Api.Controllers
 
         public class RegistrationRequest
         {
-            public string Email { get; set; }
-            public string First { get; set; }
-            public string Last { get; set; }
-            public string Password { get; set; }
+            public string email { get; set; }
+            public string firstname { get; set; }
+            public string lastname { get; set; }
+            public string password { get; set; }
         }
         public class RegistrationResult
         {
-            public string Email { get; set; }
-            public string First { get; set; }
-            public string Last { get; set; }
-            public Guid Token { get; set; }
+            public string email { get; set; }
+            public string firstname { get; set; }
+            public string lastname { get; set; }
+            public Guid token { get; set; }
         }
         [HttpPost]
         [Route("user/register")]
@@ -94,9 +95,9 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         public async Task<IActionResult> Register(RegistrationRequest registration)
         {
             //it is assumed if we got to this point the validation completed and is valid
-            var user = await _userRepository.GetUser(registration.Email);
-            
-            user = await _authenticationService.RegisterUser(registration.Email, registration.First, registration.Last, registration.Password);
+            var user = await _userRepository.GetUser(registration.email);
+
+            user = await _authenticationService.RegisterUser(registration.email, registration.firstname, registration.lastname, registration.password);
             var token = await _authenticationService.CreateNewTokenForUser(user);
             var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
 

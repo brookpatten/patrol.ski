@@ -16,10 +16,10 @@ namespace Amphibian.Patrol.Training.Api.Validations
     {
         public RegistrationValidator(IUserRepository userRepository)
         {
-            RuleFor(x => x.First).NotEmpty().MaximumLength(256);
-            RuleFor(x => x.Last).NotEmpty().MaximumLength(256);
-            RuleFor(x => x.Password).NotEmpty();
-            RuleFor(x => x.Email)
+            RuleFor(x => x.firstname).NotEmpty().MaximumLength(256);
+            RuleFor(x => x.lastname).NotEmpty().MaximumLength(256);
+            RuleFor(x => x.password).NotEmpty();
+            RuleFor(x => x.email)
                 .EmailAddress().WithMessage("Not a valid Email Address").MaximumLength(512)
                 .MustAsync(async (field, token) =>
                 {

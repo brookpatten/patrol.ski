@@ -25,6 +25,9 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "https://localhost:44348;http://localhost:44347"
+    },
+    "newProfile1": {
+      "commandName": "Executable"
     }
   }
 }
