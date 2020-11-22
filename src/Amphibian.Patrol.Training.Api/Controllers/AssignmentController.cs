@@ -93,6 +93,11 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             public List<NewSignatureDto> Signatures { get; set; }
         }
 
+        /// <summary>
+        /// create new signatures and return a complete list of signatures for the assignment
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
         [HttpPost]
         [Route("assignment/sign")]
         [Authorize]
@@ -101,7 +106,8 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             if(await _assignmentService.AllowCreateSignatures(dto.AssignmentId,User.GetUserId(),dto.Signatures))
             {
                 await _assignmentService.CreateSignatures(dto.AssignmentId, User.GetUserId(), dto.Signatures);
-                return Ok();
+                var allSignatures = await _assignmentRepository.GetSignaturesWithUsersForAssignment(dto.AssignmentId);
+                return Ok(allSignatures);
             }
             else
             {

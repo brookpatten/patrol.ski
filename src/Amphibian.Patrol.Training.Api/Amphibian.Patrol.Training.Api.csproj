@@ -11,6 +11,10 @@
     <RepositoryUrl>https://github.com/brookpatten/oet-schedule</RepositoryUrl>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DocumentationFile>C:\AS\schedule\src\Amphibian.Patrol.Training.Api\Amphibian.Patrol.Training.Api.xml</DocumentationFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="9.0.0" />
     <PackageReference Include="dapper" Version="2.0.35" />

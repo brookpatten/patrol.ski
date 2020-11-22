@@ -7,24 +7,30 @@
                     <thead class="thead-dark">
                         <tr>
                             <th scope="col">Skill</th>
-                            <th scope="col" v-for="level in levels" :key="level.id">{{level.name}}</th>
+                            <th scope="col" v-for="level in levels" :key="level.id">{{level.level.name}}</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr v-for="signOffRow in signOffTable" :key="signOffRow.skill.id">
                             <td>{{signOffRow.skill.name}}</td>
                             <td v-for="signOff in signOffRow.signOffs" :key="signOff.id" v-bind:class="{'table-dark':signOff==null,  'table-success': signOff!=null && signOff.signature!=null}">
-                                <span v-if="signOff!=null && signOff.signature!=null">{{signOff.signature.signedBy.firstName}} {{signOff.signature.signedBy.lastName}} {{new Date(signOff.signature.signedAt).toLocaleDateString()}}</span>
+                                <span v-if="signOff!=null && signOff.signature!=null">
+                                    {{signOff.signature.signedBy.firstName}} {{signOff.signature.signedBy.lastName}} 
+                                    {{new Date(signOff.signature.signedAt).toLocaleDateString()}}
+                                </span>
                                 <span v-if="signOff!=null && signOff.signature==null && !signOff.currentUserCanSign"><input type="checkbox" disabled/></span>
-                                <span v-if="signOff!=null && signOff.signature==null && signOff.currentUserCanSign"><input type="checkbox"/></span>
+                                <span v-if="signOff!=null && signOff.signature==null && signOff.currentUserCanSign">
+                                    <input type="checkbox" :value="{sectionLevelId:signOff.sectionlevel.id,sectionSkillId: signOff.sectionSkill.id}" name="signOff.id" v-model="newSignatures"/>
+                                </span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </CCardBody>
+            <CCardFooter v-if="newSignatures.length>0">
+                <CButton v-on:click="sign()" block color="primary"><CIcon name="cil-pen"/>&nbsp;Sign</CButton>
+            </CCardFooter>
         </CCard>
-
-        
     </div>
 </template>
 
@@ -40,7 +46,8 @@ export default {
         plan:{},
         sortedSections:[],
         signOffTable:[],
-        levels:[]
+        levels:[],
+        newSignatures:[]
     }
   },
   methods: {
@@ -50,6 +57,17 @@ export default {
                     console.log(response);
                     this.assignment = response.data.assignment;
                     this.plan = response.data.plan;
+                    this.tabelize();
+                }).catch(response => {
+                    console.log(response);
+                });
+        },
+        sign(){
+            this.$http.post('assignment/sign',{assignmentId:this.assignment.id,signatures:this.newSignatures})
+                .then(response => {
+                    console.log(response);
+                    this.assignment.signatures = response.data;
+                    this.newSignatures = [];
                     this.tabelize();
                 }).catch(response => {
                     console.log(response);
@@ -71,7 +89,6 @@ export default {
             //convert the list of sections into a 2 dimensional array for easy html formatting
             this.signOffTable=[];
             this.levels=[];
-            var signOffId=1;
 
             this.sortSections();
             
@@ -92,10 +109,10 @@ export default {
                         while(this.levels.length<=l){
                             this.levels.push(null);
                         }
-                        this.levels[l] = sectionLevel.level;
+                        this.levels[l] = sectionLevel;
                         
                         while(this.signOffTable[s].signOffs.length<=l){
-                            this.signOffTable[s].signOffs.push({id:signOffId++});
+                            this.signOffTable[s].signOffs.push({id:sectionLevel.id+'-'+sectionSkill.id});
                         }
 
                         var signature = _.find(this.assignment.signatures,{sectionSkillId:sectionSkill.id,sectionLevelId:sectionLevel.id});

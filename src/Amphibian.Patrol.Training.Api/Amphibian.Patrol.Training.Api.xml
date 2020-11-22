@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Amphibian.Patrol.Training.Api</name>
+    </assembly>
+    <members>
+        <member name="M:Amphibian.Patrol.Training.Api.Controllers.AssignmentController.CreateSignatures(Amphibian.Patrol.Training.Api.Controllers.AssignmentController.CreateSignaturesDto)">
+            <summary>
+            create new signatures and return a complete list of signatures for the assignment
+            </summary>
+            <param name="dto"></param>
+            <returns></returns>
+        </member>
+    </members>
+</doc>

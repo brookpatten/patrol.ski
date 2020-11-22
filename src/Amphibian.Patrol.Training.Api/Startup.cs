@@ -76,7 +76,7 @@ namespace Amphibian.Patrol.Training.Api
                     In = ParameterLocation.Header,
 
                 });
-
+                c.IncludeXmlComments("Amphibian.Patrol.Training.Api.xml", true);
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement()
                 {
                     {
