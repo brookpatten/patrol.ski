@@ -63,8 +63,7 @@ const User = () => import('@/views/users/User')
 // Schedule
 const Plan = () => import('@/views/schedule/Plan')
 const Schedule = () => import('@/views/schedule/Schedule')
-const Trainee = () => import('@/views/schedule/Trainee')
-const Trainer = () => import('@/views/schedule/Trainer')
+const Home = () => import('@/views/schedule/Home')
 const Test = () => import('@/views/schedule/Test')
 const Assignment = () => import('@/views/schedule/Assignment')
 
@@ -105,10 +104,18 @@ function configRoutes () {
   return [
     {
       path: '/',
-      redirect: '/dashboard',
+      redirect: '/home',
       name: '',
       component: TheContainer,
       children: [
+        {
+          path: 'home',
+          name: 'Home',
+          component: Home,
+          meta: { 
+            requiresAuth: true
+          }
+        },
         {
           path: 'dashboard',
           name: 'Dashboard',
@@ -139,22 +146,6 @@ function configRoutes () {
           path: 'schedule',
           name: 'Schedule',
           component: Schedule,
-          meta: { 
-            requiresAuth: true
-          }
-        },
-        {
-          path: 'trainee',
-          name: 'Trainee',
-          component: Trainee,
-          meta: { 
-            requiresAuth: true
-          }
-        },
-        {
-          path: 'trainer',
-          name: 'Trainer',
-          component: Trainer,
           meta: { 
             requiresAuth: true
           }

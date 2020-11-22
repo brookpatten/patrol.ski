@@ -1,7 +1,11 @@
 ﻿--this user is not migrated/deployed to the server db, but i suppose someone will try anyway...
 insert into users(email,firstname,lastname,passwordsalt,passwordhash,passwordhashiterations)
-values ('test','test','test',0xAC174909DBF93DCE1BC0AD2880391A8BACA2207D84FBBD89DB6D5500A20C7DB0,0x2DC0CDA8863338A36E3EDD1E41238B2542252876C4547C5C860F8D0F47A2B832,5);
+values ('candidate','test','candidate',0xAC174909DBF93DCE1BC0AD2880391A8BACA2207D84FBBD89DB6D5500A20C7DB0,0x2DC0CDA8863338A36E3EDD1E41238B2542252876C4547C5C860F8D0F47A2B832,5);
 --1
+
+insert into users(email,firstname,lastname,passwordsalt,passwordhash,passwordhashiterations)
+values ('trainer','test','trainer',0xAC174909DBF93DCE1BC0AD2880391A8BACA2207D84FBBD89DB6D5500A20C7DB0,0x2DC0CDA8863338A36E3EDD1E41238B2542252876C4547C5C860F8D0F47A2B832,5);
+--2
 
 insert into patrols(name) values ('Big Mountain Patrol');
 --1
@@ -12,6 +16,10 @@ insert into patrolusers (patrolid,userid) values (1,1);
 --1
 insert into patrolusers (patrolid,userid) values (2,1);
 --2
+insert into patrolusers (patrolid,userid) values (1,2);
+--3
+insert into patrolusers (patrolid,userid) values (2,2);
+--4
 
 --plans
 --big patrol
@@ -202,6 +210,16 @@ insert into sectionskills (sectionid,skillid,rowindex) values (4,24,5);
 --24
 
 insert into assignments (planid,userid,assignedat,dueat) values (1,1,getdate(),DATEADD(year, 1, GETDATE()));
+--1
+
+insert into signatures (assignmentid,sectionskillid,sectionlevelid,signedbyuserid,signedat) values (1,1,1,2,getdate());
+--1
+insert into signatures (assignmentid,sectionskillid,sectionlevelid,signedbyuserid,signedat) values (1,1,2,2,getdate());
+--2
+insert into signatures (assignmentid,sectionskillid,sectionlevelid,signedbyuserid,signedat) values (1,2,1,2,getdate());
+--3
+insert into signatures (assignmentid,sectionskillid,sectionlevelid,signedbyuserid,signedat) values (1,2,2,2,getdate());
+--4
 
 --sanity check
 --select

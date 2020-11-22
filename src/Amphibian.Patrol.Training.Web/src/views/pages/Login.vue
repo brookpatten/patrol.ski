@@ -83,7 +83,7 @@ export default {
       let email = this.email;
       let password = this.password;
       this.$store.dispatch('login',{email,password})
-        .then(()=>this.$router.push('/dashboard'))
+        .then(()=>this.$router.push('/'))
         .catch(err => {
           console.log(err);
           this.error = "Username or password is incorrect";

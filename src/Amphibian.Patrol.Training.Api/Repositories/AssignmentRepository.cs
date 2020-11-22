@@ -25,14 +25,54 @@ namespace Amphibian.Patrol.Training.Api.Repositories
             _mapper = mapper;
         }
 
-        public Task<IEnumerable<Assignment>> GetAssignmentsForUser(int userId)
+        public Task<IEnumerable<AssignmentHeaderDto>> GetAssignmentsForUser(int userId)
         {
-            return _connection.QueryAsync<Assignment>(@"select Id,planid,userid,assignedat,dueat from assignments where userid=@userId", new { userId });
+            return _connection.QueryAsync<AssignmentHeaderDto>(
+                @"select 
+                    a.Id
+                    ,a.planid
+                    ,a.userid
+                    ,a.assignedat
+                    ,a.dueat
+                    ,p2.name planname
+                    ,(
+                        select count(p.id)
+	                    from plans p 
+	                    inner join plansections ps on ps.planid=p.id
+	                    inner join sectionskills ss on ss.sectionid=ps.sectionid
+	                    inner join sectionlevels sl on sl.sectionid=ps.sectionid
+	                    where p.id=a.planid
+                    ) signaturesrequired
+                    ,(
+                        select count(id) from signatures s where s.assignmentid=a.id
+                    ) signatures
+                    from assignments a
+                    inner join plans p2 on p2.id=a.planid
+                    where a.userid=@userId", new { userId });
         }
 
-        public Task<IEnumerable<Assignment>> GetAssignmentsForPlan(int planId)
+        public Task<IEnumerable<AssignmentHeaderDto>> GetAssignmentsForPlan(int planId)
         {
-            return _connection.QueryAsync<Assignment>(@"select Id,planid,userid,assignedat,dueat from assignments where planId=@planId", new { planId });
+            return _connection.QueryAsync<AssignmentHeaderDto>(
+                @"select 
+                    a.Id
+                    ,a.planid
+                    ,a.userid
+                    ,a.assignedat
+                    ,a.dueat 
+                    ,(
+                        select count(p.id)
+	                    from plans p 
+	                    inner join plansections ps on ps.planid=p.id
+	                    inner join sectionskills ss on ss.sectionid=ps.sectionid
+	                    inner join sectionlevels sl on sl.sectionid=ps.sectionid
+	                    where p.id=a.planid
+                    ) signaturesrequired
+                    ,(
+                        select count(id) from signatures s where s.assignmentid=a.id
+                    ) signatures
+                    from assignments a
+                    where a.planid=@planId", new { planId });
         }
 
         public Task<Assignment> GetAssignment(int assignmentId)

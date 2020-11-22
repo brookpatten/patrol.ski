@@ -4,21 +4,15 @@ export default [
     _children: [
       {
         _name: 'CSidebarNavItem',
-        name: 'Plan',
-        to: '/plan',
-        icon: 'cil-grid'
-      },
-      {
-        _name: 'CSidebarNavItem',
-        name: 'Trainer',
-        to: '/trainer',
+        name: 'Home',
+        to: '/home',
         icon: 'cil-home'
       },
       {
         _name: 'CSidebarNavItem',
-        name: 'Trainee',
-        to: '/trainee',
-        icon: 'cil-applications'
+        name: 'Plan',
+        to: '/plan',
+        icon: 'cil-grid'
       },
       {
         _name: 'CSidebarNavItem',

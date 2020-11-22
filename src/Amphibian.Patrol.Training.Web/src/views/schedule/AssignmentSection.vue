@@ -36,23 +36,25 @@ export default {
   methods: {
         populateTable() {
             this.fields.push({key:'skillName', label:'Skill'})
-            for(var i=0;i<this.section.levels.length;i++){
-                this.fields.push({key:'level'+'-'+this.section.levels[i].id+'-by',label:this.section.levels[i].level.name});
-                this.fields.push({key:'level'+'-'+this.section.levels[i].id+'-at',label:''});
+            var sortedLevels = _.sortBy(this.section.levels,['columnIndex']);
+            for(var i=0;i<sortedLevels.length;i++){
+                this.fields.push({key:'level'+'-'+sortedLevels[i].id+'-by',label:sortedLevels[i].level.name});
+                // this.fields.push({key:'level'+'-'+this.section.levels[i].id+'-at',label:''});
             }
 
-            for(i=0;i<this.section.skills.length;i++){
-                var item = {skillName:this.section.skills[i].skill.name};
+            var sortedSkills = _.sortBy(this.section.skills,['rowIndex']);
+            for(i=0;i<sortedSkills.length;i++){
+                var item = {skillName:sortedSkills[i].skill.name};
 
-                for(var l=0;l<this.section.levels.length;l++){
-                    var signature = _.find(this.assignment.signatures,{sectionLevelId:this.section.levels[l].id,sectionSkillId:this.section.skills[i].id});
+                for(var l=0;l<sortedLevels.length;l++){
+                    var signature = _.find(this.assignment.signatures,{sectionLevelId:sortedLevels[l].id,sectionSkillId:sortedSkills[i].id});
                     if(signature){
-                        item['level'+'-'+this.section.levels[l].id+'-by'] = signature.signedby.firstname +' '+signature.signedby.lastname;
-                        item['level'+'-'+this.section.levels[l].id+'-at'] = signature.signedon;
+                        item['level'+'-'+sortedLevels[l].id+'-by'] = signature.signedBy.firstName +' '+signature.signedBy.lastName;
+                        item['level'+'-'+sortedLevels[l].id+'-at'] = signature.signedAt;
                     }
                     else{
-                        item['level'+'-'+this.section.levels[l].id+'-by'] = '';
-                        item['level'+'-'+this.section.levels[l].id+'-at'] = '';
+                        item['level'+'-'+sortedLevels[l].id+'-by'] = '';
+                        item['level'+'-'+sortedLevels[l].id+'-at'] = '';
                     }
                 }
 
