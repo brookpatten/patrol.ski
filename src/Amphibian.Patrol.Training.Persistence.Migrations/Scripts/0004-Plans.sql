@@ -141,7 +141,7 @@ CREATE TABLE dbo.SectionLevels
 	Id int NOT NULL IDENTITY (1, 1),
 	SectionId int NOT NULL,
 	LevelId int NOT NULL,
-	[Order] int NOT NULL
+	ColumnIndex int NOT NULL
 	)  ON [PRIMARY]
 GO
 ALTER TABLE dbo.SectionLevels ADD CONSTRAINT
@@ -182,7 +182,7 @@ CREATE TABLE dbo.SectionSkills
 	Id int NOT NULL IDENTITY (1, 1),
 	SectionId int NOT NULL,
 	SkillId int NOT NULL,
-	[Order] int NOT NULL
+	RowIndex int NOT NULL
 	)  ON [PRIMARY]
 GO
 ALTER TABLE dbo.SectionSkills ADD CONSTRAINT

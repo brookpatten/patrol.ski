@@ -10,6 +10,6 @@ namespace Amphibian.Patrol.Training.Api.Models
         public int Id { get; set; }
         public int SectionId { get; set; }
         public int LevelId { get; set; }
-        public int Order { get; set; }
+        public int ColumnIndex { get; set; }
     }
 }

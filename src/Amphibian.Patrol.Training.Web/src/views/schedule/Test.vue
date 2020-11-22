@@ -1,11 +1,11 @@
 <template>
     <div>
-        <!--<CCard>
+        <CCard>
             <GoogleLogin :params="googleParams" :onSuccess="onSuccess" :onFailure="onFailure">Login</GoogleLogin>
         </CCard>
         <CCard>
             <CButton v-on:click="test()">Test</CButton>
-        </CCard>-->
+        </CCard>
         <CCard>
             <CCardHeader>
             <slot name="header">
@@ -13,23 +13,24 @@
             </slot>
             </CCardHeader>
             <CCardBody>
-            
-            <table class="table table-striped">
-                <thead class="thead-dark">
-                <draggable v-model="headers" tag="tr">
-                    <th v-for="header in headers" :key="header" scope="col">
-                    {{ header }}
-                    </th>
-                </draggable>
-                </thead>
-                <draggable v-model="list" tag="tbody">
-                <tr v-for="item in list" :key="item.name">
-                    <td scope="row">{{ item.id }}</td>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.sport }}</td>
-                </tr>
-                </draggable>
-            </table>
+            <CDataTable
+                :hover="hover"
+                :striped="true"
+                :bordered="true"
+                :small="small"
+                :fixed="fixed"
+                :items="demo"
+                :fields="demoFields"
+                :items-per-page="small ? 10 : 5"
+                :dark="dark"
+                pagination
+            >
+                <template #status="{item}">
+                <td>
+                    <CBadge :color="getBadge(item.status)">{{item.status}}</CBadge>
+                </td>
+                </template>
+            </CDataTable>
             </CCardBody>
         </CCard>
     </div>
@@ -37,27 +38,38 @@
 
 <script>
 import GoogleLogin from 'vue-google-login';
-import draggable from 'vuedraggable';
-
 export default {
   name: 'Test',
   components: {
-      GoogleLogin,
-      draggable
+      GoogleLogin
   },
   data () {
     return {
         googleParams:{
             client_id: ''
         },
-        headers: ["id", "name", "sport"],
-        list: [
-            { id: 1, name: "Abby", sport: "basket" },
-            { id: 2, name: "Brooke", sport: "foot" },
-            { id: 3, name: "Courtenay", sport: "volley" },
-            { id: 4, name: "David", sport: "rugby" }
-        ],
-        dragging: false
+        plan: {
+          skills: [
+              {id:1, name: 'Gliding Wedge'},
+              {id:2, name: 'Hockey Stop'},
+          ],
+          levels: [
+              {id:1, name:'1'},
+              {id:2, name:'2'}
+          ],
+          signatures: [],
+      },
+      demo: [
+          {name:'Hockey Stop',lvl1:'',lvl2a:'',lvl2b:'',final:''},
+          {name:'Gliding Wedge',lvl1:'',lvl2a:'',lvl2b:'',final:''}
+      ],
+      demoFields:[
+          {key:'name', label:'Skill', stickyColumn:true},
+          {key:'lvl1', label:'Level 1'},
+          {key:'lvl2a', label:'Level 2+'},
+          {key:'lvl2b', label:'Level 2+'},
+          {key:'final', label:'Final'}
+      ]
     }
   },
   methods: {
@@ -76,6 +88,15 @@ export default {
         },
         onFailure(err) {
             console.log(err);
+        },
+        test() {
+            console.log('test');
+            this.$http.get('schedule/test')
+                .then(response => {
+                    console.log(response);
+                }).catch(response => {
+                    console.log(response);
+                });
         }
   }
 }

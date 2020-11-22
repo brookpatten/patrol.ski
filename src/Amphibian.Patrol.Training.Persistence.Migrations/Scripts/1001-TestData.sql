@@ -63,34 +63,34 @@ insert into levels(name,description,patrolid) values ('Trainer','',2);
 
 --sectionlevels
 --big patrol ski skills
-insert into sectionlevels (sectionid,levelid,[order]) values (1,1,1);
+insert into sectionlevels (sectionid,levelid,columnindex) values (1,1,1);
 --1
-insert into sectionlevels (sectionid,levelid,[order]) values (1,2,2);
+insert into sectionlevels (sectionid,levelid,columnindex) values (1,2,2);
 --2
-insert into sectionlevels (sectionid,levelid,[order]) values (1,2,3);
+insert into sectionlevels (sectionid,levelid,columnindex) values (1,2,3);
 --3
-insert into sectionlevels (sectionid,levelid,[order]) values (1,3,4);
+insert into sectionlevels (sectionid,levelid,columnindex) values (1,3,4);
 --4
 --big patrol snowboard skills
-insert into sectionlevels (sectionid,levelid,[order]) values (2,1,1);
+insert into sectionlevels (sectionid,levelid,columnindex) values (2,1,1);
 --5
-insert into sectionlevels (sectionid,levelid,[order]) values (2,2,2);
+insert into sectionlevels (sectionid,levelid,columnindex) values (2,2,2);
 --6
-insert into sectionlevels (sectionid,levelid,[order]) values (2,2,3);
+insert into sectionlevels (sectionid,levelid,columnindex) values (2,2,3);
 --7
-insert into sectionlevels (sectionid,levelid,[order]) values (2,3,4);
+insert into sectionlevels (sectionid,levelid,columnindex) values (2,3,4);
 --8
 --big patrol toboggan skills
-insert into sectionlevels (sectionid,levelid,[order]) values (3,1,1);
+insert into sectionlevels (sectionid,levelid,columnindex) values (3,1,1);
 --9
-insert into sectionlevels (sectionid,levelid,[order]) values (3,2,2);
+insert into sectionlevels (sectionid,levelid,columnindex) values (3,2,2);
 --10
-insert into sectionlevels (sectionid,levelid,[order]) values (3,2,3);
+insert into sectionlevels (sectionid,levelid,columnindex) values (3,2,3);
 --11
-insert into sectionlevels (sectionid,levelid,[order]) values (3,3,4);
+insert into sectionlevels (sectionid,levelid,columnindex) values (3,3,4);
 --12
 --tiny patrolred jacket
-insert into sectionlevels (sectionid,levelid,[order]) values (4,4,1);
+insert into sectionlevels (sectionid,levelid,columnindex) values (4,4,1);
 --13
 
 --skills
@@ -149,56 +149,56 @@ insert into skills (name,patrolid) values ('Loaded Toboggan - Tail Rope Operator
 
 --sectionskills
 --big patrol ski skills
-insert into sectionskills (sectionid,skillid,[order]) values (1,1,1);
+insert into sectionskills (sectionid,skillid,rowindex) values (1,1,1);
 --1
-insert into sectionskills (sectionid,skillid,[order]) values (1,2,2);
+insert into sectionskills (sectionid,skillid,rowindex) values (1,2,2);
 --2
-insert into sectionskills (sectionid,skillid,[order]) values (1,3,3);
+insert into sectionskills (sectionid,skillid,rowindex) values (1,3,3);
 --3
-insert into sectionskills (sectionid,skillid,[order]) values (1,4,4);
+insert into sectionskills (sectionid,skillid,rowindex) values (1,4,4);
 --4
-insert into sectionskills (sectionid,skillid,[order]) values (1,5,5);
+insert into sectionskills (sectionid,skillid,rowindex) values (1,5,5);
 --5
-insert into sectionskills (sectionid,skillid,[order]) values (1,6,6);
+insert into sectionskills (sectionid,skillid,rowindex) values (1,6,6);
 --6
-insert into sectionskills (sectionid,skillid,[order]) values (1,7,7);
+insert into sectionskills (sectionid,skillid,rowindex) values (1,7,7);
 --7
-insert into sectionskills (sectionid,skillid,[order]) values (1,8,8);
+insert into sectionskills (sectionid,skillid,rowindex) values (1,8,8);
 --8
 --big patrol snowboard skills
-insert into sectionskills (sectionid,skillid,[order]) values (2,9,1);
+insert into sectionskills (sectionid,skillid,rowindex) values (2,9,1);
 --9
-insert into sectionskills (sectionid,skillid,[order]) values (2,10,2);
+insert into sectionskills (sectionid,skillid,rowindex) values (2,10,2);
 --10
-insert into sectionskills (sectionid,skillid,[order]) values (2,11,3);
+insert into sectionskills (sectionid,skillid,rowindex) values (2,11,3);
 --11
-insert into sectionskills (sectionid,skillid,[order]) values (2,12,4);
+insert into sectionskills (sectionid,skillid,rowindex) values (2,12,4);
 --12
-insert into sectionskills (sectionid,skillid,[order]) values (2,13,5);
+insert into sectionskills (sectionid,skillid,rowindex) values (2,13,5);
 --13
-insert into sectionskills (sectionid,skillid,[order]) values (2,14,6);
+insert into sectionskills (sectionid,skillid,rowindex) values (2,14,6);
 --14
-insert into sectionskills (sectionid,skillid,[order]) values (2,15,7);
+insert into sectionskills (sectionid,skillid,rowindex) values (2,15,7);
 --15
-insert into sectionskills (sectionid,skillid,[order]) values (2,16,8);
+insert into sectionskills (sectionid,skillid,rowindex) values (2,16,8);
 --16
 --big patrol toboggan skills
-insert into sectionskills (sectionid,skillid,[order]) values (3,17,1);
+insert into sectionskills (sectionid,skillid,rowindex) values (3,17,1);
 --17
-insert into sectionskills (sectionid,skillid,[order]) values (3,18,2);
+insert into sectionskills (sectionid,skillid,rowindex) values (3,18,2);
 --18
-insert into sectionskills (sectionid,skillid,[order]) values (3,19,3);
+insert into sectionskills (sectionid,skillid,rowindex) values (3,19,3);
 --19
 --tiny patrol
-insert into sectionskills (sectionid,skillid,[order]) values (4,20,1);
+insert into sectionskills (sectionid,skillid,rowindex) values (4,20,1);
 --20
-insert into sectionskills (sectionid,skillid,[order]) values (4,21,2);
+insert into sectionskills (sectionid,skillid,rowindex) values (4,21,2);
 --21
-insert into sectionskills (sectionid,skillid,[order]) values (4,22,3);
+insert into sectionskills (sectionid,skillid,rowindex) values (4,22,3);
 --22
-insert into sectionskills (sectionid,skillid,[order]) values (4,23,4);
+insert into sectionskills (sectionid,skillid,rowindex) values (4,23,4);
 --23
-insert into sectionskills (sectionid,skillid,[order]) values (4,24,5);
+insert into sectionskills (sectionid,skillid,rowindex) values (4,24,5);
 --24
 
 insert into assignments (planid,userid,assignedat,dueat) values (1,1,getdate(),DATEADD(year, 1, GETDATE()));

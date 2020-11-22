@@ -3,28 +3,41 @@
         <CCard>
             <CCardHeader>
             <slot name="header">
-                <CIcon name="cil-grid"/> {{plan.name}}
+                <CIcon name="cil-grid"/> {{caption}}
             </slot>
             </CCardHeader>
+            <CCardBody>
+            <CDataTable
+                :hover="hover"
+                :striped="true"
+                :bordered="true"
+                :small="small"
+                :fixed="fixed"
+                :items="assignments"
+                :fields="fields"
+                :dark="dark">
+            </CDataTable>
+            </CCardBody>
         </CCard>
-
-        <AssignmentSection v-for="s in plan.sections" :key="s.id" :assignment="assignment" :section="s">
-        </AssignmentSection>
     </div>
 </template>
 
 <script>
-import AssignmentSection from './AssignmentSection';
-
 export default {
   name: 'Assignment',
-  components: { AssignmentSection
+  components: {
   },
   props: ['assignmentId'],
   data () {
     return {
+        caption: '',
         assignment: {},
         plan:{},
+        fields:[
+          {key:'userId'},
+          {key:'assignedAt', label:'Assigned'},
+          {key:'dueAt', label:'Due'},
+      ]
     }
   },
   methods: {
@@ -32,15 +45,21 @@ export default {
             this.$http.get('assignment/'+assignmentId)
                 .then(response => {
                     console.log(response);
-                    this.assignment = response.data.assignment;
-                    this.plan = response.data.plan;
+                    this.assignment = response.data;
+
+                    this.$http.get('plan/'+this.assignment.planId)
+                    .then(response=>{
+                        this.plan = response.data;
+                    }).catch(response=>{
+                        console.log(response);
+                    });
                 }).catch(response => {
                     console.log(response);
                 });
         }
   },
   mounted: function(){
-      this.getAssignment(this.assignmentId);
+      this.getAssignments(this.planId);
   }
 }
 </script>

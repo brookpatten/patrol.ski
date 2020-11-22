@@ -62,7 +62,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     id
                     ,sectionid
                     ,skillid
-                    ,[order] 
+                    ,rowindex
                 from sectionskills 
                 where sectionid=@sectionId",new { sectionId });
         }
@@ -74,7 +74,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     ss.id
                     ,ss.sectionid
                     ,ss.skillid
-                    ,ss.[order]
+                    ,ss.rowindex
                     ,sks.id
                     ,sks.patrolid
                     ,sks.name
@@ -109,7 +109,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     id
                     ,sectionid
                     ,levelid
-                    ,[order] 
+                    ,columnindex
                 from sectionlevels 
                 where sectionid=@sectionId", new { sectionId });
         }
@@ -121,7 +121,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     ss.id
                     ,ss.sectionid
                     ,ss.levelid
-                    ,ss.[order]
+                    ,ss.columnindex
                     ,l.id
                     ,l.patrolid
                     ,l.name
