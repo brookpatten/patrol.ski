@@ -2,6 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <PackageId>TrainingOrganizer.Api</PackageId>
+    <Version>0.0.1</Version>
+    <Authors>Brook Patten</Authors>
+    <Company>Amphibian Software</Company>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
