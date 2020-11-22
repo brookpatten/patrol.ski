@@ -78,7 +78,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                     ) signatures
                     from assignments a
                     inner join users u on u.id=a.userid
-                    inner join plans p on p.patrolid=@patrolId
+                    inner join plans p on p.id=a.planid
                     where a.planid=@planId", new { planId });
         }
 

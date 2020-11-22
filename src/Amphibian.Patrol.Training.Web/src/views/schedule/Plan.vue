@@ -16,9 +16,6 @@
                 :items="assignments"
                 :fields="fields"
                 :dark="dark">
-                <template #id="data">
-                    <td><router-link :to="{ name: 'Assignment', params: {assignmentId:JSON.stringify(data.item.id)}}">View</router-link></td>
-                </template>
             </CDataTable>
             </CCardBody>
         </CCard>
@@ -36,11 +33,14 @@ export default {
         caption: '',
         assignments: [],
         fields:[
-          {key:'id',label:''},
-          {key:'userId'},
+          {key:'userLastName',label:'Last'},
+          {key:'userFirstName',label:'First'},
+          {key:'planName',label:'Assignment'},
           {key:'assignedAt', label:'Assigned'},
           {key:'dueAt', label:'Due'},
-      ]
+          {key:'signatures', label:'Signatures'},
+          {key:'progress', label:'Progress'}
+        ]
     }
   },
   methods: {

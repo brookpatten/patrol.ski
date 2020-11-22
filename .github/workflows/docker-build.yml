@@ -13,8 +13,9 @@ jobs:
       - uses: actions/checkout@v2
         with:
           lfs: true
-      - name: Build with dotnet
-        run: dotnet test ./src --filter TestCategory!=persistence
+      - name: run tests
+        run: dotnet test ./src --verbosity normal
+        #--filter TestCategory!=persistence
         
   build_frontend:
     needs: [test]    

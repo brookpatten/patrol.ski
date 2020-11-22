@@ -12,6 +12,7 @@ using Dapper;
 using Amphibian.Patrol.Training.Persistence.Migrations;
 using System.Data;
 using Microsoft.Extensions.Configuration;
+using ThrowawayDb;
 
 namespace Amphibian.Patrol.Training.Tests.Repositories
 {
@@ -26,6 +27,8 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         private PatrolTrainingApiConfiguration _configuration;
         private DateTime _runTime;
 
+        private ThrowawayDatabase _throwaway;
+
         [OneTimeSetUp]
         public void BaseOneTimeSetUp()
         {
@@ -34,32 +37,49 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
             this._configuration = configurations.Item2;
 
             //reformat the existing connection string to connect to the master db (not strictly necassary, but mast always exists, the app db doesn't)
-            _connectionStringBuilder = new SqlConnectionStringBuilder(_configuration.Test.ConnectionString);
+            
             _runTime = DateTime.Now;
+        }
+
+        private bool UseThrowawayDb
+        {
+            get
+            {
+                return string.IsNullOrEmpty(_configuration.Test.ConnectionString);
+            }
         }
 
         [SetUp]
         public void BaseSetUp()
         {
-            //create a connection string to a database we know exists, but is not the db we intend to create/drop
-            _connectionStringBuilder.InitialCatalog = _dbOpsDb;
-            _connectionString = _connectionStringBuilder.ToString();
+            if (UseThrowawayDb)
+            {
+                _throwaway = ThrowawayDatabase.Create("Server=(localdb)\\mssqllocaldb;Trusted_Connection=True;MultipleActiveResultSets=true");
+                _connectionString = _throwaway.ConnectionString;
+            }
+            else
+            {
+                _connectionStringBuilder = new SqlConnectionStringBuilder(_configuration.Test.ConnectionString);
+                //create a connection string to a database we know exists, but is not the db we intend to create/drop
+                _connectionStringBuilder.InitialCatalog = _dbOpsDb;
+                _connectionString = _connectionStringBuilder.ToString();
 
-            //connect to master and create our test database
-            _databaseName = $"{NUnit.Framework.TestContext.CurrentContext.Test.ClassName.Substring(NUnit.Framework.TestContext.CurrentContext.Test.ClassName.LastIndexOf(".") + 1)}-{NUnit.Framework.TestContext.CurrentContext.Test.MethodName}";
-            _connection = new SqlConnection(_connectionString);
-            _connection.Open();
-            _connection.Execute($"create database [{_databaseName}]");
-            _connection.Close();
-            _connection.Dispose();
+                //connect to master and create our test database
+                _databaseName = $"{NUnit.Framework.TestContext.CurrentContext.Test.ClassName.Substring(NUnit.Framework.TestContext.CurrentContext.Test.ClassName.LastIndexOf(".") + 1)}-{NUnit.Framework.TestContext.CurrentContext.Test.MethodName}";
+                _connection = new SqlConnection(_connectionString);
+                _connection.Open();
+                _connection.Execute($"create database [{_databaseName}]");
+                _connection.Close();
+                _connection.Dispose();
 
-            //reformat the connection sring to point to the test database
-            _connectionStringBuilder.InitialCatalog = _databaseName;
-            _connectionString = _connectionStringBuilder.ToString();
+                //reformat the connection sring to point to the test database
+                _connectionStringBuilder.InitialCatalog = _databaseName;
+                _connectionString = _connectionStringBuilder.ToString();
+            }
 
             //run migrations on the test database - with initial data - with test data
-            MigrationRunner.RunMigrationsThrowOnException(_connectionString, true,true);
-           
+            MigrationRunner.RunMigrationsThrowOnException(_connectionString, true, true);
+
             //initialize the test connection to use the test database
             _connection = new SqlConnection(_connectionString);
         }
@@ -67,47 +87,57 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         [TearDown]
         public void BaseTearDown()
         {
-            _connection.Close();
-            _connection.Dispose();
-
-            _connectionStringBuilder.InitialCatalog = _dbOpsDb;
-            _connectionString = _connectionStringBuilder.ToString();
-            _connection = new SqlConnection(_connectionString);
-            _connection.Execute($"alter database [{_databaseName}] set single_user with rollback immediate");
-
-            if(_configuration.Test.OnPersistenceTestCompletion == TestConfiguration.PersistenceTestCompletionAction.DropOnComplete)
+            if (UseThrowawayDb)
             {
-                Drop(_connection, _databaseName);
-            }
-            else if(_configuration.Test.OnPersistenceTestCompletion == TestConfiguration.PersistenceTestCompletionAction.RenameOnComplete)
-            {
-               _databaseName = RenameWithRunTime(_connection, _databaseName,_runTime);
-            }
-            else if(_configuration.Test.OnPersistenceTestCompletion == TestConfiguration.PersistenceTestCompletionAction.DropIfSuccessRenameIfFailures)
-            {
-                if(NUnit.Framework.TestContext.CurrentContext.Result.Outcome == NUnit.Framework.Interfaces.ResultState.Failure)
-                {
-                    _databaseName = RenameWithRunTime(_connection, _databaseName, _runTime);
-                }
-                else
-                {
-                    Drop(_connection, _databaseName);
-                }
-            }
-            else if (_configuration.Test.OnPersistenceTestCompletion == TestConfiguration.PersistenceTestCompletionAction.DropIfSuccess)
-            {
-                if (NUnit.Framework.TestContext.CurrentContext.Result.Outcome == NUnit.Framework.Interfaces.ResultState.Success)
-                {
-                    Drop(_connection, _databaseName);
-                }
+                _connection.Close();
+                _connection.Dispose();
+                _throwaway.Dispose();
             }
             else
             {
-                throw new InvalidOperationException("Unknown PersistenceTestCompletionAction");
-            }
+                _connection.Close();
+                _connection.Dispose();
 
-            _connection.Close();
-            _connection.Dispose();
+                _connectionStringBuilder.InitialCatalog = _dbOpsDb;
+                _connectionString = _connectionStringBuilder.ToString();
+                _connection = new SqlConnection(_connectionString);
+                _connection.Execute($"alter database [{_databaseName}] set single_user with rollback immediate");
+
+                if (_configuration.Test.OnPersistenceTestCompletion == TestConfiguration.PersistenceTestCompletionAction.DropOnComplete)
+                {
+                    Drop(_connection, _databaseName);
+                }
+                else if (_configuration.Test.OnPersistenceTestCompletion == TestConfiguration.PersistenceTestCompletionAction.RenameOnComplete)
+                {
+                    _databaseName = RenameWithRunTime(_connection, _databaseName, _runTime);
+                }
+                else if (_configuration.Test.OnPersistenceTestCompletion == TestConfiguration.PersistenceTestCompletionAction.DropIfSuccessRenameIfFailures)
+                {
+                    if (NUnit.Framework.TestContext.CurrentContext.Result.Outcome == NUnit.Framework.Interfaces.ResultState.Failure)
+                    {
+                        _databaseName = RenameWithRunTime(_connection, _databaseName, _runTime);
+                    }
+                    else
+                    {
+                        Drop(_connection, _databaseName);
+                    }
+                }
+                else if (_configuration.Test.OnPersistenceTestCompletion == TestConfiguration.PersistenceTestCompletionAction.DropIfSuccess)
+                {
+                    if (NUnit.Framework.TestContext.CurrentContext.Result.Outcome == NUnit.Framework.Interfaces.ResultState.Success)
+                    {
+                        Drop(_connection, _databaseName);
+                    }
+                }
+                else
+                {
+                    throw new InvalidOperationException("Unknown PersistenceTestCompletionAction");
+                }
+
+                _connection.Close();
+                _connection.Dispose();
+            }
+            
 
             _databaseName = "";
             _connectionString = "";

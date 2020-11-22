@@ -22,6 +22,7 @@ namespace Amphibian.Patrol.Training.Api
             PrintBanners();
 
             var builder = CreateHostBuilder(args);
+            
             var host = builder.Build();
             host.Run();
         }
