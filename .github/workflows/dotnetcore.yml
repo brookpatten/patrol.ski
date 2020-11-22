@@ -29,5 +29,5 @@ jobs:
         name: Nuget Package
         path: src/Schedule.Api/bin/Debug/
     - name: Upload package
-      run: dotnet nuget push src/Schedule.Api/bin/Debug/TrainingOrganizer.Api.0.0.1.nupkg --source github --api-key ${{ secrets.GITHUB_TOKEN }}
+      run: dotnet nuget push src/Schedule.Api/bin/Debug/TrainingOrganizer.Api.0.0.1.nupkg --source https://nuget.pkg.github.com/brookpatten/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
       
