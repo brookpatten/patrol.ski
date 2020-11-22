@@ -5,7 +5,8 @@ using System.Threading.Tasks;
 
 using System.Data;
 using Dapper;
-using Dommel;
+using Dapper.Contrib;
+using Dapper.Contrib.Extensions;
 
 using Amphibian.Patrol.Training.Api.Models;
 
@@ -22,7 +23,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task InsertUser(User user)
         {
-            user.Id = (int)await _connection.InsertAsync(user).ConfigureAwait(false);
+            user.Id = await _connection.InsertAsync(user).ConfigureAwait(false);
         }
 
         public async Task UpdateUser(User user)
