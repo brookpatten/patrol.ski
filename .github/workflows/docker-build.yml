@@ -7,8 +7,7 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  build_frontend:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,6 +23,11 @@ jobs:
         repository: frontend
         tags: latest
         path: ./src/Amphibian.Patrol.Training.Web
+  build_api:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Build with dotnet
+      run: dotnet publish src/Amphibian.Patrol.Training.sln --runtime=linux-x64
     - name: Build Api
       uses: docker/build-push-action@v1
       with:
@@ -32,4 +36,4 @@ jobs:
         registry: patroltraining.azurecr.io
         repository: api
         tags: latest
-        path: ./src
+        path: ./src/Amphibian.Patrol.Training.Api
