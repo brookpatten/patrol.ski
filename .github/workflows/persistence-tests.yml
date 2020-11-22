@@ -13,7 +13,7 @@ jobs:
       mssql:
         image: mcr.microsoft.com/mssql/server:2017-CU8-ubuntu
         env:
-          SA_PASSWORD: ${{ secrets.BROOK_PAT }}
+          SA_PASSWORD: ${{ secrets.BROOK_PAT }}comPLEXity!!
           ACCEPT_EULA: Y
           MSSQL_PID: Express
         ports:
@@ -32,4 +32,4 @@ jobs:
         run: dotnet test ./src --verbosity normal --filter TestCategory=persistence
         env:
           ASPNETCORE_ENVIRONMENT: ci
-          Test__ConnectionString: 'Server=localhost;Initial Catalog=master;Trusted_Connection=True;User ID=sa;Password=${{ secrets.BROOK_PAT }};'
+          Test__ConnectionString: 'Server=localhost;Initial Catalog=master;Trusted_Connection=True;User ID=sa;Password=${{ secrets.BROOK_PAT }}comPLEXity!!;'
