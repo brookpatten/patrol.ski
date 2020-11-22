@@ -40,6 +40,7 @@
                   <CCol col="6" class="text-right">
                     <CButton color="link" class="px-0" v-on:click="reset">Forgot password?</CButton>
                     <CButton color="link" class="d-md-none" :to="{name:'Register'}">Register now!</CButton>
+                    <CButton color="link" class="d-md-none" v-on:click="throwaway">Test Drive</CButton>
                   </CCol>
                 </CRow>
               </CForm>
@@ -52,14 +53,15 @@
             body-wrapper
           >
             <h2>Sign up</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+            <p>Create, Manage, and Track your Patrol's OET Training Progress</p>
+            <CButtonGroup class="active mt-3">
             <CButton
-              color="primary"
-              class="active mt-3"
-               :to="{name:'Register'}"
-            >
-              Register Now!
+              color="success"
+              :to="{name:'Register'}"
+            > Register Now!
             </CButton>
+            <CButton color="info" v-on:click="throwaway">Test Drive</CButton>
+            </CButtonGroup>
           </CCard>
         </CCardGroup>
       </CCol>
@@ -82,8 +84,22 @@ export default {
     login: function(){
       let email = this.email;
       let password = this.password;
-      this.$store.dispatch('login',{email,password})
-        .then(()=>this.$router.push('/'))
+      this.dispatchLogin({email,password});
+    },
+    throwaway: function(){
+      this.dispatchLogin({throwaway:true});
+    },
+    dispatchLogin:function(obj){
+      this.$store.dispatch('login',obj)
+        .then(()=>{
+          //if they have any patrols go there, otherwise create a new patrol
+          if(this.$store.getters.patrols.length>0){
+            this.$router.push('/')
+          }
+          else{
+            this.$router.push({name:'NewPatrol'});
+          }
+        })
         .catch(err => {
           console.log(err);
           this.error = "Username or password is incorrect";

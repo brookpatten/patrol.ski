@@ -266,7 +266,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
             d.startsAt day,
             p.id planid,
             p.name planname,
-            (select top 1 color from sections s inner join plansections ps on ps.planid=p.id and ps.sectionid=s.id order by s.id desc) plancolor,
+            (select top 1 color from sections s inner join plansections ps on ps.planid=p.id and ps.sectionid=s.id order by s.id asc) plancolor,
             count(a.id) as OpenAssignmentCount
             from #days d
             left join plans p on p.patrolid=@patrolId

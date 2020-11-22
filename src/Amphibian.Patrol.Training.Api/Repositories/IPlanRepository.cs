@@ -32,5 +32,6 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         Task<IEnumerable<SectionGroup>> GetSectionGroupsForGroup(int groupId);
         Task DeleteSectionGroup(SectionGroup sectionGroup);
         Task<IEnumerable<Plan>> GetPlansWithSectionsAllowedByGroup(int groupId);
+        Task<SectionGroup> InsertSectionGroup(SectionGroup group);
     }
 }

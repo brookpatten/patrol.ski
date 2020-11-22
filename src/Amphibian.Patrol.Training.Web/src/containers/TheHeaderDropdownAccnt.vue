@@ -24,13 +24,18 @@
     <CDropdownItem v-on:click="logout">
       <CIcon name="cil-lock-locked" /> Logout
     </CDropdownItem>
-    <CDropdownHeader tag="div" class="text-center" color="light" v-if="patrols && patrols.length>1">
-      <strong>Patrols</strong>
-    </CDropdownHeader>
-    <CDropdownItem v-for="patrol in patrols" :key="patrol.id" v-on:click="selectPatrol(patrol.id)">
-      <CIcon name="cil-check-circle" v-if="patrol.id===selectedPatrolId"/><CIcon name="cil-circle" v-if="patrol.id!=selectedPatrolId"/> {{patrol.name}}
+    <template v-if="patrols && patrols.length>1">
+      <CDropdownHeader tag="div" class="text-center" color="light">
+        <strong>Patrols</strong>
+      </CDropdownHeader>
+      <CDropdownItem v-for="patrol in patrols" :key="patrol.id" v-on:click="selectPatrol(patrol.id)">
+        <CIcon name="cil-check-circle" v-if="patrol.id===selectedPatrolId"/><CIcon name="cil-circle" v-if="patrol.id!=selectedPatrolId"/> {{patrol.name}}
+      </CDropdownItem>
+    </template>
+    <CDropdownItem :to="{name:'NewPatrol'}">
+      <CIcon name="cil-user-follow" /> New Patrol
     </CDropdownItem>
-    <CDropdownHeader
+    <!--<CDropdownHeader
       tag="div"
       class="text-center"
       color="light"
@@ -40,7 +45,7 @@
     
     <CDropdownItem>
       <CIcon name="cil-settings" /> Settings
-    </CDropdownItem>
+    </CDropdownItem>-->
   </CDropdown>
 </template>
 

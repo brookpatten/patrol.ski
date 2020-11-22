@@ -1,13 +1,13 @@
 <template>
-  <div class="d-flex align-items-center min-vh-100">
-    <CContainer fluid>
-      <CRow class="justify-content-center">
-        <CCol md="6">
-          <CCard class="mx-4 mb-0">
-            <CCardBody class="p-4">
+    <CContainer class="d-flex content-center min-vh-100">
+      <CRow>
+        <CCol>
+          <CCard class="p-4">
+            <CCardBody>
               <CForm v-on:submit.prevent="register">
                 <h1>Register</h1>
-                <p class="text-muted">Create your account</p>
+                <p>Create your account</p>
+                <p class="text-muted">Your information will not be shared.  Ever.</p>
                 <CInput
                   placeholder="First Name"
                   autocomplete="first"
@@ -60,7 +60,6 @@
         </CCol>
       </CRow>
     </CContainer>
-  </div>
 </template>
 
 <script>
@@ -68,8 +67,8 @@ export default {
   name: 'Register',
   data(){
     return {
-      first: "",
-      last: "",
+      fistname: "",
+      lastname: "",
       email: "",
       password: "",
       password_confirmation: "",
@@ -89,7 +88,14 @@ export default {
       };
       console.log("register",data);
       this.$store.dispatch('register', data)
-       .then(() => this.$router.push('/dashboard'))
+       .then(() => {
+         if(this.$store.getters.patrols.length>0){
+            this.$router.push('/');
+          }
+          else{
+            this.$router.push({name:'NewPatrol'});
+          }
+        })
        .catch(err => 
         {
           this.processValidations(err.response.data.errors,this)

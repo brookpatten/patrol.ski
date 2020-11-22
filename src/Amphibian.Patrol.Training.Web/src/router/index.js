@@ -79,6 +79,7 @@ const EditGroup = () => import('@/views/administration/EditGroup')
 const Assignments = () => import('@/views/administration/Assignments')
 const NewAssignment = () => import('@/views/administration/NewAssignment')
 const EditAssignment = () => import('@/views/administration/EditAssignment')
+const NewPatrol = () => import('@/views/administration/NewPatrol')
 
 Vue.use(Router)
 
@@ -262,6 +263,14 @@ function configRoutes () {
                 requiresAuth: true
               },
               props: true
+            },
+            {
+              path: 'new-patrol',
+              name: 'NewPatrol',
+              component: NewPatrol,
+              meta: { 
+                requiresAuth: true
+              }
             }
           ]
         },

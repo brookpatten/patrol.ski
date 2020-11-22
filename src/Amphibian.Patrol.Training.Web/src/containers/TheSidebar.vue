@@ -6,14 +6,15 @@
     @update:show="(value) => $store.commit('set', ['sidebarShow', value])"
   >
     <CSidebarBrand class="d-md-down-none" to="/">
-      <h2>Training</h2>
+      <h3 v-if="selectedPatrol==null">Training</h3>
+      <h3 v-if="selectedPatrol">{{selectedPatrol.name}}</h3>
     </CSidebarBrand>
 
     <!--<CRenderFunction flat :content-to-render="$options.nav"/>-->
     <CSidebarNav>
-      <CSidebarNavItem name='Home' to='/home' icon='cil-house'/>
-      <CSidebarNavItem name='Plan'  to='/plan'  icon='cil-grid'/>
-      <CSidebarNavItem name='Schedule' to='/schedule' icon='cil-calendar'/>
+      <CSidebarNavItem name='Home' to='/home' icon='cil-home'/>
+      <!--<CSidebarNavItem name='Plan'  to='/plan'  icon='cil-grid'/>
+      <CSidebarNavItem name='Schedule' to='/schedule' icon='cil-calendar'/>-->
       <CSidebarNavTitle v-if="showAdministration">
         Administration
       </CSidebarNavTitle>

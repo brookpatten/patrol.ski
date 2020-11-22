@@ -15,8 +15,8 @@
                   <td>
                     <CButtonGroup size="sm">
                       <CButton v-if="hasPermission('MaintainPlans')" color="primary" :to="{ name: 'EditPlan', params: { planId: data.item.id } }">Edit</CButton>
-                      <CButton v-if="hasPermission('MaintainAssignments')" color="primary" :to="{ name: 'Assignments', params: { planId: data.item.id } }">Assignments</CButton>
-                      <CButton v-if="hasPermission('MaintainAssignments')" color="primary" :to="{ name: 'NewAssignment', params: { planId: data.item.id } }">New Assignment(s)</CButton>
+                      <CButton v-if="hasPermission('MaintainAssignments')" color="info" :to="{ name: 'Assignments', params: { planId: data.item.id } }">Assignments</CButton>
+                      <CButton v-if="hasPermission('MaintainAssignments')" color="success" :to="{ name: 'NewAssignment', params: { planId: data.item.id } }">New Assignment(s)</CButton>
                     </CButtonGroup>
                   </td>
               </template>

@@ -15,6 +15,7 @@ using Amphibian.Patrol.Training.Api.Extensions;
 using Amphibian.Patrol.Training.Api.Validations;
 using FluentValidation.AspNetCore;
 using FluentValidation;
+using Amphibian.Patrol.Training.Api.Infrastructure;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
@@ -26,15 +27,17 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         private readonly IUserRepository _userRepository;
         private readonly IPatrolRepository _patrolRepository;
         private readonly IEmailService _emailService;
+        private readonly IPatrolCreationService _patrolCreationService;
         
         public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, 
-            IUserRepository userRepository, IPatrolRepository patrolRepository, IEmailService emailService)
+            IUserRepository userRepository, IPatrolRepository patrolRepository, IEmailService emailService, IPatrolCreationService patrolCreationService)
         {
             _logger = logger;
             _authenticationService = authenticationService;
             _userRepository = userRepository;
             _patrolRepository = patrolRepository;
             _emailService = emailService;
+            _patrolCreationService = patrolCreationService;
         }
 
         public class AuthenticationRequest
@@ -146,6 +149,24 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             var userId = User.GetUserId();
             var patrols = await _patrolRepository.GetPatrolsForUser(userId);
             return Ok(patrols);
+        }
+
+        [HttpPost]
+        [Route("user/authenticate-throwaway")]
+        [AllowAnonymous]
+        [UnitOfWork]
+        public async Task<IActionResult> AuthenticateWithThrowaway()
+        {
+            var throwaway = await _patrolCreationService.CreateDemoUserAndPatrol();
+
+            var token = await _authenticationService.CreateNewTokenForUser(throwaway.Item1);
+            var patrols = await _patrolRepository.GetPatrolsForUser(throwaway.Item1.Id);
+            return Ok(new
+            {
+                User = (UserIdentifier)throwaway.Item1,
+                Token = token.TokenGuid,
+                Patrols = patrols
+            });
         }
     }
 }

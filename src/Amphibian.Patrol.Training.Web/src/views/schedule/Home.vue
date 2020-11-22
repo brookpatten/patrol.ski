@@ -1,32 +1,96 @@
 <template>
     <div>
-        <CCard v-if="hasPermission('MaintainAssignments') && assignmentCountsByDay.length>0">
+        <CRow v-if="hasPermission('MaintainAssignments')">
+            <CCol md="6">
+                <CCard v-if="hasPermission('MaintainAssignments') && assignmentCountsByDay.length>0">
+                    <CCardHeader>
+                    <slot name="header">
+                        <CIcon name="cil-grid"/>Incomplete Assignments, Last 30 Days
+                    </slot>
+                    </CCardHeader>
+                    <CCardBody>
+                        <CChartLine
+                            :datasets="assignmentCountsByDay"
+                            :labels="assignmentCountsByDayLabels"
+                            :options="assignmentCountsByDayOptions"
+                        />
+                    </CCardBody>
+                </CCard>
+            </CCol>
+            <CCol md="6">
+                <CCard v-if="hasPermission('MaintainAssignments') && assignmentProgressByDay.length>0">
+                    <CCardHeader>
+                    <slot name="header">
+                        <CIcon name="cil-grid"/>Assignment % Complete, Last 30 Days
+                    </slot>
+                    </CCardHeader>
+                    <CCardBody>
+                        <CChartLine
+                            :datasets="assignmentProgressByDay"
+                            :labels="assignmentProgressByDayLabels"
+                            :options="assignmentProgressByDayOptions"
+                        />
+                    </CCardBody>
+                </CCard>
+            </CCol>
+        </CRow>
+
+        <CCard v-if="openAssignments.length>0 && hasPermission('MaintainAssignments')">
             <CCardHeader>
             <slot name="header">
-                <CIcon name="cil-grid"/>Incomplete Assignments, Last 30 Days
+                <CIcon name="cil-grid"/> Open Assignments
             </slot>
             </CCardHeader>
             <CCardBody>
-                <CChartLine
-                    :datasets="assignmentCountsByDay"
-                    :labels="assignmentCountsByDayLabels"
-                    :options="assignmentCountsByDayOptions"
-                />
+            <CDataTable
+                :items="openAssignments"
+                :fields="openAssignmentsFields">
+                <template #assignee="data">
+                    <td>{{data.item.userLastName}}, {{data.item.userFirstName}}</td>
+                </template>
+                <template #planName="data">
+                    <td><router-link :to="{ name: 'Assignment', params: {assignmentId:JSON.stringify(data.item.id)}}">{{data.item.planName}}</router-link></td>
+                </template>
+                <template #signatures="data">
+                    <td>{{data.item.signatures}}/{{data.item.signaturesRequired}}</td>
+                </template>
+                <template #progress="data">
+                    <td><CProgress
+                            :value="(Math.round((data.item.signatures / data.item.signaturesRequired) * 100))"
+                            color="success"
+                            striped
+                            :animated="animate"
+                            show-percentage
+                            />
+                    </td>
+                </template>
+                <template #dueAt="data">
+                    <td>{{data.item.dueAt ? (new Date(data.item.dueAt)).toLocaleDateString() : ''}}</td>
+                </template>
+                <template #assignedAt="data">
+                    <td>{{(new Date(data.item.assignedAt)).toLocaleDateString()}}</td>
+                </template>
+            </CDataTable>
             </CCardBody>
         </CCard>
 
-        <CCard v-if="hasPermission('MaintainAssignments') && assignmentProgressByDay.length>0">
+        <CCard v-if="openAssignments.length>0 && hasPermission('MaintainAssignments')">
             <CCardHeader>
             <slot name="header">
-                <CIcon name="cil-grid"/>Assignment Progress, Last 30 Days
+                <CIcon name="cil-grid"/> Training Plans
             </slot>
             </CCardHeader>
             <CCardBody>
-                <CChartLine
-                    :datasets="assignmentProgressByDay"
-                    :labels="assignmentProgressByDayLabels"
-                    :options="assignmentProgressByDayOptions"
-                />
+            <CDataTable
+                :items="assignmentsByPlan"
+                :fields="assignmentsByPlanFields">
+                <template #name="data">
+                    <td><router-link :to="{ name: 'Assignments', params: {planId:data.item.id}}">{{data.item.name}}</router-link></td>
+                </template>
+                <template #count="data">
+                    <td>{{data.item.count}}</td>
+                </template>
+            </CDataTable>
             </CCardBody>
         </CCard>
 
@@ -183,6 +247,21 @@ export default {
     },
     selectedPatrol: function (){
         return this.$store.getters.selectedPatrol;
+    },
+    assignmentsByPlan:function(){
+        var planGroups = [];
+
+        for(var i=0;i<this.openAssignments.length;i++){
+            var group = _.find(planGroups,{id:this.openAssignments[i].planId});
+            if(group==null)
+            {
+                group = {id:this.openAssignments[i].planId,name:this.openAssignments[i].planName,count:0};
+                planGroups.push(group);
+            }
+            group.count++;
+        }
+        
+        return planGroups; 
     }
   },
   watch: {
@@ -195,6 +274,7 @@ export default {
       if(this.hasPermission('MaintainAssignments')){
           this.getAssignmentCountsByDay();
           this.getAssignmentProgressByDay();
+          this.getOpenAssignments();
       }
     }
   },
@@ -245,7 +325,8 @@ export default {
             scales: {
                 yAxes: [{
                     ticks: {
-                        stepSize: 1
+                        stepSize: 1,
+                        min: 0
                     }
                 }]
             },
@@ -277,7 +358,20 @@ export default {
                 display:false
             }
         },
-        assignmentProgressByDayLabels:[]
+        assignmentProgressByDayLabels:[],
+        openAssignments: [],
+        openAssignmentsFields:[
+          {key:'assignee',label:'Assignee'},
+          {key:'planName',label:'Training Plan'},
+          {key:'assignedAt', label:'Assigned'},
+          {key:'signatures', label:'Signatures'},
+          {key:'progress', label:'Progress'},
+          {key:'dueAt', label:'Due'}
+        ],
+        assignmentsByPlanFields:[
+          {key:'name',label:'Plan'},
+          {key:'count',label:'Open Assignments'}
+        ]
     }
   },
   methods: {
@@ -375,6 +469,15 @@ export default {
                     console.log(response);
                 });
         },
+        getOpenAssignments() {
+            this.$http.post('assignment/search',{patrolId:this.selectedPatrolId,completed:false})
+                .then(response => {
+                    console.log(response);
+                    this.openAssignments = response.data;
+                }).catch(response => {
+                    console.log(response);
+                });
+        },
         commit(id){
             this.$http.post('trainingshifts/commit/'+id)
                 .then(response => {
@@ -408,6 +511,7 @@ export default {
       if(this.hasPermission('MaintainAssignments')){
           this.getAssignmentCountsByDay();
           this.getAssignmentProgressByDay();
+          this.getOpenAssignments();
       }
   }
 }

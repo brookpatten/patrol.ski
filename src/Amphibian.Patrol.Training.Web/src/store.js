@@ -13,7 +13,7 @@ const state = {
   status: '',
   token: localStorage.getItem('token') || '',
   user: {},
-  patrols: localStorage.getItem('patrols')!=null ? (JSON.parse(localStorage.getItem('patrols'))) : [],
+  patrols:  [],//localStorage.getItem('patrols')!=null ? (JSON.parse(localStorage.getItem('patrols'))) :
   selectedPatrolId: localStorage.getItem('selectedPatrolId') !=null ? parseInt(localStorage.getItem('selectedPatrolId')) : 0,
 }
 
@@ -48,6 +48,10 @@ const mutations = {
   change_patrol(state,data){
     state.selectedPatrolId = data;
   },
+  update_patrols(state,data){
+    state.patrols = data.patrols;
+    state.selectedPatrolId = data.id;
+  },
   toggle (state, variable) {
     state[variable] = !state[variable]
   }
@@ -57,10 +61,17 @@ export default new Vuex.Store({
   state,
   mutations,
   actions: {
+    update_patrols({commit},patrols){
+      return new Promise((resolve, reject) => {
+        localStorage.setItem('patrols', patrols.patrols);
+        commit('update_patrols', patrols);
+        resolve();
+      });
+    },
     login({commit}, user){
       return new Promise((resolve, reject) => {
         commit('auth_request');
-        axios.post('user/authenticate',user)
+        axios.post('user/authenticate'+(user.throwaway ? '-throwaway' : ''),user)
         .then(resp => {
           commit('auth_success', resp.data);
 
@@ -70,6 +81,9 @@ export default new Vuex.Store({
           if(state.patrols && state.patrols.length>0){
             state.selectedPatrolId = state.patrols[0].id;
             localStorage.setItem('selectedPatrolId', state.selectedPatrolId);
+          }
+          else {
+            //redirect the user to create a patrol
           }
 
           resolve(resp);
@@ -87,6 +101,7 @@ export default new Vuex.Store({
       return new Promise((resolve, reject) => {
         localStorage.setItem('selectedPatrolId', patrolId);
         commit('change_patrol', patrolId);
+        resolve();
       });
     },
     register({commit}, user){
@@ -131,6 +146,7 @@ export default new Vuex.Store({
   getters: {
     isLoggedIn: state => !!state.token,
     authStatus: state => state.status,
-    selectedPatrol: state => _.find(state.patrols,{id:state.selectedPatrolId})
+    selectedPatrol: state => _.find(state.patrols,{id:state.selectedPatrolId}),
+    patrols: state => state.patrols
   }
 })

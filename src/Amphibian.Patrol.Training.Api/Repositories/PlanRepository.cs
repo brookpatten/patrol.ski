@@ -191,5 +191,12 @@ namespace Amphibian.Patrol.Training.Api.Repositories
                                                  inner join sectiongroups sg on sg.sectionid=sp.sectionid and sg.groupid=@groupId
                                                  order by p.name asc", new { groupId });
         }
+
+        public async Task<SectionGroup> InsertSectionGroup(SectionGroup group)
+        {
+            var id = (int)await _connection.InsertAsync(group);
+            group.Id = id;
+            return group;
+        }
     }
 }
