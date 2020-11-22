@@ -1,4 +1,4 @@
-name: .NET Core
+name: Build Docker images and push to Azure Container Registry
 
 on:
   push:
@@ -20,7 +20,7 @@ jobs:
       with:
         username: patroltraining
         password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
-        repository: patroltraining.azurecr.io
+        repository: patroltraining.azurecr.io/frontend
         tags: latest
         dockerfile: src/Amphibian.Patrol.Training.Web/Dockerfile
     - name: Build Api
@@ -28,6 +28,6 @@ jobs:
       with:
         username: patroltraining
         password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
-        repository: patroltraining.azurecr.io
+        repository: patroltraining.azurecr.io/api
         tags: latest
         dockerfile: src/Dockerfile
