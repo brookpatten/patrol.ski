@@ -1,0 +1,35 @@
+﻿CREATE TABLE dbo.Assignments
+	(
+	Id int NOT NULL IDENTITY (1, 1),
+	PlanId int NOT NULL,
+	UserId int NOT NULL,
+	AssignedAt datetime NOT NULL,
+	DueAt datetime NULL
+	)  ON [PRIMARY];
+GO
+ALTER TABLE dbo.Assignments ADD CONSTRAINT
+	PK_Assignments PRIMARY KEY CLUSTERED 
+	(
+	Id
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY];
+GO;
+ALTER TABLE dbo.Assignments ADD CONSTRAINT
+	FK_Assignments_Plans FOREIGN KEY
+	(
+	PlanId
+	) REFERENCES dbo.Plans
+	(
+	Id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION;
+GO;
+ALTER TABLE dbo.Assignments ADD CONSTRAINT
+	FK_Assignments_Users FOREIGN KEY
+	(
+	UserId
+	) REFERENCES dbo.Users
+	(
+	Id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION;
+GO;

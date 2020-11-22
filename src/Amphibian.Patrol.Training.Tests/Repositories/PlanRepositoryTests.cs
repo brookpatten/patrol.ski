@@ -15,6 +15,8 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
     {
         private PlanRepository _planRepository;
         private PatrolRepository _patrolRepository;
+        private UserRepository _userRepository;
+        private User _user;
         private Amphibian.Patrol.Training.Api.Models.Patrol _patrol;
         private Plan _plan;
 
@@ -23,36 +25,28 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         {
             _planRepository = new PlanRepository(_connection);
             _patrolRepository = new PatrolRepository(_connection);
-            _patrol = new Amphibian.Patrol.Training.Api.Models.Patrol()
-            {
-                Name = "Test"
-            };
-            _plan = new Plan()
-            {
-                Name="Test"
-            };
+            _userRepository = new UserRepository(_connection);
+
+            _user = _userRepository.GetUser(1).Result;
+            _patrol = _patrolRepository.GetPatrolsForUser(_user.Id).Result.First(x => x.Name == "Big Mountain Patrol");
+            _plan = _planRepository.GetPlansForPatrol(_patrol.Id).Result.First(x => x.Name == "Ski Alpine");
         }
 
         [Test]
         public async Task CanInsertAndSelectPlanToDatabase()
         {
-            await _patrolRepository.InsertPatrol(_patrol);
-            _plan.PatrolId = _patrol.Id;
-            await _planRepository.InsertPlan(_plan);
+            var plan = new Plan() { Name = "Test", PatrolId = _patrol.Id };
+            await _planRepository.InsertPlan(plan);
 
-            var selected = await _planRepository.GetPlan(_plan.Id);
+            var selected = await _planRepository.GetPlan(plan.Id);
 
-            Assert.AreEqual(_plan.Id, selected.Id);
-            Assert.AreEqual(_plan.Name, selected.Name);
+            Assert.AreEqual(plan.Id, selected.Id);
+            Assert.AreEqual(plan.Name, selected.Name);
         }
 
         [Test]
         public async Task CanUpdatePlanInDatabase()
         {
-            await _patrolRepository.InsertPatrol(_patrol);
-            _plan.PatrolId = _patrol.Id;
-            await _planRepository.InsertPlan(_plan);
-
             var selected = await _planRepository.GetPlan(_plan.Id);
 
             Assert.AreEqual(_plan.Name, selected.Name);
@@ -68,15 +62,53 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         [Test]
         public async Task CanGetPlansForPatrol()
         {
-            await _patrolRepository.InsertPatrol(_patrol);
-            _plan.PatrolId = _patrol.Id;
-            await _planRepository.InsertPlan(_plan);
-
             var plans = await _planRepository.GetPlansForPatrol(_patrol.Id);
 
-            Assert.AreEqual(1, plans.Count());
-            Assert.AreEqual(_plan.Id, plans.First().Id);
-            Assert.AreEqual(_plan.Name, plans.First().Name);
+            Assert.AreEqual(2, plans.Count());
+        }
+
+        [Test]
+        public async Task CanGetSectionsForPlan()
+        {
+            var sections = await _planRepository.GetSectionsForPlan(_plan.Id);
+
+            Assert.AreEqual(2, sections.Count());
+        }
+
+        [Test]
+        public async Task CanGetSkillsForSection()
+        {
+            var sections = await _planRepository.GetSectionsForPlan(_plan.Id);
+            var section = sections.OrderBy(x=>x.Id).First();
+            var skills = await _planRepository.GetSectionSkills(section.Id);
+
+            Assert.AreEqual(8, skills.Count());
+        }
+
+        [Test]
+        public async Task CanGetLevelsForSection()
+        {
+            var sections = await _planRepository.GetSectionsForPlan(_plan.Id);
+            var section = sections.OrderBy(x => x.Id).First();
+            var skills = await _planRepository.GetSectionLevels(section.Id);
+
+            Assert.AreEqual(4, skills.Count());
+        }
+
+        [Test]
+        public async Task CanGetLevelsForPatrol()
+        {
+            var levels = await _planRepository.GetLevels(_patrol.Id);
+
+            Assert.AreEqual(3, levels.Count());
+        }
+
+        [Test]
+        public async Task CanGetSkillsForPatrol()
+        {
+            var skills = await _planRepository.GetSkills(_patrol.Id);
+
+            Assert.AreEqual(19, skills.Count());
         }
     }
 }

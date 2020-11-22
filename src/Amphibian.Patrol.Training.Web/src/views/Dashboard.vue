@@ -541,6 +541,9 @@ export default {
         $color = 'danger'
       }
       return $color
+    },
+    test () {
+      this.$http.post('')
     }
   }
 }

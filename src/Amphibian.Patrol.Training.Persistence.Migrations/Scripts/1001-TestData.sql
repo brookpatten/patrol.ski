@@ -201,6 +201,8 @@ insert into sectionskills (sectionid,skillid,[order]) values (4,23,4);
 insert into sectionskills (sectionid,skillid,[order]) values (4,24,5);
 --24
 
+insert into assignments (planid,userid,assignedat,dueat) values (1,1,getdate(),DATEADD(year, 1, GETDATE()));
+
 --sanity check
 --select
 --p.name patrol,

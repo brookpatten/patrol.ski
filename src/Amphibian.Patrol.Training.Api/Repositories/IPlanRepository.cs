@@ -10,5 +10,10 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         Task InsertPlan(Plan plan);
         Task UpdatePlan(Plan plan);
         Task<Plan> GetPlan(int id);
+        Task<IEnumerable<Section>> GetSectionsForPlan(int planId);
+        Task<IEnumerable<SectionSkill>> GetSectionSkills(int sectionId);
+        Task<IEnumerable<Skill>> GetSkills(int patrolId);
+        Task<IEnumerable<SectionLevel>> GetSectionLevels(int sectionId);
+        Task<IEnumerable<Level>> GetLevels(int patrolId);
     }
 }

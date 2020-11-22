@@ -33,7 +33,7 @@ using Amphibian.Patrol.Training.Api.Repositories;
 using Amphibian.Patrol.Training.Api.Services;
 using Amphibian.Patrol.Training.Api.Controllers;
 using Amphibian.Patrol.Training.Api.Validations;
-
+using Amphibian.Patrol.Training.Api.Models;
 
 namespace Amphibian.Patrol.Training.Api
 {
@@ -82,6 +82,7 @@ namespace Amphibian.Patrol.Training.Api
             services.AddScoped<ITokenRepository, TokenRepository>();
             services.AddScoped<IPatrolRepository, PatrolRepository>();
             services.AddScoped<IPlanRepository, PlanRepository>();
+            services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 
             //validations
             services.AddScoped<IValidator<AuthenticationController.RegistrationRequest>, RegistrationValidator>();
