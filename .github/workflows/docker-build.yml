@@ -48,10 +48,10 @@ jobs:
           name: test-coverage-report
           path: ./test-coverage-report
           
-      - name: Upload Documentation to Wiki
+      - name: Upload Test Coverage Report
         uses: SwiftDocOrg/github-wiki-publish-action@v1
         with:
-          path: "Test-Coverage-Report"
+          path: ./test-coverage-report
         env:
           GH_PERSONAL_ACCESS_TOKEN: ${{ secrets.BROOK_PAT }}
         
