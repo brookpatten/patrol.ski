@@ -10,11 +10,12 @@ namespace Schedule.Api.Services
     public class AuthenticationService
     {
         private readonly int _defaultIterations = 2;
-        private const int _hashLength = 32;
+        private readonly int _hashLength = 32;
 
-        public AuthenticationService(int defaultIterations)
+        public AuthenticationService(int defaultIterations, int defaultHashLength)
         {
             _defaultIterations = defaultIterations;
+            _hashLength = defaultHashLength;
         }
         public void SetPassword(User user, string password)
         {
@@ -22,13 +23,13 @@ namespace Schedule.Api.Services
             var hash = GenerateHash(StringToBytes(password), salt, _defaultIterations, _hashLength);
             user.PasswordSalt = salt;
             user.PasswordHash = hash;
-            user.PasswordIterations = _defaultIterations;
+            user.PasswordHashIterations = _defaultIterations;
         }
         public bool CheckPassword(User user, string password)
         {
-            if (user.PasswordHash != null && user.PasswordSalt != null && user.PasswordIterations.HasValue)
+            if (user.PasswordHash != null && user.PasswordSalt != null && user.PasswordHashIterations.HasValue)
             {
-                var calculatedHash = GenerateHash(StringToBytes(password), user.PasswordSalt, user.PasswordIterations.Value, _hashLength);
+                var calculatedHash = GenerateHash(StringToBytes(password), user.PasswordSalt, user.PasswordHashIterations.Value, user.PasswordHash.Length);
                 return calculatedHash.SequenceEqual(user.PasswordHash);
             }
             else

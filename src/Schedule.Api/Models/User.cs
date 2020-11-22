@@ -13,6 +13,6 @@ namespace Schedule.Api.Models
         public string LastName { get; set; }
         public byte[] PasswordSalt { get; set; }
         public byte[] PasswordHash { get; set; }
-        public int? PasswordIterations { get; set; }
+        public int? PasswordHashIterations { get; set; }
     }
 }

@@ -59,7 +59,7 @@ namespace Schedule.Api
                 return new SqlConnection(serviceConfiguration.Database.ConnectionString);
             });
             services.AddScoped<UserRepository,UserRepository>();
-            services.AddScoped<Schedule.Api.Services.AuthenticationService, Schedule.Api.Services.AuthenticationService>(sp=>new Schedule.Api.Services.AuthenticationService(5));
+            services.AddScoped<Schedule.Api.Services.AuthenticationService, Schedule.Api.Services.AuthenticationService>(sp=>new Schedule.Api.Services.AuthenticationService(5,32));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
