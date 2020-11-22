@@ -122,35 +122,26 @@ namespace Amphibian.Patrol.Training.Api
             services.AddScoped<IAssignmentService, AssignmentService>();
         }
 
-        private void SetFromEnvVarIfAvailable<T>(T config, Action<T,string> set,string name)
-        {
-            string value = System.Environment.GetEnvironmentVariable(name);
-
-            if(!string.IsNullOrWhiteSpace(value))
-            {
-                set(config, value);
-            }
-        }
-
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseSerilogRequestLogging();
             app.UseHttpsRedirection();
 
-            string staticFilesPath;
-            if (env.IsDevelopment())
+            string staticFilesPath=null;
+            if (env.IsDevelopment() && Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "../Amphibian.Patrol.Training.Web/dist")))
             {
                 app.UseDeveloperExceptionPage();
                 staticFilesPath = Path.Combine(Directory.GetCurrentDirectory(), "../Amphibian.Patrol.Training.Web/dist");
 
             }
-            else
+            else if(Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "static")))
             {
                 staticFilesPath = Path.Combine(Directory.GetCurrentDirectory(), "static");
             }
+            
 
-            if (Directory.Exists(staticFilesPath))
+            if (!string.IsNullOrEmpty(staticFilesPath) && Directory.Exists(staticFilesPath))
             {
                 app.UseDefaultFiles(new DefaultFilesOptions()
                 {
