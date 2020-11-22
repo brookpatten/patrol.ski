@@ -35,6 +35,11 @@ namespace Amphibian.Patrol.Training.Configuration
             {
                 checkPaths.Add("");
             }
+            var assemblyDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            if (!checkPaths.Any(x=>x== assemblyDirectory))
+            {
+                checkPaths.Add(assemblyDirectory);
+            }
 
             string configBasePath = null;
             foreach (var path in basePaths)
