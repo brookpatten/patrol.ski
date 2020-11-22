@@ -27,5 +27,7 @@ jobs:
       uses: actions/upload-artifact@v1.0.0
       with: 
         name: Nuget Package
-        path: src/Schedule.Api/bin/Debug/TrainingOrganizer.Api.0.0.1.nupkg
+        path: src/Schedule.Api/bin/Debug/
+    - name: Upload package
+      run: dotnet nuget push src/Schedule.Api/bin/Debug/TrainingOrganizer.Api.0.0.1.nupkg --source github
       
