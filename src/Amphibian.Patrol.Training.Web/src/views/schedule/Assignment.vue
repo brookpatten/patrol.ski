@@ -1,7 +1,7 @@
 <template>
     <div>
         <CCard>
-            <CCardHeader>{{plan.name}}</CCardHeader>
+            <CCardHeader>{{user.firstName}} {{user.lastName}} - {{plan.name}}</CCardHeader>
             <CCardBody v-if="signOffTable.length>0">
                 <table class="table table-responsive table-bordered">
                     <thead class="thead-dark">
@@ -44,6 +44,7 @@ export default {
     return {
         assignment: {},
         plan:{},
+        user:{},
         sortedSections:[],
         signOffTable:[],
         levels:[],
@@ -57,6 +58,7 @@ export default {
                     console.log(response);
                     this.assignment = response.data.assignment;
                     this.plan = response.data.plan;
+                    this.user = response.data.user;
                     this.tabelize();
                 }).catch(response => {
                     console.log(response);

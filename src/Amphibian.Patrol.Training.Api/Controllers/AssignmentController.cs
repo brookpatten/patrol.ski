@@ -25,9 +25,10 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         private readonly IAssignmentRepository _assignmentRepository;
         private IPlanService _planService;
         private IAssignmentService _assignmentService;
+        private IUserRepository _userRepository;
 
         public AssignmentController(ILogger<AssignmentController> logger, IPatrolRepository patrolRepository, IPlanRepository planRepository, 
-            IAssignmentRepository assignmentRepository, IPlanService planService, IAssignmentService assignmentService)
+            IAssignmentRepository assignmentRepository, IPlanService planService, IAssignmentService assignmentService, IUserRepository userRepository)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
@@ -35,6 +36,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             _assignmentRepository = assignmentRepository;
             _planService = planService;
             _assignmentService = assignmentService;
+            _userRepository = userRepository;
         }
 
         [HttpGet]
@@ -72,11 +74,13 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             var assignment = await _assignmentService.GetAssignment(assignmentId);
             var plan = await _planService.GetPlan(assignment.PlanId,User.GetUserId());
             var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
+            var user = (UserIdentifier)await _userRepository.GetUser(assignment.UserId);
             if (patrols.Any(x => x.Id == plan.PatrolId))
             {
                 return Ok(
                     new
                     {
+                        User = user,
                         Plan = plan,
                         Assignment = assignment
                     });
