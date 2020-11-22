@@ -6,17 +6,11 @@ using System.Reflection;
 using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
 
-
-using DbUp;
-using DbUp.SqlServer;
-using Microsoft.Extensions.Configuration;
-
 using NUnit.Framework;
-using Schedule.Api.Models;
-using Schedule.Api.Services;
 using Schedule.Configuration;
 using Dapper;
-using Schedule.Api.Repositories;
+using Schedule.Persistence.Migrations;
+using System.Data;
 
 namespace Schedule.Tests
 {
@@ -27,20 +21,18 @@ namespace Schedule.Tests
         private string _databaseName;
         private SqlConnectionStringBuilder _connectionStringBuilder;
         private const string _dbOpsDb = "master";
+        private ScheduleConfiguration _configuration;
+        private DateTime _runTime;
 
         [OneTimeSetUp]
         public void BaseOneTimeSetUp()
         {
             //find the config for the app
-            string configPath = Path.Combine(Directory.GetCurrentDirectory(), "../../../../Schedule.Api");
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(configPath)
-                .AddJsonFile("appsettings.Local.json", false, true);
-            IConfiguration config = builder.Build();
-            var serviceConfiguration = config.Get<ScheduleConfiguration>();
+            _configuration = ScheduleConfiguration.LoadFromJsonConfig(Path.Combine(Directory.GetCurrentDirectory(), "../../../../Schedule.Api"));
 
             //reformat the existing connection string to connect to the master db (not strictly necassary, but mast always exists, the app db doesn't)
-            _connectionStringBuilder = new SqlConnectionStringBuilder(serviceConfiguration.Database.ConnectionString);
+            _connectionStringBuilder = new SqlConnectionStringBuilder(_configuration.Database.ConnectionString);
+            _runTime = DateTime.Now;
         }
 
         [SetUp]
@@ -62,18 +54,9 @@ namespace Schedule.Tests
             _connectionStringBuilder.InitialCatalog = _databaseName;
             _connectionString = _connectionStringBuilder.ToString();
 
-            //run migrations on the test database
-            var upgradeEngine = DeployChanges.To
-                .SqlDatabase(_connectionString)
-                .WithScriptsEmbeddedInAssembly(Assembly.GetAssembly(typeof(Schedule.Persistence.Migrations.Program)))
-                .LogToConsole()
-                .Build();
-            var result = upgradeEngine.PerformUpgrade();
-            if (result.Error != null)
-            {
-                throw result.Error;
-            }
-
+            //run migrations on the test database - with initial data - with test data
+            MigrationRunner.RunMigrationsThrowOnException(_connectionString, true,true);
+           
             //initialize the test connection to use the test database
             _connection = new SqlConnection(_connectionString);
         }
@@ -88,13 +71,57 @@ namespace Schedule.Tests
             _connectionString = _connectionStringBuilder.ToString();
             _connection = new SqlConnection(_connectionString);
             _connection.Execute($"alter database [{_databaseName}] set single_user with rollback immediate");
-            _connection.Execute($"drop database [{_databaseName}]");
+
+            if(_configuration.Test.OnPersistenceTestCompletion == TestConfiguration.PersistenceTestCompletionAction.DropOnComplete)
+            {
+                Drop(_connection, _databaseName);
+            }
+            else if(_configuration.Test.OnPersistenceTestCompletion == TestConfiguration.PersistenceTestCompletionAction.RenameOnComplete)
+            {
+               _databaseName = RenameWithRunTime(_connection, _databaseName,_runTime);
+            }
+            else if(_configuration.Test.OnPersistenceTestCompletion == TestConfiguration.PersistenceTestCompletionAction.DropIfSuccessRenameIfFailures)
+            {
+                if(NUnit.Framework.TestContext.CurrentContext.Result.Outcome == NUnit.Framework.Interfaces.ResultState.Failure)
+                {
+                    _databaseName = RenameWithRunTime(_connection, _databaseName, _runTime);
+                }
+                else
+                {
+                    Drop(_connection, _databaseName);
+                }
+            }
+            else if (_configuration.Test.OnPersistenceTestCompletion == TestConfiguration.PersistenceTestCompletionAction.DropIfSuccess)
+            {
+                if (NUnit.Framework.TestContext.CurrentContext.Result.Outcome == NUnit.Framework.Interfaces.ResultState.Success)
+                {
+                    Drop(_connection, _databaseName);
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Unknown PersistenceTestCompletionAction");
+            }
+
             _connection.Close();
             _connection.Dispose();
 
             _databaseName = "";
             _connectionString = "";
             _connection = null;
+        }
+
+        private void Drop(IDbConnection connection,string databaseName)
+        {
+            connection.Execute($"drop database [{databaseName}]");
+        }
+
+        private string RenameWithRunTime(IDbConnection connection, string databaseName, DateTime runTime)
+        {
+            var newDatabaseName = $"{runTime.Year:0000}{runTime.Month:00}{runTime.Day:00}-{runTime.Hour:00}{runTime.Minute:00}{runTime.Second:00}-{runTime.Millisecond:0000}-{databaseName}";
+            connection.Execute($"ALTER DATABASE [{databaseName}] MODIFY NAME = [{newDatabaseName}] ;");
+            connection.Execute($"ALTER DATABASE [{newDatabaseName}] SET MULTI_USER");
+            return newDatabaseName;
         }
     }
 }

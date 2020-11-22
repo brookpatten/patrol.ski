@@ -4,7 +4,6 @@ using System.IO;
 
 using DbUp;
 using DbUp.SqlServer;
-using Microsoft.Extensions.Configuration;
 
 using Schedule.Configuration;
 
@@ -14,40 +13,8 @@ namespace Schedule.Persistence.Migrations
     {
         static void Main(string[] args)
         {
-            var environment = Environment.GetEnvironmentVariable("ENVIRONMENT");
-            string configPath = "";
-            if (string.IsNullOrEmpty(environment))
-            {
-                environment = "Local";
-                configPath = Path.Combine(Directory.GetCurrentDirectory(), "../../../../Schedule.Api");
-            }
-            else
-            {
-                //same path as bins?
-                configPath = "";
-            }
-
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(configPath)
-                .AddJsonFile("appsettings.json", true, true);
-
-            if(File.Exists(Path.Combine(configPath,$"appsettings.{environment}.json")))
-            {
-                builder = builder.AddJsonFile($"appsettings.{environment}.json");
-            }
-
-            IConfiguration config=builder.Build();
-
-            var serviceConfiguration = config.Get<ScheduleConfiguration>();
-
-
-            var upgradeEngine = DeployChanges.To
-                .SqlDatabase(serviceConfiguration.Database.ConnectionString)
-                .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly())
-                .LogToConsole()
-                .Build();
-
-            var result = upgradeEngine.PerformUpgrade();
+            var configuration = ScheduleConfiguration.LoadFromJsonConfig(Path.Combine(Directory.GetCurrentDirectory(), "../../../../Schedule.Api"));
+            var result = MigrationRunner.RunMigrations(configuration.Database.ConnectionString,true,false);
 
             if (!result.Successful)
             {
