@@ -76,7 +76,7 @@ namespace Amphibian.Patrol.Training.Configuration
                 builder = new ConfigurationBuilder();
             }
 
-            builder.Sources.Clear();
+            //builder.Sources.Clear();
 
             builder = builder
                 .SetBasePath(configBasePath)
