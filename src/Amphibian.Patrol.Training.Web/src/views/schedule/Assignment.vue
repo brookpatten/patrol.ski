@@ -24,14 +24,15 @@
 
 <script>
 export default {
-  name: 'Plan',
+  name: 'Assignment',
   components: {
   },
-  props: ['planId'],
+  props: ['assignmentId'],
   data () {
     return {
         caption: '',
-        assignments: [],
+        assignment: {},
+        plan:{},
         fields:[
           {key:'userId'},
           {key:'assignedAt', label:'Assigned'},
@@ -40,11 +41,18 @@ export default {
     }
   },
   methods: {
-        getAssignments(planId) {
-            this.$http.get('assignments/by-plan/'+planId)
+        getAssignment(assignmentId) {
+            this.$http.get('assignment/'+assignmentId)
                 .then(response => {
                     console.log(response);
-                    this.assignments = response.data;
+                    this.assignment = response.data;
+
+                    this.$http.get('plan/'+this.assignment.planId)
+                    .then(response=>{
+                        this.plan = response.data;
+                    }).catch(response=>{
+                        console.log(response);
+                    });
                 }).catch(response => {
                     console.log(response);
                 });

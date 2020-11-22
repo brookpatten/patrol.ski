@@ -26,6 +26,11 @@ namespace Amphibian.Patrol.Training.Api.Repositories
             return _connection.QueryAsync<Assignment>(@"select Id,planid,userid,assignedat,dueat from assignments where userid=@userId", new { userId });
         }
 
+        public Task<IEnumerable<Assignment>> GetAssignmentsForPlan(int planId)
+        {
+            return _connection.QueryAsync<Assignment>(@"select Id,planid,userid,assignedat,dueat from assignments where planId=@planId", new { planId });
+        }
+
         public Task<Assignment> GetAssignment(int assignmentId)
         {
             return _connection.GetAsync<Assignment>(assignmentId);

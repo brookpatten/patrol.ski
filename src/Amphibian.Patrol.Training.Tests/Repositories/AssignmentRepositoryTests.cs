@@ -17,7 +17,7 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         private AssignmentRepository _assignmentRepository;
         private UserRepository _userRepository;
         private User _user;
-
+        
         [SetUp]
         public void SetUp()
         {
@@ -30,6 +30,14 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         public async Task CanGetAssignmentsByUser()
         {
             var assignments = await _assignmentRepository.GetAssignmentsForUser(_user.Id);
+
+            Assert.AreEqual(1, assignments.Count());
+        }
+
+        [Test]
+        public async Task CanGetAssignmentsByPlan()
+        {
+            var assignments = await _assignmentRepository.GetAssignmentsForPlan(1);
 
             Assert.AreEqual(1, assignments.Count());
         }

@@ -65,6 +65,8 @@ const Plan = () => import('@/views/schedule/Plan')
 const Schedule = () => import('@/views/schedule/Schedule')
 const Trainee = () => import('@/views/schedule/Trainee')
 const Trainer = () => import('@/views/schedule/Trainer')
+const Test = () => import('@/views/schedule/Test')
+const Assignment = () => import('@/views/schedule/Assignment')
 
 // Administration
 const Administration = () => import('@/views/administration/Administration')
@@ -116,12 +118,22 @@ function configRoutes () {
           }
         },
         {
-          path: 'plan',
+          path: 'plan/:planId',
           name: 'Plan',
           component: Plan,
           meta: { 
             requiresAuth: true
-          }
+          },
+          props: true
+        },
+        {
+          path: 'assignment/:assignmentId',
+          name: 'Assignment',
+          component: Assignment,
+          meta: { 
+            requiresAuth: true
+          },
+          props: true
         },
         {
           path: 'schedule',

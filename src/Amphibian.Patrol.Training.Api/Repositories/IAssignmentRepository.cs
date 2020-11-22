@@ -8,5 +8,6 @@ namespace Amphibian.Patrol.Training.Api.Repositories
     {
         Task<Assignment> GetAssignment(int assignmentId);
         Task<IEnumerable<Assignment>> GetAssignmentsForUser(int userId);
+        Task<IEnumerable<Assignment>> GetAssignmentsForPlan(int planId);
     }
 }
