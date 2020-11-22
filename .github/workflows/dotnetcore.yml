@@ -62,7 +62,7 @@ jobs:
     - name: Login to Azure
       uses: Azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS_TrainingSchedule2 }}
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
     - name: Upload artifact
       uses: actions/upload-artifact@v1.0.0
       with:
@@ -74,7 +74,7 @@ jobs:
       uses: Azure/webapps-deploy@v2
       with:
         # Name of the Azure Web App
-        app-name: TrainingSchedule2
+        app-name: TrainingSchedule3
         # Applies to Web App only: Publish profile (*.publishsettings) file contents with Web Deploy secrets
         # publish-profile: Azure
         # Enter an existing Slot other than the Production slot
@@ -86,4 +86,4 @@ jobs:
         # Applies to Web App Containers only: Path of the Docker-Compose file. Should be a fully qualified path or relative to the default working directory. Required for multi-container scenario
         # configuration-file: # optional
         # Enter the start up command. For ex. dotnet run or dotnet run
-        startup-command: dotnet run
+        startup-command: ./Schedule.Api
