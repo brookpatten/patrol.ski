@@ -23,7 +23,7 @@ jobs:
         registry: patroltraining.azurecr.io
         repository: frontend
         tags: latest
-        dockerfile: src/Amphibian.Patrol.Training.Web/Dockerfile
+        path: ./src/Amphibian.Patrol.Training.Web
     - name: Build Api
       uses: docker/build-push-action@v1
       with:
@@ -32,4 +32,4 @@ jobs:
         registry: patroltraining.azurecr.io
         repository: api
         tags: latest
-        dockerfile: src/Dockerfile
+        path: ./src
