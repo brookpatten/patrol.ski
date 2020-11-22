@@ -67,6 +67,40 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             }
         }
 
+        [HttpGet]
+        [Route("plan/levels/{patrolId}")]
+        [Authorize]
+        public async Task<IActionResult> GetLevels(int patrolId)
+        {
+            var userPatrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
+            if (userPatrols.Any(x => x.Id == patrolId))
+            {
+                var levels = await _planRepository.GetLevels(patrolId);
+                return Ok(levels);
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        [HttpGet]
+        [Route("plan/skills/{patrolId}")]
+        [Authorize]
+        public async Task<IActionResult> GetSkills(int patrolId)
+        {
+            var userPatrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
+            if (userPatrols.Any(x => x.Id == patrolId))
+            {
+                var skills = await _planRepository.GetSkills(patrolId);
+                return Ok(skills);
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
         [HttpPost]
         [Route("plan/create")]
         [Authorize]

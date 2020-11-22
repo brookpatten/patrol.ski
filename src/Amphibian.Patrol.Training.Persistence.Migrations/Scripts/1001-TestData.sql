@@ -51,6 +51,14 @@ insert into sections (name,patrolid) values ('Toboggan Skills',1);
 insert into sections (name,patrolid) values ('Red Jacket',2);
 --4
 
+--big patrol final
+insert into sections (name,patrolid) values ('Final',1);
+--5
+
+
+
+--4
+
 --plansections
 --big patrol
 insert into plansections (planid,sectionid) values (1,1);
@@ -64,6 +72,9 @@ insert into plansections (planid,sectionid) values (2,3);
 --tiny patrol
 insert into plansections (planid,sectionid) values (3,4);
 --5
+
+--big patrol final
+insert into plansections (planid,sectionid) values (1,5);
 
 --levels
 --big patrol
@@ -85,7 +96,7 @@ insert into sectionlevels (sectionid,levelid,columnindex) values (1,2,1);
 --2
 insert into sectionlevels (sectionid,levelid,columnindex) values (1,2,2);
 --3
-insert into sectionlevels (sectionid,levelid,columnindex) values (1,3,3);
+insert into sectionlevels (sectionid,levelid,columnindex) values (5,3,3); --final
 --4
 --big patrol snowboard skills
 insert into sectionlevels (sectionid,levelid,columnindex) values (2,1,0);
@@ -103,11 +114,11 @@ insert into sectionlevels (sectionid,levelid,columnindex) values (3,2,1);
 --10
 insert into sectionlevels (sectionid,levelid,columnindex) values (3,2,2);
 --11
-insert into sectionlevels (sectionid,levelid,columnindex) values (3,3,3);
+--insert into sectionlevels (sectionid,levelid,columnindex) values (3,3,3);
 --12
 --tiny patrolred jacket
 insert into sectionlevels (sectionid,levelid,columnindex) values (4,4,0);
---13
+--12
 
 --skills
 --big patrol ski skills
@@ -216,6 +227,30 @@ insert into sectionskills (sectionid,skillid,rowindex) values (4,23,3);
 --23
 insert into sectionskills (sectionid,skillid,rowindex) values (4,24,4);
 --24
+
+--big patrol final
+insert into sectionskills (sectionid,skillid,rowindex) values (5,1,0);
+--25
+insert into sectionskills (sectionid,skillid,rowindex) values (5,2,1);
+--26
+insert into sectionskills (sectionid,skillid,rowindex) values (5,3,2);
+--27
+insert into sectionskills (sectionid,skillid,rowindex) values (5,4,3);
+--28
+insert into sectionskills (sectionid,skillid,rowindex) values (5,5,4);
+--29
+insert into sectionskills (sectionid,skillid,rowindex) values (5,6,5);
+--30
+insert into sectionskills (sectionid,skillid,rowindex) values (5,7,6);
+--31
+insert into sectionskills (sectionid,skillid,rowindex) values (5,8,7);
+--32
+insert into sectionskills (sectionid,skillid,rowindex) values (5,17,8);
+--33
+insert into sectionskills (sectionid,skillid,rowindex) values (5,18,9);
+--34
+insert into sectionskills (sectionid,skillid,rowindex) values (5,19,10);
+--35
 
 insert into assignments (planid,userid,assignedat,dueat) values (1,1,getdate(),DATEADD(year, 1, GETDATE()));
 --1

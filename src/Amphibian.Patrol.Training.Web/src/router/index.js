@@ -63,7 +63,6 @@ const User = () => import('@/views/users/User')
 // Schedule
 const Plan = () => import('@/views/schedule/Plan')
 const Home = () => import('@/views/schedule/Home')
-const Test = () => import('@/views/schedule/Test')
 const Assignment = () => import('@/views/schedule/Assignment')
 
 // Administration
@@ -209,12 +208,13 @@ function configRoutes () {
               }
             },
             {
-              path: 'edit-plan',
+              path: 'plan/:planId',
               name: 'EditPlan',
               component: EditPlan,
               meta: { 
                 requiresAuth: true
-              }
+              },
+              props:true
             },
             {
               path: 'user/:userId',
