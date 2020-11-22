@@ -77,7 +77,7 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         {
             var sections = await _planRepository.GetSectionsForPlan(_plan.Id);
 
-            Assert.AreEqual(2, sections.Count());
+            Assert.AreEqual(3, sections.Count());
         }
 
         [Test]
@@ -95,7 +95,7 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         {
             var skills = await _planRepository.GetSectionSkillsForPlan(_plan.Id);
 
-            Assert.AreEqual(11, skills.Count());
+            Assert.AreEqual(22, skills.Count());
         }
 
         [Test]
@@ -105,7 +105,7 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
             var section = sections.OrderBy(x => x.Id).First();
             var skills = await _planRepository.GetSectionLevels(section.Id);
 
-            Assert.AreEqual(4, skills.Count());
+            Assert.AreEqual(3, skills.Count());
         }
 
         [Test]
@@ -113,7 +113,7 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         {
             var skills = await _planRepository.GetSectionLevelsForPlan(_plan.Id);
 
-            Assert.AreEqual(8, skills.Count());
+            Assert.AreEqual(7, skills.Count());
         }
 
         [Test]
