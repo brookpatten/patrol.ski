@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Repositories;
-using Dapper.Contrib.Extensions;
+using Dommel;
 using System.Linq;
 using System.Runtime.InteropServices;
 using AutoMapper;
@@ -99,13 +99,13 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
 
             var signatures = await _assignmentRepository.GetSignaturesForAssignment(1);
 
-            Assert.AreEqual(1, signatures.Count());
+            Assert.AreEqual(5, signatures.Count());
 
-            Assert.AreEqual(signature.AssignmentId, signatures.First().AssignmentId);
-            Assert.AreEqual(signature.SectionLevelId, signatures.First().SectionLevelId);
-            Assert.AreEqual(signature.SectionSkillId, signatures.First().SectionSkillId);
-            Assert.AreEqual(signature.SignedAt, signatures.First().SignedAt);
-            Assert.AreEqual(signature.SignedByUserId, signatures.First().SignedByUserId);
+            Assert.AreEqual(signature.AssignmentId, signatures.First(x=>x.Id==signature.Id).AssignmentId);
+            Assert.AreEqual(signature.SectionLevelId, signatures.First(x => x.Id == signature.Id).SectionLevelId);
+            Assert.AreEqual(signature.SectionSkillId, signatures.First(x => x.Id == signature.Id).SectionSkillId);
+            Assert.AreEqual(signature.SignedAt, signatures.First(x => x.Id == signature.Id).SignedAt);
+            Assert.AreEqual(signature.SignedByUserId, signatures.First(x => x.Id == signature.Id).SignedByUserId);
         }
 
         [Test]
@@ -130,12 +130,12 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
 
             var signatures = await _assignmentRepository.GetSignaturesWithUsersForAssignment(1);
 
-            Assert.AreEqual(1, signatures.Count());
+            Assert.AreEqual(5, signatures.Count());
 
-            Assert.AreEqual(signature.SectionLevelId, signatures.First().SectionLevelId);
-            Assert.AreEqual(signature.SectionSkillId, signatures.First().SectionSkillId);
-            Assert.AreEqual(signature.SignedAt, signatures.First().SignedAt);
-            Assert.AreEqual(_user.FirstName, signatures.First().SignedBy.FirstName);
+            Assert.AreEqual(signature.SectionLevelId, signatures.First(x => x.Id == signature.Id).SectionLevelId);
+            Assert.AreEqual(signature.SectionSkillId, signatures.First(x => x.Id == signature.Id).SectionSkillId);
+            Assert.AreEqual(signature.SignedAt, signatures.First(x => x.Id == signature.Id).SignedAt);
+            Assert.AreEqual(_user.FirstName, signatures.First(x => x.Id == signature.Id).SignedBy.FirstName);
         }
     }
 }

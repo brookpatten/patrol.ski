@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 using System.Data;
 
 using Dapper;
-using Dapper.Contrib;
-using Dapper.Contrib.Extensions;
+using Dommel;
 
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Dtos;
@@ -32,7 +31,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task InsertPlan(Plan plan)
         {
-            await _connection.InsertAsync(plan).ConfigureAwait(false);
+            plan.Id = (int)await _connection.InsertAsync(plan).ConfigureAwait(false);
         }
         public async Task UpdatePlan(Plan plan)
         {

@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 using System.Data;
 
 using Dapper;
-using Dapper.Contrib;
-using Dapper.Contrib.Extensions;
+using Dommel;
 
 using Amphibian.Patrol.Training.Api.Models;
 
@@ -29,7 +28,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task InsertPatrol(Amphibian.Patrol.Training.Api.Models.Patrol patrol)
         {
-            await _connection.InsertAsync(patrol)
+            patrol.Id = (int)await _connection.InsertAsync(patrol)
                 .ConfigureAwait(false);
         }
 
@@ -101,7 +100,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task InsertPatrolUser(PatrolUser patrolUser)
         {
-            await _connection.InsertAsync(patrolUser)
+            patrolUser.Id = (int)await _connection.InsertAsync(patrolUser)
                 .ConfigureAwait(false);
         }
 

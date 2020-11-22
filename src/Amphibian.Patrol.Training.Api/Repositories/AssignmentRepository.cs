@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 using System.Data;
 
 using Dapper;
-using Dapper.Contrib;
-using Dapper.Contrib.Extensions;
+using Dommel;
 
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Dtos;
@@ -113,7 +112,7 @@ namespace Amphibian.Patrol.Training.Api.Repositories
 
         public async Task InsertSignature(Signature signature)
         {
-            await _connection.InsertAsync(signature);
+            signature.Id=(int)await _connection.InsertAsync(signature);
         }
     }
 }

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Repositories;
-using Dapper.Contrib.Extensions;
+using Dommel;
 using System.Linq;
 
 namespace Amphibian.Patrol.Training.Tests.Repositories
@@ -30,7 +30,7 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
                 FirstName = "Test",
                 LastName = "Test"
             };
-            _connection.Insert(_user);
+            _user.Id=(int)_connection.Insert(_user);
             _patrol = new Amphibian.Patrol.Training.Api.Models.Patrol()
             {
                 Name="Test"

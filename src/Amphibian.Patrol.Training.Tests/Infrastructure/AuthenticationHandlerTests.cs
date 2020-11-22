@@ -119,7 +119,6 @@ namespace Amphibian.Patrol.Training.Tests.Infrastructure
         [Test]
         public async Task AuthenticateWithInvalidTokenAuthorizationHeaderShouldFail()
         {
-            string user = "user";
             Guid token = Guid.NewGuid();
             var credentialString = "Token " + token;
 
