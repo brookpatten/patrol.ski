@@ -8,7 +8,7 @@ namespace Amphibian.Patrol.Training.Api.Models
     public class PlanSection
     {
         public int Id { get; set; }
-        public int PatrolId { get; set; }
+        public int PlanId { get; set; }
         public int SectionId { get; set; }
     }
 }

@@ -29,10 +29,11 @@ namespace Amphibian.Patrol.Training.Api.Services
                 From = new EmailAddress("admin@patrol.training", "Patrol.Training Admin"),
                 Subject = "This is a test from the app",
                 PlainTextContent = "Hello, Email!",
-                HtmlContent = "<strong>Hello, Email!</strong>"
+                HtmlContent = "<strong>Hello, Email!</strong>",
             };
             msg.AddTo(new EmailAddress(GetToEmail(toEmail), toName));
             var response = await client.SendEmailAsync(msg);
+
         }
 
         private string GetToEmail(string email)

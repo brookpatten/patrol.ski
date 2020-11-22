@@ -14,19 +14,27 @@ namespace Amphibian.Patrol.Training.Persistence.Migrations
         static void Main(string[] args)
         {
             var configuration = PatrolTrainingApiConfiguration.LoadFromJsonConfig(Path.Combine(Directory.GetCurrentDirectory(), "../../../../Amphibian.Patrol.Training.Api"));
-            var result = MigrationRunner.RunMigrations(configuration.Database.ConnectionString,true,false);
 
-            if (!result.Successful)
+            if (configuration.Database.MigrateSchema)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(result.Error);
-                Console.ResetColor();
-                
-            }
+                var result = MigrationRunner.RunMigrations(configuration.Database.ConnectionString, configuration.Database.MigrateInitialData, configuration.Database.MigrateTestData);
 
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Success!");
-            Console.ResetColor();
+                if (!result.Successful)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(result.Error);
+                    Console.ResetColor();
+
+                }
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("Success!");
+                Console.ResetColor();
+            }
+            else
+            {
+                Console.WriteLine("Migrating Schema is Disabled in Configuration");
+            }
         }
 
         

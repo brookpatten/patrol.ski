@@ -54,6 +54,9 @@ namespace Amphibian.Patrol.Training.Configuration
     public class DatabaseConfiguration
     {
         public string ConnectionString { get; set; }
+        public bool MigrateSchema { get; set; }
+        public bool MigrateInitialData { get; set; }
+        public bool MigrateTestData { get; set; }
     }
 
     public class TestConfiguration
