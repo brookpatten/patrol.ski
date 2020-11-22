@@ -9,8 +9,8 @@
                 <h1>Login</h1>
                 <p class="text-muted">Sign In to your account</p>
                 <CInput
-                  placeholder="Username"
-                  autocomplete="username email"
+                  placeholder="Email"
+                  autocomplete="email"
                   v-model="email"
                 >
                   <template #prepend-content><CIcon name="cil-user"/></template>
@@ -89,15 +89,28 @@ export default {
           this.error = "Username or password is incorrect";
         });
     },
+    isValidEmail: function(email){
+      if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))
+      {
+        return (true)
+      }
+        return (false)
+    },
     reset: function(){
       let email = this.email;
-      this.$http.post('user/reset-password',{email}).then(response=>{
-        this.message = "We sent you an email with a link to reset your password";
-        this.error=null;
-      }).catch(err=>{
-        this.error = "Hmm, something went wrong";
+      if(this.isValidEmail(email)){
+        this.$http.post('user/reset-password',{email}).then(response=>{
+          this.message = "We sent you an email with a link to reset your password";
+          this.error=null;
+        }).catch(err=>{
+          this.error = "Hmm, something went wrong";
+          this.message=null;
+        });
+      }
+      else{
+        this.error="Please enter your email address";
         this.message=null;
-      });
+      }
     }
   }
 }

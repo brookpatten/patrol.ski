@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Amphibian.Patrol.Training.Api.Extensions;
+using Amphibian.Patrol.Training.Api.Validations;
+using FluentValidation.AspNetCore;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
@@ -92,23 +94,35 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         public async Task<IActionResult> Register(RegistrationRequest registration)
         {
             var user = await _userRepository.GetUser(registration.Email);
-            
+
+
             if (user != null)
             {
-                return BadRequest(new { message = "User Already Exists" });
+                ModelState.AddModelError("Email", "User Already Exists");
+                return BadRequest(ModelState);
             }
             else
             {
-                user = await _authenticationService.RegisterUser(registration.Email, registration.First, registration.Last, registration.Password);
-                var token = await _authenticationService.CreateNewTokenForUser(user);
-                var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
-
-                return Ok(new
+                RegistrationValidator validator = new RegistrationValidator();
+                var result = validator.Validate(registration);
+                if (result.IsValid)
                 {
-                    User = (UserIdentifiers)user,
-                    Token = token.TokenGuid,
-                    Patrols = patrols
-                });
+                    user = await _authenticationService.RegisterUser(registration.Email, registration.First, registration.Last, registration.Password);
+                    var token = await _authenticationService.CreateNewTokenForUser(user);
+                    var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
+
+                    return Ok(new
+                    {
+                        User = (UserIdentifiers)user,
+                        Token = token.TokenGuid,
+                        Patrols = patrols
+                    });
+                }
+                else
+                {
+                    result.AddToModelState(ModelState, null);
+                    return BadRequest(ModelState);
+                }
             }
         }
 

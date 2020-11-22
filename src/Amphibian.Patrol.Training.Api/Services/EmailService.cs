@@ -36,7 +36,7 @@ namespace Amphibian.Patrol.Training.Api.Services
 Thank you for registering with Patrol.Training.",
                 HtmlContent = @$"Hello {user.FirstName},<br/>Thank you for registering with Patrol.Training.",
             };
-            var response = await Send(msg, new EmailAddress(user.Email, user.FullName));
+            var response = await Send(msg, new EmailAddress(user.Email, user.GetFullName()));
         }
 
         public async Task SendResetEmail(User user,string resetRoute)
@@ -49,7 +49,7 @@ Thank you for registering with Patrol.Training.",
 Please follow use link to reset your password {_urlRoot}{resetRoute}",
                 HtmlContent = @$"Hello {user.FirstName},<br/>Please follow <a href='{_urlRoot}{resetRoute}'>this</a> link ({_urlRoot}{resetRoute}) to reset your password.",
             };
-            var response = await Send(msg, new EmailAddress(user.Email, user.FullName));
+            var response = await Send(msg, new EmailAddress(user.Email, user.GetFullName()));
         }
 
         private async Task<Response> Send(SendGridMessage message,params EmailAddress[] to)

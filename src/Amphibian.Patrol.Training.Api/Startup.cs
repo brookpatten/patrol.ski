@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
+using FluentValidation;
 
 using Amphibian.Patrol.Training.Configuration;
 using Microsoft.AspNetCore.Authentication;
@@ -60,6 +61,8 @@ namespace Amphibian.Patrol.Training.Api
 
             services.AddAuthentication("BasicOrTokenAuthentication")
                 .AddScheme<AuthenticationSchemeOptions, Infrastructure.AuthenticationHandler>("BasicOrTokenAuthentication", null);
+
+            
 
             services.AddScoped<IDbConnection,SqlConnection>(sp=>
             {
@@ -138,6 +141,7 @@ namespace Amphibian.Patrol.Training.Api
                 endpoints.MapControllers();
             });
 
+            
         }
     }
 }

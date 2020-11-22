@@ -12,12 +12,9 @@ namespace Amphibian.Patrol.Training.Api.Models
         public string FirstName { get; set; }
         public string LastName { get; set; }
 
-        public string FullName
+        public string GetFullName()
         {
-            get
-            {
-                return $"{FirstName} {LastName}";
-            }
+            return $"{FirstName} {LastName}";
         }
     }
     public class User: UserIdentifiers
