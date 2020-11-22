@@ -19,7 +19,9 @@ namespace Amphibian.Patrol.Training.Api
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var builder = CreateHostBuilder(args);
+            var host = builder.Build();
+            host.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args)
@@ -31,7 +33,9 @@ namespace Amphibian.Patrol.Training.Api
 
             }).ConfigureWebHostDefaults(webBuilder =>
             {
-                webBuilder.UseStartup<Startup>();
+                webBuilder
+                    .UseKestrel()
+                    .UseStartup<Startup>();
             })
             .UseSerilog((hostingContext, loggerConfiguration) =>
             {

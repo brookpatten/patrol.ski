@@ -110,6 +110,7 @@ namespace Amphibian.Patrol.Training.Api
             services.AddScoped<IPatrolRepository, PatrolRepository>();
             services.AddScoped<IPlanRepository, PlanRepository>();
             services.AddScoped<IAssignmentRepository, AssignmentRepository>();
+            services.AddScoped<IGroupRepository, GroupRepository>();
 
             //validations
             services.AddScoped<IValidator<AuthenticationController.RegistrationRequest>, RegistrationValidator>();
