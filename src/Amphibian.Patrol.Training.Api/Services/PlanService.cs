@@ -180,7 +180,10 @@ namespace Amphibian.Patrol.Training.Api.Services
                 return false;
             }
 
-            if(plan.Sections!=null)
+            var allLevels = (await _planRepository.GetLevels(plan.PatrolId)).ToList();
+            var allSkills = (await _planRepository.GetSkills(plan.PatrolId)).ToList();
+
+            if (plan.Sections!=null)
             {
                 foreach(var section in plan.Sections)
                 {
@@ -193,6 +196,10 @@ namespace Amphibian.Patrol.Training.Api.Services
                         {
                             var sectionLevel = section.Levels.SingleOrDefault(x => x.ColumnIndex == i);
                             if(sectionLevel==null || sectionLevel.Level == null || sectionLevel.Level.Id == default(int))
+                            {
+                                return false;
+                            }
+                            else if (!allLevels.Any(x=>x.Id==sectionLevel.Level.Id))
                             {
                                 return false;
                             }
@@ -212,6 +219,10 @@ namespace Amphibian.Patrol.Training.Api.Services
                         {
                             var sectionSkill = section.Skills.SingleOrDefault(x => x.RowIndex == i);
                             if (sectionSkill == null || sectionSkill.Skill == null || sectionSkill.Skill.Id == default(int))
+                            {
+                                return false;
+                            }
+                            else if (!allSkills.Any(x => x.Id == sectionSkill.Skill.Id))
                             {
                                 return false;
                             }
@@ -247,11 +258,65 @@ namespace Amphibian.Patrol.Training.Api.Services
                 if(newSection==null)
                 {
                     //remove
-                    
+                    await _planRepository.DeleteSection(section);
                 }
                 else
                 {
-                    //sync
+                    //sync levels
+                    var sectionLevels = (await _planRepository.GetSectionLevels(section.Id)).OrderBy(x => x.ColumnIndex).ToList();
+                    foreach(var sectionLevel in sectionLevels)
+                    {
+                        var newSectionlevel = newSection.Levels.SingleOrDefault(x => x.Id == sectionLevel.Id);
+                        if(newSectionlevel==null)
+                        {
+                            await _planRepository.DeleteSectionLevel(sectionLevel);
+                        }
+                        else
+                        {
+                            sectionLevel.ColumnIndex = newSectionlevel.ColumnIndex;
+                            sectionLevel.LevelId = newSectionlevel.Level.Id;
+                            await _planRepository.UpdateSectionLevel(sectionLevel);
+                        }
+                    }
+
+                    foreach(var newSectionLevel in newSection.Levels.Where(x=>x.Id==default(int)))
+                    {
+                        var sectionLevel = new SectionLevel()
+                        {
+                            SectionId = section.Id,
+                            ColumnIndex = newSectionLevel.ColumnIndex,
+                            LevelId = newSectionLevel.Level.Id
+                        };
+                        await _planRepository.InsertSectionLevel(sectionLevel);
+                    }
+
+                    //sync skills
+                    var sectionSkills = (await _planRepository.GetSectionSkills(section.Id)).OrderBy(x => x.RowIndex).ToList();
+                    foreach (var sectionSkill in sectionSkills)
+                    {
+                        var newSectionSkill = newSection.Skills.SingleOrDefault(x => x.Id == sectionSkill.Id);
+                        if (newSectionSkill == null)
+                        {
+                            await _planRepository.DeleteSectionSkill(sectionSkill);
+                        }
+                        else
+                        {
+                            sectionSkill.RowIndex = newSectionSkill.RowIndex;
+                            sectionSkill.SkillId = newSectionSkill.Skill.Id;
+                            await _planRepository.UpdateSectionSkill(sectionSkill);
+                        }
+                    }
+
+                    foreach (var newSectionSkill in newSection.Skills.Where(x => x.Id == default(int)))
+                    {
+                        var sectionSkill = new SectionSkill()
+                        {
+                            SectionId = section.Id,
+                            RowIndex = newSectionSkill.RowIndex,
+                            SkillId = newSectionSkill.Skill.Id
+                        };
+                        await _planRepository.InsertSectionSkill(sectionSkill);
+                    }
                 }
             }
 
@@ -259,6 +324,40 @@ namespace Amphibian.Patrol.Training.Api.Services
             foreach(var newSection in dto.Sections.Where(x=>x.Id==default(int)))
             {
                 //save new sections
+                var section = new Section()
+                {
+                    Name = newSection.Name,
+                    PatrolId = plan.PatrolId
+                };
+                await _planRepository.InsertSection(section);
+                var planSection = new PlanSection()
+                {
+                    PlanId = plan.Id,
+                    SectionId = section.Id
+                };
+                await _planRepository.InsertPlanSection(planSection);
+
+                foreach(var newLevel in newSection.Levels)
+                {
+                    var sectionLevel = new SectionLevel()
+                    {
+                        SectionId = section.Id,
+                        ColumnIndex = newLevel.ColumnIndex,
+                        LevelId = newLevel.Level.Id
+                    };
+                    await _planRepository.InsertSectionLevel(sectionLevel);
+                }
+
+                foreach(var newSkill in newSection.Skills)
+                {
+                    var sectionSkill = new SectionSkill()
+                    {
+                        SectionId = section.Id,
+                        RowIndex = newSkill.RowIndex,
+                        SkillId = newSkill.Skill.Id
+                    };
+                    await _planRepository.InsertSectionSkill(sectionSkill);
+                }
             }
         }
     }

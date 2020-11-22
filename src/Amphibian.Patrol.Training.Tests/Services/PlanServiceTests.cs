@@ -278,9 +278,17 @@ namespace Amphibian.Patrol.Training.Tests.Services
         [Test]
         public async Task PlanIsValidIfItHasContiguousSection()
         {
+            _planRepositoryMock.Setup(x => x.GetLevels(1))
+                .Returns(Task.FromResult(new List<Level>() { new Level() { Id = 1 } }.AsEnumerable()))
+                .Verifiable();
+            _planRepositoryMock.Setup(x => x.GetSkills(1))
+                .Returns(Task.FromResult(new List<Skill>() { new Skill() { Id = 1 } }.AsEnumerable()))
+                .Verifiable();
+
             var plan = new PlanDto()
             {
                 Name = "test",
+                PatrolId = 1,
                 Sections = new List<SectionDto>() {
                     new SectionDto(){ 
                         Levels = new List<SectionLevelDto>()
@@ -345,8 +353,105 @@ namespace Amphibian.Patrol.Training.Tests.Services
         }
 
         [Test]
+        public async Task PlanIsInvalidIfItUsesSkillsFromWrongPatrol()
+        {
+            _planRepositoryMock.Setup(x => x.GetLevels(1))
+                .Returns(Task.FromResult(new List<Level>() { }.AsEnumerable()))
+                .Verifiable();
+            _planRepositoryMock.Setup(x => x.GetSkills(1))
+                .Returns(Task.FromResult(new List<Skill>() { new Skill() { Id = 1 } }.AsEnumerable()))
+                .Verifiable();
+
+            var plan = new PlanDto()
+            {
+                Name = "test",
+                PatrolId = 1,
+                Sections = new List<SectionDto>() {
+                    new SectionDto(){
+                        Levels = new List<SectionLevelDto>()
+                        {
+                            new SectionLevelDto()
+                            {
+                                ColumnIndex=0,
+                                Level = new Level()
+                                {
+                                    Id = 1,
+                                }
+                            },
+                        },
+                        Skills = new List<SectionSkillDto>()
+                        {
+                            new SectionSkillDto()
+                            {
+                                RowIndex=0,
+                                Skill = new Skill()
+                                {
+                                    Id=1
+                                }
+                            },
+                        }
+                    }
+                }
+            };
+            var result = await _planService.IsPlanFormatValid(plan);
+            Assert.IsFalse(result);
+        }
+
+        [Test]
+        public async Task PlanIsInvalidIfItUsesLevelsFromWrongPatrol()
+        {
+            _planRepositoryMock.Setup(x => x.GetLevels(1))
+                .Returns(Task.FromResult(new List<Level>() { new Level() { Id = 1 } }.AsEnumerable()))
+                .Verifiable();
+            _planRepositoryMock.Setup(x => x.GetSkills(1))
+                .Returns(Task.FromResult(new List<Skill>() {  }.AsEnumerable()))
+                .Verifiable();
+
+            var plan = new PlanDto()
+            {
+                Name = "test",
+                PatrolId = 1,
+                Sections = new List<SectionDto>() {
+                    new SectionDto(){
+                        Levels = new List<SectionLevelDto>()
+                        {
+                            new SectionLevelDto()
+                            {
+                                ColumnIndex=0,
+                                Level = new Level()
+                                {
+                                    Id = 1,
+                                }
+                            },
+                        },
+                        Skills = new List<SectionSkillDto>()
+                        {
+                            new SectionSkillDto()
+                            {
+                                RowIndex=0,
+                                Skill = new Skill()
+                                {
+                                    Id=1
+                                }
+                            },
+                        }
+                    }
+                }
+            };
+            var result = await _planService.IsPlanFormatValid(plan);
+            Assert.IsFalse(result);
+        }
+
+        [Test]
         public async Task PlanIsInvalidIfLevelsAreNotContiguous()
         {
+            _planRepositoryMock.Setup(x => x.GetLevels(1))
+                .Returns(Task.FromResult(new List<Level>() { new Level() { Id = 1 } }.AsEnumerable()))
+                .Verifiable();
+            _planRepositoryMock.Setup(x => x.GetSkills(1))
+                .Returns(Task.FromResult(new List<Skill>() { new Skill() { Id = 1 } }.AsEnumerable()))
+                .Verifiable();
+
             var plan = new PlanDto()
             {
                 Name = "test",
@@ -408,6 +513,13 @@ namespace Amphibian.Patrol.Training.Tests.Services
         [Test]
         public async Task PlanIsInValidIfSkillsAreNotContiguous()
         {
+            _planRepositoryMock.Setup(x => x.GetLevels(1))
+                .Returns(Task.FromResult(new List<Level>() { new Level() { Id = 1 } }.AsEnumerable()))
+                .Verifiable();
+            _planRepositoryMock.Setup(x => x.GetSkills(1))
+                .Returns(Task.FromResult(new List<Skill>() { new Skill() { Id = 1 } }.AsEnumerable()))
+                .Verifiable();
+
             var plan = new PlanDto()
             {
                 Name = "test",

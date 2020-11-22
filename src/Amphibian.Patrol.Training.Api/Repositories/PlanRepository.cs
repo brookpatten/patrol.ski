@@ -145,5 +145,33 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         {
             skill.Id = (int)await _connection.InsertAsync(skill).ConfigureAwait(false);
         }
+
+        public async Task DeleteSection(Section section)
+        {
+            await _connection.DeleteMultipleAsync<SectionSkill>(x => x.SectionId == section.Id);
+            await _connection.DeleteMultipleAsync<SectionLevel>(x => x.SectionId == section.Id);
+            await _connection.DeleteMultipleAsync<PlanSection>(x => x.SectionId == section.Id);
+            await _connection.DeleteAsync(section);
+        }
+
+        public async Task DeleteSectionLevel(SectionLevel sectionLevel)
+        {
+            await _connection.DeleteAsync(sectionLevel);
+        }
+
+        public async Task DeleteSectionSkill(SectionSkill sectionSkill)
+        {
+            await _connection.DeleteAsync(sectionSkill);
+        }
+
+        public async Task UpdateSectionLevel(SectionLevel sectionLevel)
+        {
+            await _connection.UpdateAsync(sectionLevel);
+        }
+
+        public async Task UpdateSectionSkill(SectionSkill sectionSkill)
+        {
+            await _connection.UpdateAsync(sectionSkill);
+        }
     }
 }
