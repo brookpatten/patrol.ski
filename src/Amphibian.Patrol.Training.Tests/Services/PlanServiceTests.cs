@@ -53,6 +53,7 @@ namespace Amphibian.Patrol.Training.Tests.Services
             Assert.AreEqual(1, plan.Sections.Count());
             Assert.AreEqual(1, plan.Sections.First().Levels.Count());
             Assert.AreEqual(1, plan.Sections.First().Skills.Count());
+            _planRepositoryMock.Verify();
         }
     }
 }

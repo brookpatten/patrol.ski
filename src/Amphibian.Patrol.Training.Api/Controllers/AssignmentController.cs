@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using Amphibian.Patrol.Training.Api.Extensions;
+using Amphibian.Patrol.Training.Api.Dtos;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
@@ -79,6 +80,32 @@ namespace Amphibian.Patrol.Training.Api.Controllers
                         Plan = plan,
                         Assignment = assignment
                     });
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        public class CreateSignaturesDto
+        {
+            public int AssignmentId { get; set; }
+            public List<NewSignatureDto> Signatures { get; set; }
+        }
+
+        [HttpPost]
+        [Route("assignment/sign")]
+        [Authorize]
+        public async Task<IActionResult> CreateSignatures(CreateSignaturesDto dto)
+        {
+            var assignment = await _assignmentService.GetAssignment(dto.AssignmentId);
+            var plan = await _planService.GetPlan(assignment.PlanId);
+            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
+            //TODO: also make sure the user has the right to create these signatures
+            if (patrols.Any(x => x.Id == plan.PatrolId))
+            {
+                await _assignmentService.CreateSignatures(assignment.Id, User.GetUserId(), dto.Signatures);
+                return Ok();
             }
             else
             {

@@ -33,5 +33,27 @@ namespace Amphibian.Patrol.Training.Api.Services
 
             return assignmentDto;
         }
+
+        public async Task CreateSignatures(int assignmentId, int byUserId, IList<NewSignatureDto> newSignatures)
+        {
+            var existingSignatures = await _assignmentRepository.GetSignaturesForAssignment(assignmentId);
+            var now = DateTime.UtcNow;
+
+            //remove any "new" signatures that were previously signed by someone else
+            var uniqueSignatures = newSignatures.Where(x => !existingSignatures.Any(y => y.SectionLevelId == x.SectionLevelId && y.SectionSkillId == x.SectionSkillId));
+
+            foreach(var sig in uniqueSignatures)
+            {
+                var signature = new Signature()
+                {
+                    AssignmentId = assignmentId,
+                    SectionLevelId = sig.SectionLevelId,
+                    SectionSkillId = sig.SectionSkillId,
+                    SignedByUserId = byUserId,
+                    SignedAt = now
+                };
+                await _assignmentRepository.InsertSignature(signature);
+            }
+        }
     }
 }

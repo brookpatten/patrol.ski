@@ -49,6 +49,27 @@ namespace Amphibian.Patrol.Training.Tests.Services
             var assignment = await _assignmentService.GetAssignment(assignmentId);
 
             Assert.AreEqual(1, assignment.Signatures.Count());
+            _assignmentRepositoryMock.Verify();
+        }
+
+        [Test]
+        public async Task CanCreateSignatures()
+        {
+            var assignmentId = 1;
+            _assignmentRepositoryMock.Setup(x => x.GetSignaturesForAssignment(assignmentId))
+                .Returns(Task.FromResult((new List<Signature>()).AsEnumerable()))
+                .Verifiable();
+
+            int sectionSkillId = 5;
+            int sectionLevelId = 6;
+
+            _assignmentRepositoryMock.Setup(x => x.InsertSignature(It.Is<Signature>(y => y.SectionSkillId == sectionSkillId && y.SectionLevelId == sectionLevelId)))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+
+            await _assignmentService.CreateSignatures(assignmentId, 1, new List<NewSignatureDto>() { new NewSignatureDto() { SectionLevelId = sectionLevelId, SectionSkillId = sectionSkillId } });
+
+            _assignmentRepositoryMock.Verify();
         }
     }
 }
