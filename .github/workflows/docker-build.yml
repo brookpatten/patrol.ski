@@ -9,14 +9,24 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2017-CU8-ubuntu
+        env:
+          SA_PASSWORD: ${{ secrets.BROOK_PAT }}comPLEXity!!
+          ACCEPT_EULA: Y
+          MSSQL_PID: Express
+        ports:
+          - 1433:1433
     steps:
       - uses: actions/checkout@v2
         with:
           lfs: true
       - name: run tests
-        run: dotnet test ./src --verbosity normal --filter TestCategory!=persistence
+        run: dotnet test ./src --verbosity normal
         env:
           ASPNETCORE_ENVIRONMENT: ci
+          Test__ConnectionString: 'Server=localhost;User ID=sa;Password=${{ secrets.BROOK_PAT }}comPLEXity!!;'
         
   build_frontend:
     needs: [test]    
