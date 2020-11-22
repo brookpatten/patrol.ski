@@ -7,7 +7,7 @@ using NUnit.Framework;
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Repositories;
 
-namespace Amphibian.Patrol.Training.Tests
+namespace Amphibian.Patrol.Training.Tests.Repositories
 {
     [TestFixture(Category ="Persistence")]
     public class UserRepositoryTests: DatabaseConnectedTestFixture

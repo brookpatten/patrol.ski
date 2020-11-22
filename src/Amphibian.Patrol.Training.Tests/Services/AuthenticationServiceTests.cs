@@ -2,7 +2,7 @@ using NUnit.Framework;
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Services;
 
-namespace Amphibian.Patrol.Training.Tests
+namespace Amphibian.Patrol.Training.Tests.Services
 {
     public class Tests
     {

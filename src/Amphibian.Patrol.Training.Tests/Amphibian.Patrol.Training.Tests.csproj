@@ -19,4 +19,8 @@
     <ProjectReference Include="..\Amphibian.Patrol.Training.Persistence.Migrations\Amphibian.Patrol.Training.Persistence.Migrations.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+  </ItemGroup>
+
 </Project>

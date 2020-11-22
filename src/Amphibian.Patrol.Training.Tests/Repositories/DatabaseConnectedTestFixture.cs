@@ -12,7 +12,7 @@ using Dapper;
 using Amphibian.Patrol.Training.Persistence.Migrations;
 using System.Data;
 
-namespace Amphibian.Patrol.Training.Tests
+namespace Amphibian.Patrol.Training.Tests.Repositories
 {
     public abstract class DatabaseConnectedTestFixture
     {
