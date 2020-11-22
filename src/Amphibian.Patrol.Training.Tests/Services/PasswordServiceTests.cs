@@ -4,6 +4,7 @@ using Amphibian.Patrol.Training.Api.Services;
 
 namespace Amphibian.Patrol.Training.Tests.Services
 {
+    [TestFixture(Category = "Services")]
     public class Tests
     {
         private int _defaultIterations = 5;

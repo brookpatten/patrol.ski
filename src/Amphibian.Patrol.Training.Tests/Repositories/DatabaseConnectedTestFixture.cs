@@ -14,6 +14,7 @@ using System.Data;
 
 namespace Amphibian.Patrol.Training.Tests.Repositories
 {
+    [TestFixture(Category = "Persistence")]
     public abstract class DatabaseConnectedTestFixture
     {
         private string _connectionString;

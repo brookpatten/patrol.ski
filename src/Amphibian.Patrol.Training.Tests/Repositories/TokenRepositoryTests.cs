@@ -9,7 +9,6 @@ using Amphibian.Patrol.Training.Api.Repositories;
 
 namespace Amphibian.Patrol.Training.Tests.Repositories
 {
-    [TestFixture(Category ="Persistence")]
     public class TokenRepositoryTests: DatabaseConnectedTestFixture
     {
         private TokenRepository _tokenRepository;

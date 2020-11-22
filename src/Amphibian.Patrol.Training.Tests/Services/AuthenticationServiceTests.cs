@@ -14,6 +14,7 @@ using AuthenticationService = Amphibian.Patrol.Training.Api.Services.Authenticat
 
 namespace Amphibian.Patrol.Training.Tests.Services
 {
+    [TestFixture(Category = "Services")]
     public class AuthenticationServiceTests
     {
         private AuthenticationService _authenticationService;
