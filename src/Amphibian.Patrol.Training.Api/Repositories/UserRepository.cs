@@ -13,7 +13,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Amphibian.Patrol.Training.Api.Repositories
 {
-    public class UserRepository
+    public class UserRepository : IUserRepository
     {
         private readonly IDbConnection _connection;
 

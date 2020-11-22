@@ -11,15 +11,15 @@ using Amphibian.Patrol.Training.Api.Models;
 
 namespace Amphibian.Patrol.Training.Api.Services
 {
-    public class AuthenticationService
+    public class AuthenticationService : IAuthenticationService
     {
         private readonly ILogger<AuthenticationService> _logger;
-        private readonly UserRepository _userRepository;
-        private readonly PasswordService _passwordService;
-        private readonly TokenRepository _tokenRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly IPasswordService _passwordService;
+        private readonly ITokenRepository _tokenRepository;
         private readonly ISystemClock _systemClock;
 
-        public AuthenticationService(ILogger<AuthenticationService> logger, UserRepository userRepository, PasswordService passwordService, TokenRepository tokenRepository, ISystemClock systemClock)
+        public AuthenticationService(ILogger<AuthenticationService> logger, IUserRepository userRepository, IPasswordService passwordService, ITokenRepository tokenRepository, ISystemClock systemClock)
         {
             _logger = logger;
             _userRepository = userRepository;
@@ -44,13 +44,15 @@ namespace Amphibian.Patrol.Training.Api.Services
 
         public async Task<User> AuthenticateUserWithToken(Guid guid)
         {
+            var now = _systemClock.UtcNow.UtcDateTime;
+
             var token = await _tokenRepository.GetToken(guid);
             if (token == null)
             {
                 //invalid token
                 return null;
             }
-            else if (DateTime.Now - token.LastRequestAt > new TimeSpan(1, 0, 0))
+            else if (now - token.LastRequestAt > new TimeSpan(1, 0, 0))
             {
                 //expired token
                 await _tokenRepository.DeleteToken(token);
@@ -61,14 +63,14 @@ namespace Amphibian.Patrol.Training.Api.Services
                 //valid token
                 var user = await _userRepository.GetUser(token.UserId);
 
-                token.LastRequestAt = _systemClock.UtcNow.UtcDateTime;
+                token.LastRequestAt = now;
                 await _tokenRepository.UpdateToken(token);
 
                 return user;
             }
         }
 
-        public async Task<User> AuthenticateUserWithPassword(string email,string password)
+        public async Task<User> AuthenticateUserWithPassword(string email, string password)
         {
             var checkUser = await _userRepository.GetUser(email);
             if (checkUser != null)

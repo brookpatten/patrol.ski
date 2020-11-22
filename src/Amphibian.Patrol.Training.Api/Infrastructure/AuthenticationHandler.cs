@@ -13,20 +13,20 @@ using System.Security.Claims;
 using Amphibian.Patrol.Training.Api.Models;
 using Amphibian.Patrol.Training.Api.Services;
 using Amphibian.Patrol.Training.Api.Repositories;
-using AuthenticationService = Amphibian.Patrol.Training.Api.Services.AuthenticationService;
+using IAuthenticationService = Amphibian.Patrol.Training.Api.Services.IAuthenticationService;
 
 namespace Amphibian.Patrol.Training.Api.Infrastructure
 {
     public class AuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        private readonly AuthenticationService _authenticationService;
+        private readonly IAuthenticationService _authenticationService;
 
         public AuthenticationHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
             ISystemClock clock,
-            AuthenticationService authenticationService)
+            IAuthenticationService authenticationService)
             : base(options, logger, encoder, clock)
         {
             _authenticationService = authenticationService;

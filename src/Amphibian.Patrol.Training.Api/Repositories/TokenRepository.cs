@@ -13,7 +13,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace Amphibian.Patrol.Training.Api.Repositories
 {
-    public class TokenRepository
+    public class TokenRepository : ITokenRepository
     {
         private readonly IDbConnection _connection;
 

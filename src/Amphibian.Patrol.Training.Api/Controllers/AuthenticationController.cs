@@ -15,10 +15,10 @@ namespace Amphibian.Patrol.Training.Api.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly ILogger<AuthenticationController> _logger;
-        private readonly AuthenticationService _authenticationService;
-        private readonly UserRepository _userRepository;
+        private readonly IAuthenticationService _authenticationService;
+        private readonly IUserRepository _userRepository;
 
-        public AuthenticationController(ILogger<AuthenticationController> logger, AuthenticationService authenticationService, UserRepository userRepository)
+        public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, IUserRepository userRepository)
         {
             _logger = logger;
             _authenticationService = authenticationService;
