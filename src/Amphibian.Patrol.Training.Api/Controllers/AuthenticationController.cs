@@ -93,37 +93,19 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Register(RegistrationRequest registration)
         {
+            //it is assumed if we got to this point the validation completed and is valid
             var user = await _userRepository.GetUser(registration.Email);
+            
+            user = await _authenticationService.RegisterUser(registration.Email, registration.First, registration.Last, registration.Password);
+            var token = await _authenticationService.CreateNewTokenForUser(user);
+            var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
 
-
-            if (user != null)
+            return Ok(new
             {
-                ModelState.AddModelError("Email", "User Already Exists");
-                return BadRequest(ModelState);
-            }
-            else
-            {
-                RegistrationValidator validator = new RegistrationValidator();
-                var result = validator.Validate(registration);
-                if (result.IsValid)
-                {
-                    user = await _authenticationService.RegisterUser(registration.Email, registration.First, registration.Last, registration.Password);
-                    var token = await _authenticationService.CreateNewTokenForUser(user);
-                    var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
-
-                    return Ok(new
-                    {
-                        User = (UserIdentifiers)user,
-                        Token = token.TokenGuid,
-                        Patrols = patrols
-                    });
-                }
-                else
-                {
-                    result.AddToModelState(ModelState, null);
-                    return BadRequest(ModelState);
-                }
-            }
+                User = (UserIdentifiers)user,
+                Token = token.TokenGuid,
+                Patrols = patrols
+            });
         }
 
         public class ChangePasswordRequest

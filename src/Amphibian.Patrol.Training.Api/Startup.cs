@@ -27,6 +27,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
 using Amphibian.Patrol.Training.Api.Services;
 using Amphibian.Patrol.Training.Api.Controllers;
+using Amphibian.Patrol.Training.Api.Validations;
+using FluentValidation.AspNetCore;
 
 namespace Amphibian.Patrol.Training.Api
 {
@@ -52,7 +54,7 @@ namespace Amphibian.Patrol.Training.Api
 
             services.AddSingleton(serviceConfiguration);
 
-            services.AddControllers();
+            services.AddControllers().AddFluentValidation();
 
             services.AddSwaggerGen(c =>
             {
@@ -63,20 +65,27 @@ namespace Amphibian.Patrol.Training.Api
                 .AddScheme<AuthenticationSchemeOptions, Infrastructure.AuthenticationHandler>("BasicOrTokenAuthentication", null);
 
             
-
+            //db
             services.AddScoped<IDbConnection,SqlConnection>(sp=>
             {
                 return new SqlConnection(serviceConfiguration.Database.ConnectionString);
             });
-            services.AddTransient<ClaimsPrincipal>(provider => provider.GetService<IHttpContextAccessor>().HttpContext.User);
-            services.AddScoped<IUserRepository,UserRepository>();
+            //persistence
+            services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ITokenRepository, TokenRepository>();
             services.AddScoped<IPatrolRepository, PatrolRepository>();
             services.AddScoped<IPlanRepository, PlanRepository>();
+
+            //validations
+            services.AddScoped<IValidator<AuthenticationController.RegistrationRequest>, RegistrationValidator>();
+
+            //security
+            //services.AddTransient<ClaimsPrincipal>(provider => provider.GetService<IHttpContextAccessor>().HttpContext.User);
+
+            //services
             services.AddScoped<Services.IAuthenticationService, Services.AuthenticationService>();
             services.AddScoped<Services.IPasswordService, Services.PasswordService>(sp=>new Services.PasswordService(5,32));
             services.AddScoped<EmailService, EmailService>(provider => new EmailService(serviceConfiguration.Email.SendGridApiKey, serviceConfiguration.Email.SendAllEmailsTo,serviceConfiguration.Email.FromName,serviceConfiguration.Email.FromEmail,serviceConfiguration.App.RootUrl));
-            //services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
         }
 
         private void SetFromEnvVarIfAvailable<T>(T config, Action<T,string> set,string name)

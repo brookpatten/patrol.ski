@@ -20,7 +20,7 @@
     "Amphibian.Patro.Training.Api": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "https://localhost:44348",
+      "launchUrl": "https://localhost:44348/swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

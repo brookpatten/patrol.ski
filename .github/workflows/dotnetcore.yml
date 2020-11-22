@@ -65,6 +65,13 @@ jobs:
       uses: Azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Upload artifact
+      uses: actions/upload-artifact@v1.0.0
+      with:
+        # Artifact name
+        name: deployment
+        # Directory containing files to upload
+        path: deployment
     - name: Deploy to Azure
       uses: Azure/webapps-deploy@v2
       with:
