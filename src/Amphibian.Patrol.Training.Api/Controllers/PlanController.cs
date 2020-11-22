@@ -29,6 +29,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             _planRepository = planRepository;
         }
 
+        [HttpGet]
         [Route("plans")]
         public async Task<IActionResult> Plans(int patrolId)
         {

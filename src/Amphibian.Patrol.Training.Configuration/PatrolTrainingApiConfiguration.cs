@@ -5,18 +5,20 @@ using System.IO;
 
 namespace Amphibian.Patrol.Training.Configuration
 {
-    public class ScheduleConfiguration
+    public class PatrolTrainingApiConfiguration
     {
         public DatabaseConfiguration Database { get; set; }
         public TestConfiguration Test { get; set; }
+        public EmailConfiguration Email{get;set;}
 
-        public ScheduleConfiguration()
+        public PatrolTrainingApiConfiguration()
         {
             Database = new DatabaseConfiguration();
             Test = new TestConfiguration();
+            Email = new EmailConfiguration();
         }
 
-        public static ScheduleConfiguration LoadFromJsonConfig(string configBasePath=null,string environmentName=null)
+        public static PatrolTrainingApiConfiguration LoadFromJsonConfig(string configBasePath=null,string environmentName=null)
         {
             if(string.IsNullOrEmpty(environmentName))
             {
@@ -43,7 +45,7 @@ namespace Amphibian.Patrol.Training.Configuration
 
             IConfiguration config = builder.Build();
 
-            var serviceConfiguration = config.Get<ScheduleConfiguration>();
+            var serviceConfiguration = config.Get<PatrolTrainingApiConfiguration>();
 
             return serviceConfiguration;
         }
@@ -63,5 +65,11 @@ namespace Amphibian.Patrol.Training.Configuration
         {
             OnPersistenceTestCompletion = PersistenceTestCompletionAction.DropOnComplete;
         }
+    }
+
+    public class EmailConfiguration
+    {
+        public string SendGridApiKey { get; set; }
+        public string SendAllEmailsTo { get; set; }
     }
 }

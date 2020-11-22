@@ -22,7 +22,7 @@ namespace Amphibian.Patrol.Training.Api.Controllers
         private readonly IAuthenticationService _authenticationService;
         private readonly IUserRepository _userRepository;
         private readonly IPatrolRepository _patrolRepository;
-
+        
         public AuthenticationController(ILogger<AuthenticationController> logger, IAuthenticationService authenticationService, 
             IUserRepository userRepository, IPatrolRepository patrolRepository)
         {

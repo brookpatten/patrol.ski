@@ -22,14 +22,14 @@ namespace Amphibian.Patrol.Training.Tests.Repositories
         private string _databaseName;
         private SqlConnectionStringBuilder _connectionStringBuilder;
         private const string _dbOpsDb = "master";
-        private ScheduleConfiguration _configuration;
+        private PatrolTrainingApiConfiguration _configuration;
         private DateTime _runTime;
 
         [OneTimeSetUp]
         public void BaseOneTimeSetUp()
         {
             //find the config for the app
-            _configuration = ScheduleConfiguration.LoadFromJsonConfig(Path.Combine(Directory.GetCurrentDirectory(), "../../../../Amphibian.Patrol.Training.Api"));
+            _configuration = PatrolTrainingApiConfiguration.LoadFromJsonConfig(Path.Combine(Directory.GetCurrentDirectory(), "../../../../Amphibian.Patrol.Training.Api"));
 
             //reformat the existing connection string to connect to the master db (not strictly necassary, but mast always exists, the app db doesn't)
             _connectionStringBuilder = new SqlConnectionStringBuilder(_configuration.Database.ConnectionString);

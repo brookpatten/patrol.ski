@@ -24,6 +24,7 @@ using System.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using Amphibian.Patrol.Training.Api.Services;
 
 namespace Amphibian.Patrol.Training.Api
 {
@@ -39,8 +40,14 @@ namespace Amphibian.Patrol.Training.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var serviceConfiguration = new ScheduleConfiguration();
+            var serviceConfiguration = new PatrolTrainingApiConfiguration();
             Configuration.Bind(serviceConfiguration);
+
+            //pull secure things from env vars if we're not in dev
+            //TODO: we can probably just do this with reflection, but this is faster
+            SetFromEnvVarIfAvailable<PatrolTrainingApiConfiguration>(serviceConfiguration, (c, s) => c.Email.SendGridApiKey = s, "Email.SendGridApiKey");
+            SetFromEnvVarIfAvailable<PatrolTrainingApiConfiguration>(serviceConfiguration, (c, s) => c.Database.ConnectionString = s, "Database.ConnectionString");
+
             services.AddSingleton(serviceConfiguration);
 
             services.AddControllers();
@@ -62,10 +69,20 @@ namespace Amphibian.Patrol.Training.Api
             services.AddScoped<ITokenRepository, TokenRepository>();
             services.AddScoped<IPatrolRepository, PatrolRepository>();
             services.AddScoped<IPlanRepository, PlanRepository>();
-            services.AddScoped<Amphibian.Patrol.Training.Api.Services.IAuthenticationService, Amphibian.Patrol.Training.Api.Services.AuthenticationService>();
-            services.AddScoped<Amphibian.Patrol.Training.Api.Services.IPasswordService, Amphibian.Patrol.Training.Api.Services.PasswordService>(sp=>new Amphibian.Patrol.Training.Api.Services.PasswordService(5,32));
-
+            services.AddScoped<Services.IAuthenticationService, Services.AuthenticationService>();
+            services.AddScoped<Services.IPasswordService, Services.PasswordService>(sp=>new Services.PasswordService(5,32));
+            services.AddScoped<EmailService, EmailService>(provider => new EmailService(serviceConfiguration.Email.SendGridApiKey, serviceConfiguration.Email.SendAllEmailsTo));
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+        }
+
+        private void SetFromEnvVarIfAvailable<T>(T config, Action<T,string> set,string name)
+        {
+            string value = System.Environment.GetEnvironmentVariable(name);
+
+            if(!string.IsNullOrWhiteSpace(value))
+            {
+                set(config, value);
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -110,10 +127,10 @@ namespace Amphibian.Patrol.Training.Api
             app.UseAuthentication();
             app.UseAuthorization();
 
-            //app.UseCors(x => x
-            //    .AllowAnyOrigin()
-            //    .AllowAnyMethod()
-            //    .AllowAnyHeader());
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
 
             app.UseEndpoints(endpoints =>
             {
