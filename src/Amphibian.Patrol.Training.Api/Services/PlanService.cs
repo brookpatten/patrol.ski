@@ -65,30 +65,48 @@ namespace Amphibian.Patrol.Training.Api.Services
         /// <returns></returns>
         public async Task<Plan> CreatePlan(string name,int patrolId, int? copyFromPlanId)
         {
+            Plan copyFromPlan = null;
+            if(copyFromPlanId.HasValue)
+            {
+                copyFromPlan = await _planRepository.GetPlan(copyFromPlanId.Value);
+            }
+
             var newPlan = new Plan()
             {
-                Name = name,
                 PatrolId = patrolId
             };
+            if(!string.IsNullOrEmpty(name))
+            {
+                newPlan.Name = name;
+            }
+            else if (copyFromPlan!=null)
+            {
+                newPlan.Name = "Copy of " + copyFromPlan.Name;
+            }
+            else
+            {
+                newPlan.Name = "New Training Plan";
+            }
             await _planRepository.InsertPlan(newPlan);
 
-            if(copyFromPlanId.HasValue)
+            var patrolLevels = (await _planRepository.GetLevels(patrolId)).ToList();
+            var patrolSkills = (await _planRepository.GetSkills(patrolId)).ToList();
+            var patrolGroups = (await _groupRepository.GetGroupsForPatrol(patrolId)).ToList();
+
+            if (copyFromPlanId.HasValue)
             {
                 var sections = await _planRepository.GetSectionsForPlan(copyFromPlanId.Value);
                 var sectionSkills = await _planRepository.GetSectionSkillsForPlan(copyFromPlanId.Value);
                 var sectionLevels = await _planRepository.GetSectionLevelsForPlan(copyFromPlanId.Value);
                 var sectionGroups = await _planRepository.GetSectionGroupsForPlan(copyFromPlanId.Value);
 
-                var patrolLevels = (await _planRepository.GetLevels(patrolId)).ToList();
-                var patrolSkills = (await _planRepository.GetSkills(patrolId)).ToList();
-                var patrolGroups = (await _groupRepository.GetGroupsForPatrol(patrolId)).ToList();
-
-                foreach(var section in sections)
+                foreach (var section in sections)
                 {
                     var newSection = new Section()
                     {
                         Name = section.Name,
-                        PatrolId = section.PatrolId
+                        PatrolId = section.PatrolId,
+                        Color = section.Color
                     };
                     await _planRepository.InsertSection(newSection);
 
@@ -103,13 +121,13 @@ namespace Amphibian.Patrol.Training.Api.Services
                     foreach (var sectionLevel in levels)
                     {
                         int levelId;
-                        if(sectionLevel.Level.PatrolId==patrolId)
+                        if (sectionLevel.Level.PatrolId == patrolId)
                         {
                             levelId = sectionLevel.Level.Id;
                         }
                         else
                         {
-                            if(patrolLevels.Any(x=>x.Name==sectionLevel.Level.Name))
+                            if (patrolLevels.Any(x => x.Name == sectionLevel.Level.Name))
                             {
                                 levelId = patrolLevels.First(x => x.Name == sectionLevel.Level.Name).Id;
                             }
@@ -174,7 +192,7 @@ namespace Amphibian.Patrol.Training.Api.Services
                     }
 
                     var groups = sectionGroups.Where(x => x.SectionId == section.Id);
-                    foreach(var sectionGroup in groups)
+                    foreach (var sectionGroup in groups)
                     {
                         int groupid;
                         if (sectionGroup.Group.PatrolId == patrolId)
@@ -208,6 +226,34 @@ namespace Amphibian.Patrol.Training.Api.Services
                         await _planRepository.InsertSectionGroup(newSectionGroup);
                     }
                 }
+            }
+            else
+            {
+                var section = new Section() { Name = "New Section", PatrolId = patrolId, Color = "#00FF00" };
+                await _planRepository.InsertSection(section);
+
+                var planSection = new PlanSection() { PlanId = newPlan.Id, SectionId = section.Id };
+                await _planRepository.InsertPlanSection(planSection);
+                
+                var level = patrolLevels.FirstOrDefault();
+                if (level == null)
+                {
+                    level = new Level() { Name = "New", PatrolId = patrolId };
+                    await _planRepository.InsertLevel(level);
+                }
+
+                var sectionLevel = new SectionLevel() { SectionId = section.Id, LevelId = level.Id, ColumnIndex = 0 };
+                await _planRepository.InsertSectionLevel(sectionLevel);
+
+                var skill = patrolSkills.FirstOrDefault();
+                if (skill == null)
+                {
+                    skill = new Skill() { Name = "New", PatrolId = patrolId };
+                    await _planRepository.InsertSkill(skill);
+                }
+
+                var sectionSkill = new SectionSkill() { SectionId = section.Id, SkillId = skill.Id, RowIndex = 0 };
+                await _planRepository.InsertSectionSkill(sectionSkill);
             }
 
             return newPlan;

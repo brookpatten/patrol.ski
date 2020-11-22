@@ -4,6 +4,7 @@
             <CCardHeader>
             <slot name="header">
                 <CIcon name="cil-grid"/> Plans
+                <CButton color="success" size="sm" class="float-right" v-on:click="newPlan()">New</CButton>
             </slot>
             </CCardHeader>
             <CCardBody>
@@ -15,6 +16,7 @@
                   <td>
                     <CButtonGroup size="sm">
                       <CButton v-if="hasPermission('MaintainPlans')" color="primary" :to="{ name: 'EditPlan', params: { planId: data.item.id } }">Edit</CButton>
+                      <CButton v-if="hasPermission('MaintainPlans')" v-on:click="newPlan(data.item.id)" color="warning">Copy</CButton>
                       <CButton v-if="hasPermission('MaintainAssignments')" color="info" :to="{ name: 'Assignments', params: { planId: data.item.id } }">Assignments</CButton>
                       <CButton v-if="hasPermission('MaintainAssignments')" color="success" :to="{ name: 'NewAssignment', params: { planId: data.item.id } }">New Assignment(s)</CButton>
                     </CButtonGroup>
@@ -57,6 +59,15 @@ export default {
                 }).catch(response => {
                     console.log(response);
                 });
+        },
+        newPlan(copyFromId){
+          this.$http.post('plan/create?patrolId=' + this.selectedPatrolId+(copyFromId ? ('&copyFromPlanId='+copyFromId) : ''))
+                .then(response => {
+                    this.$router.push({name:'EditPlan',params:{planId:response.data.id}});
+                }).catch(response => {
+                    console.log(response);
+                });
+
         },
         hasPermission: function(permission){
           return this.selectedPatrol!=null && this.selectedPatrol.permissions!=null && _.indexOf(this.selectedPatrol.permissions,permission) >= 0;

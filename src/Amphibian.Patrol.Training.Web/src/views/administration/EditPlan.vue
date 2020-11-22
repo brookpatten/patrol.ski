@@ -1,7 +1,10 @@
 <template>
     <div>
         <CCard v-if="editor=='plan'">
-            <CCardHeader>{{plan.name}}</CCardHeader>
+            <CCardHeader>
+              <div v-if="!edit">{{plan.name}}</div>
+              <CInput v-if="edit" v-model="plan.name"></CInput>
+            </CCardHeader>
             <CCardBody v-if="signOffTable.length>0">
                 <table class="table table-responsive table-bordered">
                     <thead class="thead-dark">
@@ -12,8 +15,8 @@
                                 <div>{{level.level.name}}</div>
                                 
                                 <CButtonGroup v-if="edit">
-                                  <CButton  v-if="edit" v-on:click="beginEditLevel(level)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
-                                  <CButton size="sm" color="danger" v-on:click="removeLevel(level)"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
+                                  <CButton v-on:click="beginEditLevel(level)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
+                                  <CButton v-if="allowRemoveLevel" size="sm" color="danger" v-on:click="removeLevel(level)"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
                                   <CButton v-if="last(levels)==level" size="sm" color="success">Level <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
                                   <CButton v-if="last(levels)==level" size="sm" color="primary" v-on:click="addSection(0,signOffTable.length,levels.length,1)">Section <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
                                 </CButtonGroup>
@@ -29,9 +32,9 @@
                               <div>{{section.name}}</div>
                               <CButtonGroup v-if="edit">
                                 <CButton v-if="section.id || section.id==0" v-on:click="beginEditSection(section)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
-                                <CButton v-if="section.id || section.id==0" v-on:click="removeSection(section)" size="sm" color="danger"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
-                                <CButton v-if="section.id || section.id==0" size="sm" color="success">Level <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
-                                <CButton v-if="section.id || section.id==0 && (last(signOffRow.header.sections)==section)" size="sm" color="primary" v-on:click="addSection(section.rowIndex,section.rowCount,section.columnIndex + section.columnCount,1,section)">Section <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
+                                <CButton v-if="(section.id || section.id==0) && allowRemoveSection" v-on:click="removeSection(section)" size="sm" color="danger"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
+                                <CButton v-if="(section.id || section.id==0) && last(signOffRow.header.sections)==section" size="sm" color="success">Level <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
+                                <CButton v-if="(section.id || section.id==0) && last(signOffRow.header.sections)==section" size="sm" color="primary" v-on:click="addSection(section.rowIndex,null,section.columnIndex + section.columnCount,1,section)">Section <CIcon :content="$options.freeSet.cilExpandRight"/></CButton>
                               </CButtonGroup>
                             </th>
                           </tr>
@@ -39,30 +42,22 @@
                             <td>
                               <div>{{signOffRow.skill.name}}</div>
                               <CButtonGroup>
-                                <CButton  v-if="edit" v-on:click="beginEditSkill(signOffRow)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
-                                <CButton  v-if="edit" size="sm" color="success">Skill<CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
-                                <CButton  v-if="edit" v-on:click="removeSkill(signOffRow.skill)" size="sm" color="danger"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
+                                <CButton v-if="edit" v-on:click="beginEditSkill(signOffRow)" size="sm" color="info"><CIcon :content="$options.freeSet.cilPencil"/></CButton>
+                                <CButton v-if="edit && allowRemoveSkill" v-on:click="removeSkill(signOffRow.skill)" size="sm" color="danger"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
+                                <CButton v-if="edit" size="sm" color="success">Skill <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
+                                <CButton v-if="edit && last(signOffTable)==signOffRow" size="sm" color="primary" v-on:click="addSection(signOffRow.index+1,1,0,levels.length,section)">Section <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
                               </CButtonGroup>
                             </td>
                             <td v-for="signOff in signOffRow.signOffs" :key="signOff.rowIndex+'-'+signOff.columnIndex+'-skill-buttons'" v-bind:style="{ backgroundColor: signOff.section ? signOff.section.color : null}">
-                                <span v-if="signOff!=null && signOff.section"><input type="checkbox" disabled/></span>
-                                <CButton v-on:click="removeSkill(signOffRow.skill,signOff.section)" v-if="edit && signOff !=null && signOff.section != null && signOff.columnIndex == signOff.section.columnIndex + signOff.section.columnCount -1 && signOff.rowIndex == signOff.section.rowIndex + signOff.section.rowCount -1" size="sm" color="danger" class="float-right"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
+                                <div v-if="signOff!=null && signOff.section"><input type="checkbox" disabled/></div>
+                                <CButtonGroup v-if="edit && signOffRow.footer && signOff !=null && signOff.section != null && signOff.columnIndex == signOff.section.columnIndex + signOff.section.columnCount -1 && signOff.rowIndex == signOff.section.rowIndex + signOff.section.rowCount -1">
+                                  <CButton v-if="allowRemoveSkill" v-on:click="removeSkill(signOffRow.skill,signOff.section)" size="sm" color="danger" class="float-right"><CIcon :content="$options.freeSet.cilXCircle"/></CButton>
+                                  <CButton v-if="edit && last(signOffTable)==signOffRow" size="sm" color="success">Skill <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
+                                  <CButton v-if="edit && last(signOffTable)==signOffRow" size="sm" color="primary" v-on:click="addSection(signOff.section.rowIndex + signOff.section.rowCount,1,signOff.section.columnIndex,null,signOff.section)">Section <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
+                                </CButtonGroup>
                             </td>
                           </tr>
-                          <tr v-if="edit && signOffRow.footer" :key="signOffRow.index+'-footer'">
-                            <td>
-                              <CButtonGroup  class="float-right">
-                                <CButton size="sm" color="success">Skill <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
-                                <CButton size="sm" color="primary" v-on:click="addSection(signOffRow.index+1,1,0,levels.length,section)">Section <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
-                              </CButtoNGroup>
-                            </td>
-                            <th v-for="section in signOffRow.footer.sections" :key="section.columnIndex+'-footer-buttons'" :colspan="section.columnCount" v-bind:style="{ backgroundColor: section.color}">
-                              <CButtonGroup  class="float-right">
-                                <CButton v-if="section.id || section.id==0" size="sm" color="success">Skill <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
-                                <CButton v-if="section.id || section.id==0" size="sm" color="primary" v-on:click="addSection(section.rowIndex + section.rowCount,1,section.columnIndex,section.columnCount,section)">Section <CIcon :content="$options.freeSet.cilExpandDown"/></CButton>
-                              </CButtonGroup>
-                            </th>
-                          </tr>
+                          
                         </template>
                     </tbody>
                 </table>
@@ -90,7 +85,7 @@
             </CRow>
             <CRow>
               <CCol>
-                <label>Group(s)</label>
+                <label>Group(s) who can Sign</label>
                 <div v-for="group in allGroups" :key="group.id">
                     <input type="checkbox" :value="group.id" v-model="group.selected"/> <label>{{group.name}}</label>
                 </div>
@@ -172,8 +167,11 @@ export default {
         allSkills:[],
         allGroups:[],
 
-        //select editor mode
+        //editor state
         editor:'plan',
+        allowRemoveLevel:false,
+        allowRemoveSkill:false,
+        allowRemoveSection:false,
         
         //plan editor
         plan:{},
@@ -200,7 +198,7 @@ export default {
         //fetch data
         getPlan(planId) {
           if(planId){
-            //this.edit=false;
+            this.edit=false;
             this.$http.get('plan/'+planId)
                 .then(response => {
                     console.log(response);
@@ -292,6 +290,7 @@ export default {
             }
 
             this.tabelize();
+            this.updateEditorButtons();
             //save a new level
             this.editor='plan';
             this.editSkillRow = {};
@@ -310,6 +309,7 @@ export default {
             }
 
             this.tabelize();
+            this.updateEditorButtons();
             //save a new level
             this.editor='plan';
             this.editLevelColumn = {};
@@ -345,6 +345,7 @@ export default {
         isLoadComplete(){
           if(this.allSkills.length>0 && this.allLevels.length>0 && this.allGroups.length>0 && this.plan.sections){
             this.tabelize();
+            this.updateEditorButtons();
           }
         },
         createSkill(name,onComplete){
@@ -388,6 +389,7 @@ export default {
           var rand = Math.floor(Math.random()*16777215).toString(16);
           return ("#" + rand).toUpperCase();
         },
+        
 
         //modifiers
         addSection(rowIndex,rowCount,columnIndex,columnCount,sourceSection){
@@ -398,8 +400,8 @@ export default {
           for(var i=0;i<rowCount;i++){
             //add skills
             var newSkill=null;
-            if(rowCount==1 || sourceSection==null){
-              newSkill = {id:0,name:'New Skill'};
+            if((!rowCount || rowCount==1) || sourceSection==null){
+              newSkill = this.allSkills[0];
             }
             else if(sourceSection!=null){
               for(var ss=0;ss<sourceSection.skills.length;ss++){
@@ -414,8 +416,8 @@ export default {
           for(var i=0;i<columnCount;i++){
             //add levels
             var newLevel=null;
-            if(columnCount==1 || sourceSection==null){
-              newLevel = {id:0,name:'New Level'};
+            if(!columnCount || columnCount==1 || sourceSection==null){
+              newLevel = this.allLevels[0];
             }
             else if(sourceSection!=null){
               for(var ss=0;ss<sourceSection.levels.length;ss++){
@@ -451,12 +453,14 @@ export default {
 
           this.plan.sections.push(section);
           this.tabelize();
+          this.updateEditorButtons();
         },
         removeSection(section){
           //TODO: adjust surrounding indexes?
 
           this.plan.sections = _.pull(this.plan.sections,section);
           this.tabelize();
+          this.updateEditorButtons();
         },
         removeSkill(skill,section){
           var removeRowIndex=-1;
@@ -486,11 +490,12 @@ export default {
           }
           this.pruneEmptySections();
           this.tabelize();
+          this.updateEditorButtons();
         },
         pruneEmptySections(){
           for(var s=0;s<this.plan.sections.length;s++){
             if(this.plan.sections[s].skills.length==0 || this.plan.sections[s].levels.length==0){
-              this.plan.sections.splice(0,1);
+              this.plan.sections.splice(s,1);
               s--;
             }
           }
@@ -506,20 +511,20 @@ export default {
                     && this.plan.sections[s].levels[i].columnIndex == removeColumnIndex){
                   this.plan.sections[s].levels.splice(i,1);
                 }
-                
+              
                 //only recalc rowindexes if we're removing the skill entirely
                 if(!section 
                 && i < this.plan.sections[s].levels.length
                 && removeColumnIndex<this.plan.sections[s].levels[i].columnIndex
                 ){
                   this.plan.sections[s].levels[i].columnIndex--;
-                  //i--;
                 }
               }
             }
           }
           this.pruneEmptySections();
           this.tabelize();
+          this.updateEditorButtons();
           console.log('removed level'+level.index)
         },
         
@@ -714,6 +719,37 @@ export default {
             }).catch(response=>{
                 console.log(response);
             });
+        },
+        updateEditorButtons(){
+          this.allowRemoveLevel=false;
+          this.allowRemoveSkill=false;
+          this.allowRemoveSection=false;
+
+          var columnIndex=-1;
+          var rowIndex=-1;
+
+          for(var i=0;i<this.plan.sections.length;i++){
+            if(this.plan.sections[i].levels.length>1){
+              this.allowRemoveLevel = true;
+            }
+            else if(columnIndex==-1){
+              columnIndex = this.plan.sections[i].levels[0].columnIndex;
+            }
+            else if(columnIndex!=this.plan.sections[i].levels[0].columnIndex){
+              this.allowRemoveLevel = true;
+            }
+
+            if(this.plan.sections[i].skills.length>1){
+              this.allowRemoveSkill = true;
+            }
+            else if(rowIndex==-1){
+              rowIndex = this.plan.sections[i].skills[0].rowIndex;
+            }
+            else if(rowIndex!=this.plan.sections[i].skills[0].rowIndex){
+              this.allowRemoveSkill = true;
+            }
+          }
+          this.allowRemoveSection = this.plan.sections.length>1;
         }
   },
   mounted: function(){
