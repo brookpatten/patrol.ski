@@ -6,7 +6,65 @@ export default [
         _name: 'CSidebarNavItem',
         name: 'Plan',
         to: '/plan',
+        icon: 'cil-grid'
+      },
+      {
+        _name: 'CSidebarNavItem',
+        name: 'Trainer',
+        to: '/trainer',
+        icon: 'cil-home'
+      },
+      {
+        _name: 'CSidebarNavItem',
+        name: 'Trainee',
+        to: '/trainee',
+        icon: 'cil-applications'
+      },
+      {
+        _name: 'CSidebarNavItem',
+        name: 'Schedule',
+        to: '/schedule',
         icon: 'cil-calendar'
+      },
+      {
+        _name: 'CSidebarNavTitle',
+        _children: ['Administration']
+      },
+      {
+        _name: 'CSidebarNavItem',
+        name: 'People',
+        to: '/administration/people',
+        icon: 'cil-people'
+      },
+      {
+        _name: 'CSidebarNavItem',
+        name: 'Organization',
+        to: '/administration/organization',
+        icon: 'cil-chart-pie'
+      },
+      {
+        _name: 'CSidebarNavItem',
+        name: 'Integration',
+        to: '/administration/integration',
+        icon: 'cil-cloud-download'
+      },
+      {
+        _name: 'CSidebarNavItem',
+        name: 'Plans',
+        to: '/administration/plans',
+        icon: 'cil-grid'
+      },
+      {
+        _name: 'CSidebarNavItem',
+        name: 'Skills',
+        to: '/administration/skills',
+        icon: 'cil-list'
+      },
+      {
+        _name: 'CSidebarNavItem',
+        name: 'Levels',
+        to: '/administration/levels',
+        icon: 'cil-layers'
       },
       {
         _name: 'CSidebarNavTitle',

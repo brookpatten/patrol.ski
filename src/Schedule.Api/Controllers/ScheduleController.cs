@@ -7,6 +7,8 @@ using Microsoft.Extensions.Logging;
 
 using Dapper;
 using Dapper.Contrib.Extensions;
+
+using Microsoft.Data.SqlClient;
 using Microsoft.Data.Sqlite;
 
 namespace Schedule.Api.Controllers
@@ -18,7 +20,6 @@ namespace Schedule.Api.Controllers
     }
 
     [ApiController]
-    [Route("[controller]")]
     public class ScheduleController : ControllerBase
     {
         private readonly ILogger<ScheduleController> _logger;
@@ -29,7 +30,25 @@ namespace Schedule.Api.Controllers
         }
 
         [HttpGet]
-        public async Task Test()
+        [Route("[controller]/[action]")]
+        public async Task TestMsSqlConnection()
+        {
+
+
+            using (var connection = new SqlConnection("Server=tcp:trainingschedule.database.windows.net,1433;Initial Catalog=trainingschedule;Persist Security Info=False;User ID=trainingschedule;Password=Catalina25;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;"))
+            {
+                await connection.OpenAsync();
+
+                await connection.CloseAsync();
+
+                Ok();
+            }
+
+        }
+
+        [HttpGet]
+        [Route("[controller]/[action]")]
+        public async Task TestSqliteConnection()
         {
             using (var connection = new SqliteConnection("" +
                 new SqliteConnectionStringBuilder

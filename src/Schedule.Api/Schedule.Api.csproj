@@ -15,8 +15,13 @@
     <PackageReference Include="dapper" Version="2.0.30" />
     <PackageReference Include="dapper.contrib" Version="2.0.30" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="1.1.1" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="3.1.2" />
     <PackageReference Include="swashbuckle.aspnetcore" Version="5.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Schedule.Configuration\Schedule.Configuration.csproj" />
   </ItemGroup>
 
 

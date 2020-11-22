@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.IO;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -16,11 +17,39 @@ namespace Schedule.Api
             CreateHostBuilder(args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            var environment = Environment.GetEnvironmentVariable("ENVIRONMENT");
+            if(string.IsNullOrEmpty(environment))
+            {
+                environment = "Local";
+            }
+
+            var builder = Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
                 {
-                    webBuilder.UseStartup<Startup>();
+                    config.AddJsonFile("appsettings.json");
                 });
+
+
+            if (string.IsNullOrEmpty(environment))
+            {
+                var envSpecificConfig = $"appsettings.{environment}.json";
+                if (File.Exists(envSpecificConfig))
+                {
+                    builder = builder.ConfigureAppConfiguration((hostingContext, config) =>
+                    {
+                        config.AddJsonFile(envSpecificConfig);
+                    });
+                }
+            }
+
+            builder = builder.ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+            });
+
+            return builder;
+        }
     }
 }

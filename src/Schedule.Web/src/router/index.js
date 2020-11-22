@@ -59,6 +59,19 @@ const User = () => import('@/views/users/User')
 
 // Schedule
 const Plan = () => import('@/views/schedule/Plan')
+const Schedule = () => import('@/views/schedule/Schedule')
+const Trainee = () => import('@/views/schedule/Trainee')
+const Trainer = () => import('@/views/schedule/Trainer')
+
+// Administration
+const Administration = () => import('@/views/administration/Administration')
+const Organization = () => import('@/views/administration/Organization')
+const Integration = () => import('@/views/administration/Integration')
+const People = () => import('@/views/administration/People')
+const Plans = () => import('@/views/administration/Plans')
+const EditPlan = () => import('@/views/administration/EditPlan')
+const Skills = () => import('@/views/administration/Skills')
+const Levels = () => import('@/views/administration/Levels')
 
 Vue.use(Router)
 
@@ -74,7 +87,7 @@ function configRoutes () {
     {
       path: '/',
       redirect: '/dashboard',
-      name: 'Home',
+      name: '',
       component: TheContainer,
       children: [
         {
@@ -86,6 +99,71 @@ function configRoutes () {
           path: 'plan',
           name: 'Plan',
           component: Plan
+        },
+        {
+          path: 'schedule',
+          name: 'Schedule',
+          component: Schedule
+        },
+        {
+          path: 'trainee',
+          name: 'Trainee',
+          component: Trainee
+        },
+        {
+          path: 'trainer',
+          name: 'Trainer',
+          component: Trainer
+        },
+        {
+          path: 'administration',
+          redirect: '/administration/Administration',
+          name: 'Administration',
+          component: {
+            render (c) { return c('router-view') }
+          },
+          children: [
+            {
+              path: 'administration',
+              name: 'Administration',
+              component: Administration
+            },
+            {
+              path: 'people',
+              name: 'People',
+              component: People
+            },
+            {
+              path: 'organization',
+              name: 'Organization',
+              component: Organization
+            },
+            {
+              path: 'integration',
+              name: 'Integration',
+              component: Integration
+            },
+            {
+              path: 'plans',
+              name: 'Plans',
+              component: Plans
+            },
+            {
+              path: 'skills',
+              name: 'Skills',
+              component: Skills
+            },
+            {
+              path: 'levels',
+              name: 'Levels',
+              component: Levels
+            },
+            {
+              path: 'edit-plan',
+              name: 'EditPlan',
+              component: EditPlan
+            }
+          ]
         },
         {
           path: 'theme',

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.IO;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -15,10 +16,15 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 
+using Schedule.Configuration;
+
 namespace Schedule.Api
 {
     public class Startup
     {
+
+        
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -29,6 +35,10 @@ namespace Schedule.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var serviceConfiguration = new ScheduleConfiguration();
+            Configuration.Bind(serviceConfiguration);
+            services.AddSingleton(serviceConfiguration);
+
             services.AddControllers();
 
             services.AddSwaggerGen(c =>
@@ -40,8 +50,13 @@ namespace Schedule.Api
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseHttpsRedirection();
 
+            app.UseHttpsRedirection();
+            app.UseDefaultFiles(new DefaultFilesOptions() { 
+                DefaultFileNames = new List<string>() { "index.html" },
+                RequestPath=""
+            });
+            app.UseStaticFiles();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
