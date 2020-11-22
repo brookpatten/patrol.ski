@@ -7,6 +7,8 @@ using System.IO;
 using Microsoft.Azure.KeyVault;
 using Microsoft.Azure.Services.AppAuthentication;
 using Microsoft.Extensions.Configuration.AzureKeyVault;
+using Azure.Identity;
+using System.Net.Http;
 
 namespace Amphibian.Patrol.Training.Configuration
 {
@@ -31,22 +33,15 @@ namespace Amphibian.Patrol.Training.Configuration
         public static (IConfiguration,PatrolTrainingApiConfiguration) LoadFromJsonConfig(IConfigurationBuilder builder=null, params string[] basePaths)
         {
             var checkPaths = basePaths.ToList();
-            //if (!checkPaths.Any(x=>x==""))
-            //{
-            //    Console.WriteLine("Adding Default Path");
-            //    checkPaths.Add("");
-            //}
             var assemblyDirectory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             if (!checkPaths.Any(x=>x== assemblyDirectory))
             {
-                Console.WriteLine("Adding " + assemblyDirectory);
                 checkPaths.Add(assemblyDirectory);
             }
 
             string configBasePath = null;
             foreach (var path in checkPaths)
             {
-                Console.WriteLine("Checking " + path);
                 if (File.Exists(Path.Combine(path, "appsettings.json")))
                 {
                     configBasePath = path;
@@ -96,13 +91,8 @@ namespace Amphibian.Patrol.Training.Configuration
             if (!string.IsNullOrEmpty(serviceConfiguration.Azure.KeyVaultUrl))
             {
                 Console.Write("Configuring from Key Vault " + serviceConfiguration.Azure.KeyVaultUrl);
-                //logger.LogInformation($"Loading Additional Secret Configuration from Azure Key Vault {serviceConfiguration.SecretAzureKeyVaultUrl}");
-                var azureServiceTokenProvider = new AzureServiceTokenProvider();
-                var keyVaultClient = new KeyVaultClient(
-                    new KeyVaultClient.AuthenticationCallback(
-                        azureServiceTokenProvider.KeyVaultTokenCallback));
-                builder.AddAzureKeyVault(serviceConfiguration.Azure.KeyVaultUrl, keyVaultClient, new DefaultKeyVaultSecretManager());
-
+                builder.AddAzureKeyVault(serviceConfiguration.Azure.KeyVaultUrl);
+                
                 //do it again, this time with azure keyvault
                 config = builder.Build();
                 serviceConfiguration = config.Get<PatrolTrainingApiConfiguration>();
