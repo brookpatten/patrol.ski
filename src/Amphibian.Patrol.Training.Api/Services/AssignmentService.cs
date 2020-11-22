@@ -9,6 +9,7 @@ using Amphibian.Patrol.Training.Api.Repositories;
 using Microsoft.Extensions.Logging;
 using AutoMapper;
 using Serilog.Sinks.SystemConsole.Themes;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Amphibian.Patrol.Training.Api.Services
 {
@@ -21,8 +22,9 @@ namespace Amphibian.Patrol.Training.Api.Services
         private IPlanRepository _planRepository;
         private IPatrolRepository _patrolRepository;
         private IGroupRepository _groupRepository;
+        private ISystemClock _clock;
         public AssignmentService(IAssignmentRepository assignmentRepository,IPlanService planService, ILogger<AssignmentService> logger, 
-            IPlanRepository planRepository, IPatrolRepository patrolRepository, IGroupRepository groupRepository,IMapper mapper)
+            IPlanRepository planRepository, IPatrolRepository patrolRepository, IGroupRepository groupRepository,IMapper mapper, ISystemClock clock)
         {
             _assignmentRepository = assignmentRepository;
             _logger = logger;
@@ -31,6 +33,7 @@ namespace Amphibian.Patrol.Training.Api.Services
             _planRepository = planRepository;
             _patrolRepository = patrolRepository;
             _groupRepository = groupRepository;
+            _clock = clock;
         }
 
         public async Task<AssignmentDto> GetAssignment(int id)
@@ -148,6 +151,22 @@ namespace Amphibian.Patrol.Training.Api.Services
         {
             assignment.CompletedAt = at;
             await _assignmentRepository.UpdateAssignment(assignment);
+        }
+
+        public async Task CreateAssignments(int planId,IList<int> toUserIds,DateTime? dueAt)
+        {
+            var now = _clock.UtcNow.UtcDateTime;
+            foreach(var userId in toUserIds)
+            {
+                var assignment = new Assignment()
+                {
+                    AssignedAt = now,
+                    DueAt = dueAt,
+                    PlanId = planId,
+                    UserId = userId
+                };
+                await _assignmentRepository.InsertAssignment(assignment);
+            }
         }
     }
 }

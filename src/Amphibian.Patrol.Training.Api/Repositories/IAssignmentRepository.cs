@@ -16,5 +16,6 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         Task UpdateAssignment(Assignment assignment);
         Task<IEnumerable<AssignmentHeaderDto>> GetIncompleteAssignments(int patrolId);
         Task<IEnumerable<AssignmentHeaderDto>> GetIncompleteAssignments(int patrolId, int userId);
+        Task InsertAssignment(Assignment assignment);
     }
 }

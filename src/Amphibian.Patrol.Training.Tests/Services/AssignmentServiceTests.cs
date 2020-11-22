@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Amphibian.Patrol.Training.Tests.Services
 {
@@ -25,6 +26,7 @@ namespace Amphibian.Patrol.Training.Tests.Services
         private Mock<IGroupRepository> _groupRepositoryMock;
         private Mock<IPlanRepository> _planRepositoryMock;
         private Mock<IPatrolRepository> _patrolRepository;
+        private Mock<ISystemClock> _systemClockMock;
 
         [SetUp]
         public void Setup()
@@ -36,8 +38,9 @@ namespace Amphibian.Patrol.Training.Tests.Services
             _patrolRepository = new Mock<IPatrolRepository>();
             _groupRepositoryMock = new Mock<IGroupRepository>();
             _planRepositoryMock = new Mock<IPlanRepository>();
-            
-            _assignmentService = new AssignmentService(_assignmentRepositoryMock.Object,_planServiceMock.Object, _loggerMock.Object,_planRepositoryMock.Object,_patrolRepository.Object,_groupRepositoryMock.Object, _mapper);
+            _systemClockMock = new Mock<ISystemClock>();
+
+            _assignmentService = new AssignmentService(_assignmentRepositoryMock.Object, _planServiceMock.Object, _loggerMock.Object, _planRepositoryMock.Object, _patrolRepository.Object, _groupRepositoryMock.Object, _mapper, _systemClockMock.Object);
         }
 
         [Test]
@@ -45,14 +48,14 @@ namespace Amphibian.Patrol.Training.Tests.Services
         {
             var assignmentId = 1;
             _assignmentRepositoryMock.Setup(x => x.GetAssignment(assignmentId))
-                .Returns(Task.FromResult(new Assignment() { Id = assignmentId,PlanId=1,UserId=1,AssignedAt=new System.DateTime(2020,1,1,0,0,0) }))
+                .Returns(Task.FromResult(new Assignment() { Id = assignmentId, PlanId = 1, UserId = 1, AssignedAt = new System.DateTime(2020, 1, 1, 0, 0, 0) }))
                 .Verifiable();
 
             _assignmentRepositoryMock.Setup(x => x.GetAssignment(assignmentId))
-                .Returns(Task.FromResult(new Assignment() { Id=1,PlanId=1,UserId=1}))
+                .Returns(Task.FromResult(new Assignment() { Id = 1, PlanId = 1, UserId = 1 }))
                 .Verifiable();
             _assignmentRepositoryMock.Setup(x => x.GetSignaturesWithUsersForAssignment(assignmentId))
-                .Returns(Task.FromResult((new List<SignatureDto>() { new SignatureDto() { Id = 1,SectionLevelId=1,SectionSkillId=1 } }).AsEnumerable()))
+                .Returns(Task.FromResult((new List<SignatureDto>() { new SignatureDto() { Id = 1, SectionLevelId = 1, SectionSkillId = 1 } }).AsEnumerable()))
                 .Verifiable();
 
             var assignment = await _assignmentService.GetAssignment(assignmentId);
@@ -116,11 +119,11 @@ namespace Amphibian.Patrol.Training.Tests.Services
                 .Returns(Task.CompletedTask)
                 .Verifiable();
 
-            _planServiceMock.Setup(x => x.GetPlan(planId,null))
+            _planServiceMock.Setup(x => x.GetPlan(planId, null))
                 .Returns(Task.FromResult(new PlanDto()
                 {
                     Id = planId,
-                    Name="test plan",
+                    Name = "test plan",
                     PatrolId = 1,
                     Sections = new List<SectionDto>()
                     {
@@ -147,7 +150,7 @@ namespace Amphibian.Patrol.Training.Tests.Services
 
             await _assignmentService.CreateSignatures(assignmentId, 1, new List<NewSignatureDto>() { new NewSignatureDto() { SectionLevelId = sectionLevelId, SectionSkillId = sectionSkillId } });
 
-            
+
             _assignmentRepositoryMock.Verify();
         }
 
@@ -444,7 +447,7 @@ namespace Amphibian.Patrol.Training.Tests.Services
             }).AsEnumerable()));
 
             _groupRepositoryMock.Setup(x => x.GetSectionIdsInPlanThatUserCanSign(userId, planId))
-                .Returns(Task.FromResult((new List<int>() {  }).AsEnumerable()));
+                .Returns(Task.FromResult((new List<int>() { }).AsEnumerable()));
 
             _patrolRepository.Setup(x => x.GetPatrolsForUser(userId))
                 .Returns(Task.FromResult((new List<Amphibian.Patrol.Training.Api.Models.Patrol>()
@@ -461,6 +464,17 @@ namespace Amphibian.Patrol.Training.Tests.Services
 
             _assignmentRepositoryMock.Verify();
             Assert.False(result);
+        }
+
+        [Test]
+        public async Task CanCreateAssignments()
+        {
+            _assignmentRepositoryMock.Setup(x => x.InsertAssignment(It.Is<Assignment>(y => y.UserId == 2 && y.PlanId == 1))).Verifiable();
+            await _assignmentService.CreateAssignments(1, new List<int>() { 2 }, DateTime.Now);
+
+            _assignmentRepositoryMock.Verify();
+                
+                
         }
     }
 }

@@ -201,5 +201,10 @@ namespace Amphibian.Patrol.Training.Api.Repositories
         {
             await _connection.UpdateAsync(assignment);
         }
+
+        public async Task InsertAssignment(Assignment assignment)
+        {
+            assignment.Id = (int)await _connection.InsertAsync(assignment);
+        }
     }
 }
