@@ -16,51 +16,61 @@ using Amphibian.Patrol.Training.Api.Services;
 
 namespace Amphibian.Patrol.Training.Api.Controllers
 {
-    [Authorize]
     [ApiController]
     public class AuthenticationController : ControllerBase
     {
         private readonly ILogger<ScheduleController> _logger;
         private readonly UserRepository _userRepository;
         private readonly PasswordService _authenticationService;
+        private readonly TokenRepository _tokenRepository;
 
-        public AuthenticationController(ILogger<ScheduleController> logger, UserRepository userRepository, PasswordService authenticationService)
+        public AuthenticationController(ILogger<ScheduleController> logger, UserRepository userRepository, PasswordService authenticationService, TokenRepository tokenRepository)
         {
             _logger = logger;
             _userRepository = userRepository;
             _authenticationService = authenticationService;
+            _tokenRepository = tokenRepository;
         }
 
-        [AllowAnonymous]
+        public class AuthenticationRequest
+        {
+            public string Email { get; set; }
+            public string Password { get; set; }
+        }
         [HttpPost]
         [Route("user/authenticate")]
-        public async Task Authenticate(string email,string password)
+        public async Task<IActionResult> Authenticate(AuthenticationRequest request)
         {
-            var user = await _userRepository.GetUser(email);
+            var user = await _userRepository.GetUser(request.Email);
             if(user!=null)
             {
-                if(_authenticationService.CheckPassword(user,password))
+                if(_authenticationService.CheckPassword(user,request.Password))
                 {
-                    Ok(new
+                    var now = DateTime.UtcNow;
+                    var newToken = new Token()
                     {
-                        user = new
-                        {
-                            user.Id,
-                            user.Email,
-                            user.FirstName,
-                            user.LastName
-                        },
-                        token = Guid.NewGuid()
+                        CreatedAt = now,
+                        LastRequestAt = now,
+                        TokenGuid = Guid.NewGuid(),
+                        UserId = user.Id
+                    };
+                    await _tokenRepository.InsertToken(newToken);
+                    return Ok(new
+                    {
+                        Email = user.Email,
+                        First = user.FirstName,
+                        Last = user.LastName,
+                        Token = newToken.TokenGuid
                     });
                 }
                 else
                 {
-                    BadRequest(new { message = "Username or password is incorrect" });
+                    return BadRequest(new { message = "Username or password is incorrect" });
                 }
             }
             else
             {
-                BadRequest(new { message = "Username or password is incorrect" });
+                return BadRequest(new { message = "Username or password is incorrect" });
             }
         }
 
@@ -78,7 +88,6 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             public string Last { get; set; }
             public Guid Token { get; set; }
         }
-        [AllowAnonymous]
         [HttpPost]
         [Route("user/register")]
         public async Task<IActionResult> Register(RegistrationRequest registration)
@@ -99,12 +108,23 @@ namespace Amphibian.Patrol.Training.Api.Controllers
                 };
                 _authenticationService.SetPassword(user, registration.Password);
                 await _userRepository.InsertUser(user);
+
+                var now = DateTime.UtcNow;
+                var newToken = new Token()
+                {
+                    CreatedAt = now,
+                    LastRequestAt = now,
+                    TokenGuid = Guid.NewGuid(),
+                    UserId = user.Id
+                };
+                await _tokenRepository.InsertToken(newToken);
+
                 return Ok(new
                 {
                     Email = user.Email,
                     First = user.FirstName,
                     Last = user.LastName,
-                    Token = Guid.NewGuid()
+                    Token = newToken.TokenGuid
                 });
             }
         }

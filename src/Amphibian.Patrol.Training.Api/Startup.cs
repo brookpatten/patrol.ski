@@ -49,13 +49,15 @@ namespace Amphibian.Patrol.Training.Api
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
             });
 
-            services.AddAuthentication();
+            services.AddAuthentication("BasicOrTokenAuthentication")
+                .AddScheme<AuthenticationSchemeOptions, Infrastructure.AuthenticationHandler>("BasicOrTokenAuthentication", null);
 
             services.AddScoped<IDbConnection,SqlConnection>(sp=>
             {
                 return new SqlConnection(serviceConfiguration.Database.ConnectionString);
             });
             services.AddScoped<UserRepository,UserRepository>();
+            services.AddScoped<TokenRepository, TokenRepository>();
             services.AddScoped<Amphibian.Patrol.Training.Api.Services.PasswordService, Amphibian.Patrol.Training.Api.Services.PasswordService>(sp=>new Amphibian.Patrol.Training.Api.Services.PasswordService(5,32));
         }
 

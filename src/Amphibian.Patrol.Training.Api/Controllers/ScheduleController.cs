@@ -30,9 +30,10 @@ namespace Amphibian.Patrol.Training.Api.Controllers
             _logger = logger;
         }
 
+        [Authorize]
         [HttpGet]
         [Route("[controller]/[action]")]
-        public async Task Test()
+        public void Test()
         {
         }
     }
