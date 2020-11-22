@@ -26,6 +26,9 @@ jobs:
   build_api:
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v2
+      with:
+        lfs: true
     - name: Build with dotnet
       run: dotnet publish src/Amphibian.Patrol.Training.sln --runtime=linux-x64
     - name: Build Api
