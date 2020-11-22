@@ -48,8 +48,6 @@ jobs:
         lfs: true
     - name: Build Onestop
       uses: docker/build-push-action@v1
-      - name: Build frontend
-      uses: docker/build-push-action@v1
       with:
         username: brookpatten
         password: ${{ secrets.BROOK_PAT }}
