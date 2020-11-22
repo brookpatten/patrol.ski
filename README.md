@@ -1,4 +1,4 @@
-# Patrol.Training ![Build, Test, Deploy Dev](https://github.com/brookpatten/patrol.training/workflows/Build%20Container,%20Push%20to%20Github,%20Trigger%20Deploy/badge.svg)
+# Patrol.Ski ![Test, Build Docker Images, Update Dev](https://github.com/brookpatten/patrol.ski/workflows/Test,%20Build%20Docker%20Images,%20Update%20Dev/badge.svg)
 
 ## Assign, Organize, and track Outdoor Emergency Transportation (OET) Training for Ski Patrol
 
