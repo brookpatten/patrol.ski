@@ -23,7 +23,7 @@
 
             <label>User(s)</label>
             <div v-for="user in users" :key="user.id">
-                <input type="checkbox" :value="user.id" v-model="user.selected"/> <label>{{user.lastName}} {{user.firstName}}</label>
+                <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="user.selected" v-bind="labelIcon"/><label>{{user.lastName}} {{user.firstName}}</label>
             </div>
 
             
@@ -59,15 +59,17 @@ export default {
   },
   methods: {
     getPlans() {
+        this.$store.dispatch('loading','Loading...');
         this.$http.get('plans?patrolId='+this.selectedPatrolId)
             .then(response => {
                 this.plans = response.data;
                 console.log(response);
             }).catch(response => {
                 console.log(response);
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     getUsers(){
+        this.$store.dispatch('loading','Loading...');
         this.$http.get('user/list/'+this.selectedPatrolId)
             .then(response => {
                 console.log(response);
@@ -77,11 +79,12 @@ export default {
                 }
             }).catch(response => {
                 console.log(response);
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     save(){
         if(this.selectedPlanId && this.selectedUserIds.length>0)
         {
+          this.$store.dispatch('loading','Saving...');
           this.$http.post('assignments/create',{planId:this.selectedPlanId,toUserIds:this.selectedUserIds,dueAt:this.selectedDueOn})
             .then(response=>{
               this.$router.push({name:'Assignments',params:{planId:this.selectedPlanId}});
@@ -89,7 +92,7 @@ export default {
               this.validated=true;
               this.validationMessage = response.response.data.title;
               this.validationErrors = response.response.data.errors;
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
         }
     }
   },

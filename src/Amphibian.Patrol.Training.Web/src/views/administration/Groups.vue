@@ -49,21 +49,23 @@ export default {
   },
   methods: {
     getGroups() {
+      this.$store.dispatch('loading','Loading...');
         this.$http.get('user/groups/'+this.selectedPatrolId)
             .then(response => {
                 console.log(response);
                 this.groups = response.data;
             }).catch(response => {
                 console.log(response);
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
     removeGroup(groupId){
+      this.$store.dispatch('loading','Removing...');
       this.$http.delete('user/groups/'+this.selectedPatrolId+'/'+groupId)
         .then(response=>{
           this.groups = _.filter(this.groups,function(x){return x.id!=groupId;});
         }).catch(response=>{
           console.log(response);
-        });
+        }).finally(response=>this.$store.dispatch('loadingComplete'));
     }
   },
   computed: {

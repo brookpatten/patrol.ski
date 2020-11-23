@@ -37,7 +37,7 @@
 
             <label>Group(s)</label>
             <div v-for="group in groups" :key="group.id">
-                <input type="checkbox" :value="group.id" v-model="group.selected"/> <label>{{group.name}}</label>
+                <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="group.selected" v-bind="labelIcon"/><label>{{group.name}}</label>
             </div>
 
             
@@ -83,6 +83,7 @@ export default {
           this.getGroups();
         }
         else{
+          this.$store.dispatch('loading','Loading...');
           this.$http.get('user/'+this.selectedPatrolId+'/'+this.userId)
             .then(response => {
                 this.user = response.data;
@@ -93,10 +94,11 @@ export default {
                 this.getGroups();
             }).catch(response => {
                 console.log(response);
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
         }
         },
     getGroups(){
+      this.$store.dispatch('loading','Loading...');
         this.$http.get('user/groups/'+this.selectedPatrolId)
             .then(response => {
                 console.log(response);
@@ -116,9 +118,10 @@ export default {
                 
             }).catch(response => {
                 console.log(response);
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     save(){
+      this.$store.dispatch('loading','Saving...');
         this.$http.put('user',this.user)
           .then(response=>{
             this.$router.push({name:'People'});
@@ -126,7 +129,7 @@ export default {
             this.validated=true;
             this.validationMessage = response.response.data.title;
             this.validationErrors = response.response.data.errors;
-          });
+          }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     isValid(obj,field){
       if(obj!=null){

@@ -375,51 +375,57 @@ export default {
   },
   methods: {
         getMyAssignments() {
+            this.$store.dispatch('loading','Loading...');
             this.$http.get('assignments')
                 .then(response => {
                     console.log(response);
                     this.myAssignments = response.data;
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         getIncompleteTrainerAssignments() {
+            this.$store.dispatch('loading','Loading...');
             this.$http.get('assignments/incomplete-for-trainer/'+this.selectedPatrolId)
                 .then(response => {
                     console.log(response);
                     this.trainerIncompleteAssignments = response.data;
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         getCommittedTrainingShifts() {
+            this.$store.dispatch('loading','Loading...');
             this.$http.get('trainingshifts/committed/'+this.selectedPatrolId)
                 .then(response => {
                     console.log(response);
                     this.committedShifts = response.data;
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         getAvailableTrainingShifts() {
+            this.$store.dispatch('loading','Loading...');
             this.$http.get('trainingshifts/available/'+this.selectedPatrolId)
                 .then(response => {
                     console.log(response);
                     this.availableShifts = response.data;
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         getTrainerShifts(){
+            this.$store.dispatch('loading','Loading...');
             this.$http.get('trainingshifts/training/'+this.selectedPatrolId)
                 .then(response => {
                     console.log(response);
                     this.trainerShifts = response.data;
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         getAssignmentCountsByDay(){
+            this.$store.dispatch('loading','Loading...');
             this.assignmentCountsByDay=[];
             this.$http.get('assignments/counts-by-day?patrolId='+this.selectedPatrolId)
                 .then(response => {
@@ -428,11 +434,12 @@ export default {
                     this.assignmentCountsByDay = _.map(counts,function(g){
                         return {
                             label: g.planName,
-                            backgroundColor: g.planColor,
-                            data: _.map(g.countsByDay,'openAssignmentCount')
+                            borderColor: g.planColor,
+                            data: _.map(g.countsByDay,'openAssignmentCount'),
+                            fill:false,
+                            lineTension: 0
                         };
                     });
-
                     if(this.assignmentCountsByDay.length>0){
                         this.assignmentCountsByDayLabels = _.map(counts[0].countsByDay,function(d){
                             return (new Date(d.day)).toLocaleDateString();
@@ -441,9 +448,10 @@ export default {
                     
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         getAssignmentProgressByDay(){
+            this.$store.dispatch('loading','Loading...');
             this.assignmentProgressByDay=[];
             this.$http.get('assignments/progress-by-day?patrolId='+this.selectedPatrolId)
                 .then(response => {
@@ -452,10 +460,12 @@ export default {
                     this.assignmentProgressByDay = _.map(counts,function(g){
                         return {
                             label: g.userLastName+', '+g.userFirstName+' - '+g.planName,
-                            backgroundColor: 'rgba('+(Math.floor(Math.random() * Math.floor(255)))+','+(Math.floor(Math.random() * Math.floor(255)))+','+(Math.floor(Math.random() * Math.floor(255)))+',10)',
+                            borderColor: 'rgba('+(Math.floor(Math.random() * Math.floor(255)))+','+(Math.floor(Math.random() * Math.floor(255)))+','+(Math.floor(Math.random() * Math.floor(255)))+',10)',
                             data: _.map(g.days,function(d){
                                 return Math.round((d.completedsignatures / d.requiredsignatures) * 100.0);
-                            })
+                            }),
+                            fill:false,
+                            lineTension: 0
                         };
                     });
                     if(this.assignmentProgressByDay.length>0){
@@ -466,18 +476,20 @@ export default {
                     
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         getOpenAssignments() {
+            this.$store.dispatch('loading','Loading...');
             this.$http.post('assignment/search',{patrolId:this.selectedPatrolId,completed:false})
                 .then(response => {
                     console.log(response);
                     this.openAssignments = response.data;
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         commit(id){
+            this.$store.dispatch('loading','Loading...');
             this.$http.post('trainingshifts/commit/'+id)
                 .then(response => {
                     console.log(response);
@@ -485,9 +497,10 @@ export default {
                     this.getAvailableTrainingShifts();
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         cancel(id){
+            this.$store.dispatch('loading','Loading...');
             this.$http.post('trainingshifts/cancel/'+id)
                 .then(response => {
                     console.log(response);
@@ -495,7 +508,7 @@ export default {
                     this.getAvailableTrainingShifts();
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         hasPermission: function(permission){
           return this.selectedPatrol!=null && this.selectedPatrol.permissions!=null && _.indexOf(this.selectedPatrol.permissions,permission) >= 0;

@@ -12,9 +12,11 @@ const state = {
   sidebarMinimize: false,
   status: '',
   token: localStorage.getItem('token') || '',
-  user: {},
+  user: localStorage.getItem('user') != null ? JSON.parse(localStorage.getItem('user')) :null,
   patrols:  localStorage.getItem('patrols')!=null ? (JSON.parse(localStorage.getItem('patrols')).patrols) :[],
   selectedPatrolId: localStorage.getItem('selectedPatrolId') !=null ? parseInt(localStorage.getItem('selectedPatrolId')) : 0,
+  loadingMessage: 'Loading',
+  loadingCount: 0
 }
 
 const mutations = {
@@ -54,6 +56,16 @@ const mutations = {
   },
   toggle (state, variable) {
     state[variable] = !state[variable]
+  },
+  loading (state,message){
+    state.loadingMessage = message;
+    state.loadingCount++;
+  },
+  loadingComplete(state,message){
+    state.loadingCount--;
+    if(state.loadingCount<0){
+      state.loadingCount=0;
+    }
   }
 }
 
@@ -74,7 +86,7 @@ export default new Vuex.Store({
         axios.post('user/authenticate'+(user.throwaway ? '-throwaway' : ''),user)
         .then(resp => {
           commit('auth_success', resp.data);
-
+          localStorage.setItem('user', JSON.stringify(state.user));
           localStorage.setItem('token', state.token);
           axios.defaults.headers.common['Authorization'] = 'Bearer ' + state.token;
           localStorage.setItem('patrols', JSON.stringify({patrols:state.patrols}));
@@ -90,6 +102,7 @@ export default new Vuex.Store({
         })
         .catch(err => {
           commit('auth_error');
+          localStorage.removeItem('user');
           localStorage.removeItem('token');
           localStorage.removeItem('patrols');
           localStorage.removeItem('selectedPatrolId');
@@ -113,7 +126,7 @@ export default new Vuex.Store({
         .then(resp => {
           console.log('auth success',resp);
           commit('auth_success', resp.data);
-          
+          localStorage.setItem('user', JSON.stringify(state.user));
           localStorage.setItem('token', state.token);
           axios.defaults.headers.common['Authorization'] = 'Bearer ' + state.token;
           localStorage.setItem('patrols', JSON.stringify({patrols:state.patrols}));
@@ -135,12 +148,19 @@ export default new Vuex.Store({
     logout({commit}){
       return new Promise((resolve, reject) => {
         commit('logout');
+        localStorage.removeItem('user');
         localStorage.removeItem('token');
         localStorage.removeItem('patrols');
         localStorage.removeItem('selectedPatrolId');
         delete axios.defaults.headers.common['Authorization'];
         resolve();
       });
+    },
+    loading({commit},message){
+      commit('loading',message);
+    },
+    loadingComplete({commit}){
+      commit('loadingComplete');
     }
   },
   getters: {
@@ -148,6 +168,8 @@ export default new Vuex.Store({
     authStatus: state => state.status,
     selectedPatrol: state => _.find(state.patrols,{id:state.selectedPatrolId}),
     patrols: state => state.patrols,
-    user: state=> state.user
+    user: state=> state.user,
+    loadingCount: state=>state.loadingCount,
+    loadingMessage: state=>state.loadingMessage
   }
 })

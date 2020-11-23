@@ -74,6 +74,7 @@ export default {
   },
   methods: {
         getAssignment(assignmentId) {
+            this.$store.dispatch('loading','Loading...');
             this.$http.get('assignment/'+assignmentId)
                 .then(response => {
                     console.log(response);
@@ -83,9 +84,10 @@ export default {
                     this.tabelize();
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         sign(){
+            this.$store.dispatch('loading','Saving...');
             this.$http.post('assignment/sign',{assignmentId:this.assignment.id,signatures:this.newSignatures})
                 .then(response => {
                     console.log(response);
@@ -94,7 +96,7 @@ export default {
                     this.tabelize();
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         last(arr){
           return _.last(arr);

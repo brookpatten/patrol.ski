@@ -69,6 +69,7 @@ export default {
   },
   methods: {
     getAssignment(){
+        this.$store.dispatch('loading','Loading...');
         this.$http.get('assignment/'+this.assignmentId)
           .then(response=>{
             this.assignment = response.data.assignment;
@@ -84,9 +85,10 @@ export default {
             this.validated=true;
             this.validationMessage = response.response.data.title;
             this.validationErrors = response.response.data.errors;
-          });
+          }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     save(){
+        this.$store.dispatch('loading','Saving...');
         var saved = {id:parseInt(this.assignmentId)};
         
         if(this.assignment.dueAt){
@@ -105,7 +107,7 @@ export default {
             this.validated=true;
             this.validationMessage = response.response.data.title;
             this.validationErrors = response.response.data.errors;
-          });
+          }).finally(response=>this.$store.dispatch('loadingComplete'));
     }
   },
   computed: {

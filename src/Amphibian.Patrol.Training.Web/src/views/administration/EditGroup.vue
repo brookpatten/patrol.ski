@@ -110,6 +110,7 @@ export default {
           this.plans=[];
         }
         else{
+          this.$store.dispatch('loading','Loading...');
           this.$http.get('user/group/'+this.groupId)
             .then(response => {
                 this.group = response.data.group;
@@ -119,10 +120,11 @@ export default {
                 console.log(response);
             }).catch(response => {
                 console.log(response);
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
         }
     },
     save(){
+        this.$store.dispatch('loading','Saving...');
         this.$http.put('user/group',this.group)
           .then(response=>{
             this.$router.push({name:'Groups'});
@@ -130,7 +132,7 @@ export default {
             this.validated=true;
             this.validationMessage = response.response.data.title;
             this.validationErrors = response.response.data.errors;
-          });
+          }).finally(response=>this.$store.dispatch('loadingComplete'));
     }
   },
   computed: {

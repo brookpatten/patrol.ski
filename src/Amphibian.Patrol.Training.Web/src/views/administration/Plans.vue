@@ -51,22 +51,23 @@ export default {
   },
   methods: {
         loadPlans() {
-            console.log('test');
+            this.$store.dispatch('loading','Loading...');
             this.$http.get('plans?patrolId=' + this.selectedPatrolId)
                 .then(response => {
                     console.log(response);
                     this.plans=response.data;
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         newPlan(copyFromId){
+          this.$store.dispatch('loading','Creating New Training Plan...');
           this.$http.post('plan/create?patrolId=' + this.selectedPatrolId+(copyFromId ? ('&copyFromPlanId='+copyFromId) : ''))
                 .then(response => {
                     this.$router.push({name:'EditPlan',params:{planId:response.data.id}});
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
 
         },
         hasPermission: function(permission){

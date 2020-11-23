@@ -15,6 +15,7 @@ export default {
       this.dispatchLogin({throwaway:true});
     },
     dispatchLogin:function(obj){
+      this.$store.dispatch('loading','Creating Fictional Patrol...');
       this.$store.dispatch('login',obj)
         .then(()=>{
           //if they have any patrols go there, otherwise create a new patrol
@@ -23,7 +24,7 @@ export default {
         .catch(err => {
           console.log(err);
           this.error = "Something didn't work";
-        });
+        }).finally(response=>this.$store.dispatch('loadingComplete'));
     }
   },
   mounted(){

@@ -7,6 +7,7 @@
       <div class="c-body">
         <main class="c-main">
           <CContainer fluid>
+            <loading-block/>
             <transition name="fade" mode="out-in">
               <router-view :key="$route.path"></router-view>
             </transition>
@@ -22,7 +23,8 @@
 import TheSidebar from './TheSidebar'
 import TheHeader from './TheHeader'
 import TheFooter from './TheFooter'
-import TheAside from './TheAside'
+//import TheAside from './TheAside'
+import LoadingBlock from './LoadingBlock'
 
 export default {
   name: 'TheContainer',
@@ -30,7 +32,8 @@ export default {
     TheSidebar,
     TheHeader,
     TheFooter,
-    TheAside
+    //TheAside,
+    LoadingBlock
   },
   computed: {
     selectedPatrolId: function () {

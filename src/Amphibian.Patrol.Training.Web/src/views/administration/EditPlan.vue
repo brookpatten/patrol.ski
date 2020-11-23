@@ -199,6 +199,7 @@ export default {
         getPlan(planId) {
           if(planId){
             this.edit=false;
+            this.$store.dispatch('loading','Loading...');
             this.$http.get('plan/'+planId)
                 .then(response => {
                     console.log(response);
@@ -209,7 +210,7 @@ export default {
                     this.getSkills();
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
           }
           else{
             this.edit=true;
@@ -246,6 +247,7 @@ export default {
             this.swapLevelIntoPlan(this.editLevelColumn.level.id,this.editLevelColumn.columnIndex,level);
           }
           else{
+            this.$store.dispatch('loading','Saving...');
             this.$http.post('plan/levels/create',{patrolId:this.plan.patrolId,name:this.newLevelName})
               .then(response => {
                 var newLevel = response.data;
@@ -253,7 +255,7 @@ export default {
                 this.swapLevelIntoPlan(this.editLevelColumn.level.id,this.editLevelColumn.columnIndex,newLevel);
               }).catch(response=>{
                   console.log(response);
-              });
+              }).finally(response=>this.$store.dispatch('loadingComplete'));
           }
         },
         beginEditSkill(signOffRow){
@@ -267,6 +269,7 @@ export default {
             this.swapSkillIntoPlan(this.editSkillRow.skill.id,this.editSkillRow.index,skill);
           }
           else{
+            this.$store.dispatch('loading','Loading...');
             this.$http.post('plan/skills/create',{patrolId:this.plan.patrolId,name:this.newSkillName})
               .then(response => {
                 var newSkill = response.data;
@@ -274,7 +277,7 @@ export default {
                 this.swapSkillIntoPlan(this.editSkillRow.skill.id,this.editSkillRow.index,newSkill);
               }).catch(response=>{
                   console.log(response);
-              });
+              }).finally(response=>this.$store.dispatch('loadingComplete'));
           }
         },
         swapSkillIntoPlan(oldSkillId,oldIndex,newSkill){
@@ -316,31 +319,34 @@ export default {
             this.selectedLevelId = null;
         },
         getGroups() {
+          this.$store.dispatch('loading','Loading...');
           this.$http.get('user/groups/'+this.plan.patrolId)
             .then(response => {
               this.allGroups = response.data;
               this.isLoadComplete();
             }).catch(response=>{
                 console.log(response);
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         getLevels() {
+          this.$store.dispatch('loading','Loading...');
           this.$http.get('plan/levels/'+this.plan.patrolId)
             .then(response => {
               this.allLevels = response.data;
               this.isLoadComplete();
             }).catch(response=>{
                 console.log(response);
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         getSkills() {
+          this.$store.dispatch('loading','Loading...');
           this.$http.get('plan/skills/'+this.plan.patrolId)
             .then(response => {
               this.allSkills = response.data;
               this.isLoadComplete();
             }).catch(response=>{
                 console.log(response);
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         isLoadComplete(){
           if(this.allSkills.length>0 && this.allLevels.length>0 && this.allGroups.length>0 && this.plan.sections){
@@ -349,6 +355,7 @@ export default {
           }
         },
         createSkill(name,onComplete){
+          this.$store.dispatch('loading','Saving...');
           this.$http.post('plan/skills/create',{name:name,patrolId:this.plan.patrolId})
             .then(response => {
               this.allSkills.push(response.data);
@@ -357,9 +364,10 @@ export default {
               }
             }).catch(response=>{
                 console.log(response);
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         createLevel(name,onComplete){
+          this.$store.dispatch('loading','Saving...');
           this.$http.post('plan/levels/create',{name:name,patrolId:this.plan.patrolId})
             .then(response => {
               this.allLevels.push(response.data);
@@ -368,7 +376,7 @@ export default {
               }
             }).catch(response=>{
                 console.log(response);
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         
 
@@ -738,12 +746,13 @@ export default {
             }
         },
         save(){
+          this.$store.dispatch('loading','Loading...');
           this.$http.post('plan/update',this.plan)
             .then(response => {
               this.$router.push({name:'Plans'});
             }).catch(response=>{
                 console.log(response);
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         updateEditorButtons(){
           this.allowRemoveLevel=false;

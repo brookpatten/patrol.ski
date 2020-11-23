@@ -5,6 +5,7 @@
           <source src="/snowmaking.mp4" type="video/mp4">
       </video>
     </div>
+    <loading-block/>
     <router-view></router-view>
   </div>
 </template>
@@ -49,10 +50,11 @@
 
 <script>
 
+import LoadingBlock from './LoadingBlock'
+
 export default {
   name: 'CenteredPublicContainer',
-  components: {
-  }
+  components: {LoadingBlock}
 }
 </script>
 

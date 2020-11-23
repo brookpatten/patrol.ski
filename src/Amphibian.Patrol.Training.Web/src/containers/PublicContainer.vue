@@ -5,12 +5,12 @@
           <source src="/snowmaking.mp4" type="video/mp4">
       </video>
     </div>
-    <TheSidebar/>
     <CWrapper>
       <TheHeader/>
       <div class="c-body">
         <main class="c-main">
           <CContainer fluid>
+            <loading-block/>
             <transition name="fade" mode="out-in">
               <router-view :key="$route.path"></router-view>
             </transition>
@@ -64,12 +64,12 @@
 
 import TheHeader from './TheHeader'
 import TheFooter from './TheFooter'
-import TheAside from './TheAside'
+import LoadingBlock from './LoadingBlock'
 
 export default {
   name: 'PublicContainer',
   components: {
-    TheHeader,TheFooter,TheAside
+    TheHeader,TheFooter,LoadingBlock
   },
   computed: {
     user: function (){

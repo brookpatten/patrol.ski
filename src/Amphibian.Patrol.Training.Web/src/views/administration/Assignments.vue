@@ -26,7 +26,8 @@
                         />
                     </CCol>
                     <CCol md="3">
-                        <CInputCheckbox :checked.sync="completed" label="Complete"/>
+                        <div><label>Completed</label></div>
+                        <CSwitch label="Completed" class="mx-1" color="success" :checked.sync="completed" variant="3d" v-bind="labelIcon" />
                     </CCol>
                     <CCol md="3">
                         <CButton v-if="hasPermission('MaintainAssignments')" color="primary" :to="{ name: 'NewAssignment', params: { planId: selectedPlanId } }">New Assignment(s)</CButton>
@@ -129,32 +130,34 @@ export default {
   },
   methods: {
         loadPlans() {
-            console.log('test');
+            this.$store.dispatch('loading','Loading...');
             this.$http.get('plans?patrolId=' + this.selectedPatrolId)
                 .then(response => {
                     console.log(response);
                     this.plans=response.data;
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         loadUsers() {
+            this.$store.dispatch('loading','Loading...');
             this.$http.get('user/list/'+this.selectedPatrolId)
                 .then(response => {
                     console.log(response);
                     this.users = response.data;
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
             },
         loadAssignments(){
+            this.$store.dispatch('loading','Loading...');
             this.$http.post('assignment/search',{patrolId:this.selectedPatrolId, planId:this.selectedPlanId, userId:this.selectedUserId, completed:this.completed})
                 .then(response => {
                     console.log(response);
                     this.assignments = response.data;
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
             },
         hasPermission: function(permission){
           return this.selectedPatrol!=null && this.selectedPatrol.permissions!=null && _.indexOf(this.selectedPatrol.permissions,permission) >= 0;

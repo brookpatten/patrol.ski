@@ -62,21 +62,23 @@ export default {
   },
   methods: {
     getPeople() {
+        this.$store.dispatch('loading','Loading...');
         this.$http.get('user/list/'+this.selectedPatrolId)
             .then(response => {
                 console.log(response);
                 this.people = response.data;
             }).catch(response => {
                 console.log(response);
-            });
+            }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
     removeUser(userId){
+      this.$store.dispatch('loading','Removing...');
       this.$http.post('user/remove-from-patrol',{userId:userId,patrolId:this.selectedPatrolId})
         .then(response=>{
           this.people = _.filter(this.people,function(x){return x.id!=userId;});
         }).catch(response=>{
           console.log(response);
-        });
+        }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     hasPermission: function(permission){
       return this.selectedPatrol!=null && this.selectedPatrol.permissions!=null && _.indexOf(this.selectedPatrol.permissions,permission) >= 0;

@@ -85,12 +85,13 @@ export default {
     login: function(){
       let email = this.email;
       let password = this.password;
-      this.dispatchLogin({email,password});
+      this.dispatchLogin({email,password},'Logging in');
     },
     throwaway: function(){
-      this.dispatchLogin({throwaway:true});
+      this.dispatchLogin({throwaway:true},'Creating fictional patrol...');
     },
-    dispatchLogin:function(obj){
+    dispatchLogin:function(obj,message){
+      this.$store.dispatch('loading',message);
       this.$store.dispatch('login',obj)
         .then(()=>{
           //if they have any patrols go there, otherwise create a new patrol
@@ -104,7 +105,7 @@ export default {
         .catch(err => {
           console.log(err);
           this.error = "Username or password is incorrect";
-        });
+        }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     isValidEmail: function(email){
       if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))

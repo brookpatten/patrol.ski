@@ -40,6 +40,13 @@ namespace Amphibian.Patrol.Training.Api.Services
         
         public async Task CreateDefaultInitialSetup(int patrolId)
         {
+            //var groupSki1 = new Group() { Name = $"Patroller", PatrolId = patrolId };
+            //await _groupRepository.InsertGroup(groupSki1);
+            //var groupSki2 = new Group() { Name = $"Trainer", PatrolId = patrolId };
+            //await _groupRepository.InsertGroup(groupSki2);
+            //var groupSki3 = new Group() { Name = $"Trainee", PatrolId = patrolId };
+            //await _groupRepository.InsertGroup(groupSki3);
+
             await CreateDefaultPlan(patrolId, "PSIA", "Ski", new List<string>()
             {
                 "Controlled Parallel Stop (2 Directions)",

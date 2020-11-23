@@ -54,6 +54,8 @@ export default {
     save(){
         if(this.patrolName && this.patrolName.length>0 && this.patrolName.length<256)
         {
+          this.$store.dispatch('loading','Loading...');
+        
             //create the new patrl
             this.$http.post('patrol/create/'+this.initialType+'?name='+this.patrolName)
                 .then(response=>{
@@ -72,7 +74,7 @@ export default {
                     this.validated=true;
                     this.validationMessage = response.response.data.title;
                     this.validationErrors = response.response.data.errors;
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         }
     }
   },

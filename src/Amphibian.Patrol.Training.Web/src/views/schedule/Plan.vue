@@ -45,13 +45,14 @@ export default {
   },
   methods: {
         getAssignments(planId) {
+            this.$store.dispatch('loading','Loading...');
             this.$http.get('assignments/by-plan/'+planId)
                 .then(response => {
                     console.log(response);
                     this.assignments = response.data;
                 }).catch(response => {
                     console.log(response);
-                });
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         }
   },
   mounted: function(){

@@ -28,12 +28,9 @@ const Assignment = () => import('@/views/schedule/Assignment')
 // Administration
 const Administration = () => import('@/views/administration/Administration')
 const Groups = () => import('@/views/administration/Groups')
-const Integration = () => import('@/views/administration/Integration')
 const People = () => import('@/views/administration/People')
 const Plans = () => import('@/views/administration/Plans')
 const EditPlan = () => import('@/views/administration/EditPlan')
-const Skills = () => import('@/views/administration/Skills')
-const Levels = () => import('@/views/administration/Levels')
 const EditUser = () => import('@/views/administration/EditUser')
 const EditGroup = () => import('@/views/administration/EditGroup')
 const Assignments = () => import('@/views/administration/Assignments')
@@ -130,33 +127,9 @@ function configRoutes () {
               }
             },
             {
-              path: 'integration',
-              name: 'Integration',
-              component: Integration,
-              meta: { 
-                requiresAuth: true
-              }
-            },
-            {
               path: 'plans',
               name: 'Plans',
               component: Plans,
-              meta: { 
-                requiresAuth: true
-              }
-            },
-            {
-              path: 'skills',
-              name: 'Skills',
-              component: Skills,
-              meta: { 
-                requiresAuth: true
-              }
-            },
-            {
-              path: 'levels',
-              name: 'Levels',
-              component: Levels,
               meta: { 
                 requiresAuth: true
               }
@@ -229,7 +202,7 @@ function configRoutes () {
     },
     {
       path: '/login',
-      name: 'Login',
+      name: 'Auth',
       component: CenteredPublicContainer,
       children: [
         {
