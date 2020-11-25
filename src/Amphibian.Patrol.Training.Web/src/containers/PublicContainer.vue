@@ -5,6 +5,7 @@
           <source src="/snowmaking.mp4" type="video/mp4">
       </video>
     </div>
+    <TheSidebar/>
     <CWrapper>
       <TheHeader/>
       <div class="c-body">
@@ -64,12 +65,13 @@
 
 import TheHeader from './TheHeader'
 import TheFooter from './TheFooter'
+import TheSidebar from './TheSidebar'
 import LoadingBlock from './LoadingBlock'
 
 export default {
   name: 'PublicContainer',
   components: {
-    TheHeader,TheFooter,LoadingBlock
+    TheHeader,TheFooter,LoadingBlock,TheSidebar
   },
   computed: {
     user: function (){

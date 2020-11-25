@@ -26,6 +26,8 @@ namespace Amphibian.Patrol.Training.Api.Services
         private IAssignmentRepository _assignmentRepository;
         private IPlanService _planService;
 
+        public enum BuiltInPlan { AlpineSki, AlpineSnowboard };
+
         public PatrolCreationService(ILogger<PatrolCreationService> logger, IPatrolRepository patrolRepository, IPlanRepository planRepository, 
             IGroupRepository groupRepository, IUserRepository userRepository, IAssignmentRepository assignmentRepository, IPlanService planService)
         {
@@ -37,39 +39,43 @@ namespace Amphibian.Patrol.Training.Api.Services
             _assignmentRepository = assignmentRepository;
             _planService = planService;
         }
+
+        public async Task CreateBuiltInPlan(BuiltInPlan plan, int patrolId)
+        {
+            if(plan==BuiltInPlan.AlpineSki)
+            {
+                await CreateDefaultPlan(patrolId, "PSIA", "Ski", new List<string>()
+                {
+                    "Controlled Parallel Stop (2 Directions)",
+                    "Descending Leaves (2 Directions)",
+                    "Traverse with Forward Traversing Sideslip (2 Directions)",
+                    "Gliding Wedge",
+                    "Wedge Sideslip Transition (2 Directions)",
+                    "Pivot Sideslip Transitions (2 Directions)",
+                    "Confined Area (Parallel Turns)",
+                    "Free Skiing"
+                });
+            }
+            else if(plan==BuiltInPlan.AlpineSnowboard)
+            {
+                await CreateDefaultPlan(patrolId, "AASI", "Snowboard", new List<string>()
+                {
+                    "Controlled Emergency Stop (Toe & Heel Side)",
+                    "Descending Leaves (Toe & Heel Side)",
+                    "Traverse with Forward Traversing Sideslip (Toe & Heel Side)",
+                    "Linked Skidded Turns (Forward)",
+                    "Linked Skidded Turns (Switch)",
+                    "Pivot Sideslip Transitions (Toe-to-Heel, Heel-to-Toe)",
+                    "Confined Area Dynamic Turns",
+                    "Free Riding"
+                });
+            }
+        }
         
         public async Task CreateDefaultInitialSetup(int patrolId)
         {
-            //var groupSki1 = new Group() { Name = $"Patroller", PatrolId = patrolId };
-            //await _groupRepository.InsertGroup(groupSki1);
-            //var groupSki2 = new Group() { Name = $"Trainer", PatrolId = patrolId };
-            //await _groupRepository.InsertGroup(groupSki2);
-            //var groupSki3 = new Group() { Name = $"Trainee", PatrolId = patrolId };
-            //await _groupRepository.InsertGroup(groupSki3);
-
-            await CreateDefaultPlan(patrolId, "PSIA", "Ski", new List<string>()
-            {
-                "Controlled Parallel Stop (2 Directions)",
-                "Descending Leaves (2 Directions)",
-                "Traverse with Forward Traversing Sideslip (2 Directions)",
-                "Gliding Wedge",
-                "Wedge Sideslip Transition (2 Directions)",
-                "Pivot Sideslip Transitions (2 Directions)",
-                "Confined Area (Parallel Turns)",
-                "Free Skiing"
-            });
-
-            await CreateDefaultPlan(patrolId, "AASI", "Snowboard", new List<string>()
-            {
-                "Controlled Emergency Stop (Toe & Heel Side)",
-                "Descending Leaves (Toe & Heel Side)",
-                "Traverse with Forward Traversing Sideslip (Toe & Heel Side)",
-                "Linked Skidded Turns (Forward)",
-                "Linked Skidded Turns (Switch)",
-                "Pivot Sideslip Transitions (Toe-to-Heel, Heel-to-Toe)",
-                "Confined Area Dynamic Turns",
-                "Free Riding"
-            });
+            await CreateBuiltInPlan(BuiltInPlan.AlpineSki, patrolId);
+            await CreateBuiltInPlan(BuiltInPlan.AlpineSnowboard, patrolId);
         }
 
         public async Task CreateDefaultPlan(int patrolId,string trainingOrgName,string sport, List<string> skills)

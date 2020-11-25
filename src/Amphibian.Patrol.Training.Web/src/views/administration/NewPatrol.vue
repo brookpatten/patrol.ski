@@ -65,7 +65,7 @@ export default {
                     this.$store.dispatch('update_patrols',{patrols,id:newPatrol.id})
                     .then(()=>{
                         //change the currently selected patrol to the one we just created
-                        this.$router.push('/');
+                        this.$router.push({name:"Home"});
                     })
                     .catch(err => {
                         console.log(err);

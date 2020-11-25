@@ -2,16 +2,21 @@
   <div>
     <CRow>
       <CCol md="12" lg="12">
-        <CJumbotron
-              color="dark"
-              text-color="white"
-              border-color="dark"
-            >
-              <h1 class="display-3">Patrol<span style="color:#8C0C00">.Ski</span></h1>
-              <p class="lead">
-                The app for ski patrol OET training.  Free for NSP patrols.
-              </p>
-              <CButtonGroup class="float-right">
+        <CCard>
+          <CCardBody>
+            <CJumbotron
+                color="dark"
+                text-color="white"
+                border-color="dark"
+              >
+                <h1 class="display-3">Patrol<span style="color:#8C0C00">.Ski</span></h1>
+                <p class="lead">
+                  The app for ski patrol OET training.  Free for NSP patrols.
+                </p>
+            </CJumbotron>
+          </CCardBody>
+          <CCardFooter>
+            <CButtonGroup class="float-right">
                 <CButton
                   color="success"
                   :to="{name:'Register'}"
@@ -19,7 +24,8 @@
                 </CButton>
                 <CButton color="info" :to="{name:'TestDrive'}">Test Drive</CButton>
               </CButtonGroup>
-          </CJumbotron>
+          </CCardFooter>
+        </CCard>
       </CCol>
     </CRow>
     <CRow>
