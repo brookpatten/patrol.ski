@@ -83,7 +83,7 @@ namespace Amphibian.Patrol.Tests.Services
             };
 
             _systemClockMock.Setup(x => x.UtcNow)
-                .Returns(new DateTimeOffset(new DateTime(2020,1,1,3,0,0)))
+                .Returns(new DateTimeOffset(new DateTime(2020,1,10,3,0,0)))
                 .Verifiable();
 
             _tokenRepositoryMock.Setup(x => x.GetToken(id))
