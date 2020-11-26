@@ -34,7 +34,7 @@ jobs:
           Test__ConnectionString: 'Server=localhost;User ID=sa;Password=${{ secrets.BROOK_PAT }}comPLEXity!!;'
           
       - name: move coverage file
-        run: cp ./src/Amphibian.Patrol.Training.Tests/TestResults/*/coverage.cobertura.xml ./coverage.xml
+        run: cp ./src/Amphibian.Patrol.Tests/TestResults/*/coverage.cobertura.xml ./coverage.xml
       
       - name: ReportGenerator
         uses: danielpalme/ReportGenerator-GitHub-Action@4.7.1
