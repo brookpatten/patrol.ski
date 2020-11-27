@@ -4,7 +4,7 @@
       <CCard>
         <CCardHeader>
           <slot name="header">
-            <CIcon name="cil-user"/>
+            <CIcon name="cil-home"/>
           </slot>
         </CCardHeader>
         <CCardBody>
@@ -19,14 +19,19 @@
             :invalidFeedback="validationErrors.Name ? validationErrors.Name.join() : 'Invalid'"
             :isValid="validated ? validationErrors.Name==null : null"
             />
-            <strong>Enabled Modules</strong>
+            <strong>Enabled Functionality</strong>
             <br/>
             
+            
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableAnnouncements" v-bind="labelIcon"/>
+            <label for="editedPatrol.enableAnnouncements">Announcements</label>
+            <br/>
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableEvents" v-bind="labelIcon"/>
+            <label for="editedPatrol.enableEvents">Events</label>
+            <br/>
             <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableTraining" v-bind="labelIcon"/>
             <label for="editedPatrol.enableTraining">Training</label>
             <br/>
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableAnnouncements" v-bind="labelIcon"/>
-            <label for="editedPatrol.enableAnnouncements">Announcements</label>
 
         </CCardBody>
         <CCardFooter>
@@ -48,7 +53,7 @@ export default {
   props: [],
   data () {
     return {
-      editedPatrol:{id:0,name:'',enableTraining:false,enableAnnouncements:false},
+      editedPatrol:{id:0,name:'',enableTraining:false,enableAnnouncements:false,enableEvents:false},
       validationMessage:'',
       validationErrors:{},
       validated:false
@@ -68,11 +73,12 @@ export default {
           }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     load(){
-        this.editedPatrol={id:0,name:'',enableTraining:false,enableAnnouncements:false};
+        this.editedPatrol={id:0,name:'',enableTraining:false,enableAnnouncements:false,enableEvents:false};
         this.editedPatrol.id = this.selectedPatrol.id;
         this.editedPatrol.name = this.selectedPatrol.name;
         this.editedPatrol.enableTraining = this.selectedPatrol.enableTraining;
         this.editedPatrol.enableAnnouncements = this.selectedPatrol.enableAnnouncements;
+        this.editedPatrol.enableEvents = this.selectedPatrol.enableEvents;
     }
   },
   computed: {

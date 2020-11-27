@@ -15,6 +15,7 @@ namespace Amphibian.Patrol.Api.Dtos
         public string Name { get; set; }
         public bool EnableTraining { get; set; }
         public bool EnableAnnouncements { get; set; }
+        public bool EnableEvents { get; set; }
         public Role? Role { get; set; }
         public IList<Permission> Permissions
         {

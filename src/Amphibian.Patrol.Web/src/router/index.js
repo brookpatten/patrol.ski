@@ -24,6 +24,7 @@ const TestDrive = () => import('@/views/pages/TestDrive')
 const Plan = () => import('@/views/schedule/Plan')
 const Home = () => import('@/views/schedule/Home')
 const Assignment = () => import('@/views/schedule/Assignment')
+const MyCalendar = () => import('@/views/schedule/Calendar')
 
 // Administration
 const Administration = () => import('@/views/administration/Administration')
@@ -40,6 +41,8 @@ const EditAssignment = () => import('@/views/administration/EditAssignment')
 const NewPatrol = () => import('@/views/administration/NewPatrol')
 const Announcements = () => import('@/views/administration/Announcements')
 const EditPatrol = () => import('@/views/administration/EditPatrol')
+const Events = () => import('@/views/administration/Events')
+const EditEvent = () => import('@/views/administration/EditEvent')
 
 Vue.use(Router)
 
@@ -98,6 +101,14 @@ function configRoutes () {
             requiresAuth: true
           },
           props: true
+        },
+        {
+          path: 'calendar',
+          name: 'Calendar',
+          component: MyCalendar,
+          meta: { 
+            requiresAuth: true
+          }
         },
         {
           path: 'admin',
@@ -201,6 +212,14 @@ function configRoutes () {
               props: true
             },
             {
+              path: 'events',
+              name: 'Events',
+              component: Events,
+              meta: { 
+                requiresAuth: true
+              }
+            },
+            {
               path: 'new-assignment/:planId',
               name: 'NewAssignment',
               component: NewAssignment,
@@ -213,6 +232,15 @@ function configRoutes () {
               path: 'edit-assignment/:assignmentId',
               name: 'EditAssignment',
               component: EditAssignment,
+              meta: { 
+                requiresAuth: true
+              },
+              props: true
+            },
+            {
+              path: 'edit-event/:eventId',
+              name: 'EditEvent',
+              component: EditEvent,
               meta: { 
                 requiresAuth: true
               },

@@ -3,7 +3,7 @@
         <CCard>
             <CCardHeader>
             <slot name="header">
-                <CIcon name="cil-pencil"/> Assignments
+                <CIcon name="cil-list-rich"/> Assignments
             </slot>
             </CCardHeader>
             <CCardBody>

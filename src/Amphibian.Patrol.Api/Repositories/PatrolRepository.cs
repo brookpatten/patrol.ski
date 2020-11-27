@@ -70,6 +70,7 @@ namespace Amphibian.Patrol.Api.Repositories
                     ,p.name
                     ,p.enabletraining
                     ,p.enableannouncements
+                    ,p.enableevents
                     ,pu.role
                     from patrolusers pu
                     inner join patrols p on p.id=pu.patrolid

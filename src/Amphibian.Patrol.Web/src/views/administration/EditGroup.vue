@@ -4,7 +4,7 @@
       <CCard>
         <CCardHeader>
           <slot name="header">
-            <CIcon name="cil-user"/>
+              <CIcon name="cil-people"/>
           </slot>
         </CCardHeader>
         <CCardBody>

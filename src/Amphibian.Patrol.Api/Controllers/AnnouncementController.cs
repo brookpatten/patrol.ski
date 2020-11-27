@@ -94,11 +94,22 @@ namespace Amphibian.Patrol.Api.Controllers
         [HttpPost]
         [Route("announcements")]
         [Authorize]
+        [UnitOfWork]
         public async Task<IActionResult> PostAnnouncement(Announcement announcement)
         {
             if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), announcement.PatrolId)).CanMaintainAnnouncements())
             {
                 announcement.CreatedByUserId = User.GetUserId();
+
+                if(announcement.Id!=default(int))
+                {
+                    var existing = await _announcementRepository.GetById(announcement.Id);
+                    if(existing.PatrolId!=announcement.PatrolId)
+                    {
+                        return Forbid();
+                    }
+                }
+
                 await _announcementService.PostAnnouncement(announcement);
                 return Ok(announcement);
             }
@@ -111,6 +122,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [HttpPost]
         [Route("announcements/expire/{id}")]
         [Authorize]
+        [UnitOfWork]
         public async Task<IActionResult> ExpireAnnouncement(int id)
         {
             var announcement = await _announcementRepository.GetById(id);

@@ -121,6 +121,7 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<IGroupRepository, GroupRepository>();
             services.AddScoped<IShiftRepository, ShiftRepository>();
             services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
+            services.AddScoped<IEventRepository, EventRepository>();
 
             //validations
             services.AddScoped<IValidator<AuthenticationController.RegistrationRequest>, RegistrationValidator>();

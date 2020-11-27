@@ -3,7 +3,7 @@
         <CCard>
             <CCardHeader>
             <slot name="header">
-                <CIcon name="cil-grid"/> Plans
+                <CIcon name="cil-spreadsheet"/> Training Plans
                 <CButton color="success" size="sm" class="float-right" v-on:click="newPlan()">New</CButton>
             </slot>
             </CCardHeader>

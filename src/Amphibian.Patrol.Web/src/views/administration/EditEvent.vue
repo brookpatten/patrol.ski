@@ -4,24 +4,29 @@
       <CCard>
         <CCardHeader>
           <slot name="header">
-              <CIcon name="cil-comment-square"/>
+              <CIcon name="cil-calendar"/>
           </slot>
         </CCardHeader>
         <CCardBody>
             <CAlert color="danger" v-if="validationMessage">{{validationMessage}}</CAlert>
             <CInput
-            label="Subject"
-            v-model="announcement.subject"
-            :invalidFeedback="validationErrors.Subject ? validationErrors.Subject.join() : 'Invalid'"
-            :isValid="validated ? validationErrors.Subject==null : null"
+            label="Name"
+            v-model="event.name"
+            :invalidFeedback="validationErrors.Name ? validationErrors.Name.join() : 'Invalid'"
+            :isValid="validated ? validationErrors.Name==null : null"
+            />
+            <CInput
+            label="Location"
+            v-model="event.location"
+            :invalidFeedback="validationErrors.Location ? validationErrors.Location.join() : 'Invalid'"
+            :isValid="validated ? validationErrors.Location==null : null"
             />
             
-            <label for="announcement.postAt">Begin Showing</label>
-            <datepicker v-model="announcement.postAt" input-class="form-control" calendar-class="card"></datepicker>
-            <label for="announcement.expireAt">Expire</label>
-            <datepicker v-model="announcement.expireAt" input-class="form-control" calendar-class="card"></datepicker><br/>
+            <label for="event.startsAt">Start</label>
+            <VueCtkDateTimePicker v-model="event.startsAt" dark noClearButton minute-interval="15" color="#3b2fa4" format="YYYY-MM-DDTHH:MMZ"></VueCtkDateTimePicker><br/>
+            <label for="event.endsAt">End</label>
+            <VueCtkDateTimePicker v-model="event.endsAt" dark noClearButton minute-interval="15" color="#3b2fa4" format="YYYY-MM-DDTHH:MMZ"></VueCtkDateTimePicker><br/>
 
-            <quill-editor v-model="announcement.announcementMarkdown"></quill-editor>
         </CCardBody>
         <CCardFooter>
             <CButtonGroup>
@@ -36,20 +41,19 @@
 
 <script>
 
-import { quillEditor } from 'vue-quill-editor'
-import 'quill/dist/quill.core.css'
-import 'quill/dist/quill.snow.css'
-import 'quill/dist/quill.bubble.css'
 import Datepicker from 'vuejs-datepicker';
 
+import VueCtkDateTimePicker from 'vue-ctk-date-time-picker';
+import 'vue-ctk-date-time-picker/dist/vue-ctk-date-time-picker.css';
+
 export default {
-  name: 'EditAnnouncement',
-  components: { quillEditor, Datepicker
+  name: 'EditEvent',
+  components: { Datepicker, VueCtkDateTimePicker
   },
-  props: ['announcementId'],
+  props: ['eventId'],
   data () {
     return {
-      announcement:{},
+      event:{},
       validationMessage:'',
       validationErrors:{},
       validated:false
@@ -59,23 +63,21 @@ export default {
     hasPermission: function(permission){
       return this.selectedPatrol!=null && this.selectedPatrol.permissions!=null && _.indexOf(this.selectedPatrol.permissions,permission) >= 0;
     },
-    getAnnouncement() {
-        if(this.announcementId==0 || !this.announcementId){
-          this.announcement={
-            subject:'',
-            announcementMarkdown:'',
-            announcementHtml:'',
+    getEvent() {
+        if(this.eventId==0 || !this.eventId){
+          this.event={
+            name:'',
+            location:'',
+            startsAt:new Date(),
+            endsAt:new Date(),
             patrolId: this.selectedPatrolId
           };
         }
         else{
           this.$store.dispatch('loading','Loading...');
-          this.$http.get('announcement/'+this.announcementId)
+          this.$http.get('event/'+this.eventId)
             .then(response => {
-                this.announcement = response.data;
-
-                
-                
+                this.event = response.data;
                 console.log(response);
             }).catch(response => {
                 console.log(response);
@@ -86,9 +88,9 @@ export default {
         this.$store.dispatch('loading','Saving...');
 
         
-        this.$http.post('announcements',this.announcement)
+        this.$http.post('events',this.event)
           .then(response=>{
-            this.$router.push({name:'Announcements'});
+            this.$router.push({name:'Events'});
           }).catch(response=>{
             this.validated=true;
             this.validationMessage = response.response.data.title;
@@ -106,11 +108,11 @@ export default {
   },
   watch: {
     selectedPatrolId(){
-        this.getAnnouncement();
+        this.getEvent();
     }
   },
   mounted: function(){
-    this.getAnnouncement();
+    this.getEvent();
   }
 }
 </script>

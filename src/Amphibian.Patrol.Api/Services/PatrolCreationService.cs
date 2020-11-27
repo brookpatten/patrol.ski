@@ -26,11 +26,13 @@ namespace Amphibian.Patrol.Api.Services
         private IAssignmentRepository _assignmentRepository;
         private IAnnouncementService _announcementService;
         private IPlanService _planService;
+        private IEventRepository _eventRepository;
 
         public enum BuiltInPlan { AlpineSki, AlpineSnowboard };
 
         public PatrolCreationService(ILogger<PatrolCreationService> logger, IPatrolRepository patrolRepository, IPlanRepository planRepository, 
-            IGroupRepository groupRepository, IUserRepository userRepository, IAssignmentRepository assignmentRepository, IPlanService planService, IAnnouncementService announcementService)
+            IGroupRepository groupRepository, IUserRepository userRepository, IAssignmentRepository assignmentRepository, IPlanService planService, 
+            IAnnouncementService announcementService, IEventRepository eventRepository)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
@@ -40,6 +42,7 @@ namespace Amphibian.Patrol.Api.Services
             _assignmentRepository = assignmentRepository;
             _planService = planService;
             _announcementService = announcementService;
+            _eventRepository = eventRepository;
         }
 
         public async Task CreateBuiltInPlan(BuiltInPlan plan, int patrolId)
@@ -340,6 +343,19 @@ namespace Amphibian.Patrol.Api.Services
                 PostAt = DateTime.Now
             };
             await _announcementService.PostAnnouncement(announcement);
+
+            //events
+            var patrolEvent = new Event()
+            {
+                CreatedAt = DateTime.UtcNow,
+                CreatedByUserId = adminUserId,
+                Name = "Season Begins",
+                Location = "Mt. Dumptruck",
+                StartsAt = DateTime.UtcNow + new TimeSpan(3, 0, 0, 0),
+                EndsAt = DateTime.UtcNow + new TimeSpan(3, 8, 0, 0),
+                PatrolId = patrolId
+            };
+            await _eventRepository.InsertEvent(patrolEvent);
         }
 
         private async Task RandomlySignAssignment(Assignment assignment,PlanDto plan, int trainerId, int tobogganTrainerId, int finalTrainerId,DateTime from,DateTime to,int? count)
@@ -499,7 +515,8 @@ namespace Amphibian.Patrol.Api.Services
             {
                 Name = name,
                 EnableAnnouncements = true,
-                EnableTraining = true
+                EnableTraining = true,
+                EnableEvents = true
             };
             await _patrolRepository.InsertPatrol(patrol);
             var patrolUser = new PatrolUser()

@@ -3,7 +3,7 @@
       <CCard>
             <CCardHeader>
             <slot name="header">
-                <CIcon name="cil-people"/>
+                <CIcon name="cil-user"/>
             </slot>
             </CCardHeader>
             <CCardBody>

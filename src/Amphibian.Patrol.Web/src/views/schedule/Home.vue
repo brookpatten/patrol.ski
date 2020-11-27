@@ -17,6 +17,31 @@
                 </CCol>
             </CRow>
         </template>
+        <CCard v-if="upcomingEvents.length>0 && selectedPatrol.enableEvents">
+            <CCardHeader>
+            <slot name="header">
+                <CIcon name="cil-calendar"/> Upcoming Events
+                <CButton size="sm" color="info" class="float-right" :to="{name:'Calendar'}">Calendar</CButton>
+            </slot>
+            </CCardHeader>
+            <CCardBody>
+                <CDataTable
+                    striped
+                    bordered
+                    small
+                    fixed
+                    :items="upcomingEvents"
+                    :fields="upcomingEventsFields"
+                    sorter>
+                    <template #startsAt="data">
+                        <td>{{(data.item.startsAt ? (new Date(data.item.startsAt)).toLocaleString() : '')}}</td>
+                    </template>
+                    <template #endsAt="data">
+                        <td>{{(data.item.endsAt ? (new Date(data.item.endsAt)).toLocaleString() : '')}}</td>
+                    </template>
+                </CDataTable>
+            </CCardBody>
+        </CCard>
         <template v-if="selectedPatrol.enableTraining">
             <CRow v-if="hasPermission('MaintainAssignments')">
                 <CCol md="6">
@@ -384,6 +409,10 @@ export default {
           {key:'count',label:'Open Assignments'}
         ],
         announcements:[],
+        upcomingEvents:[],
+        upcomingEventsFields:[{key:'name',label:'Event'},
+          {key:'location',label:'Location'},
+          {key:'startsAt',label:'Date/Time'}]
     }
   },
   methods: {
@@ -393,6 +422,16 @@ export default {
                 .then(response => {
                     console.log(response);
                     this.myAssignments = response.data;
+                }).catch(response => {
+                    console.log(response);
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
+        },
+        getUpcomingEvents() {
+            this.$store.dispatch('loading','Loading...');
+            this.$http.get('events/upcoming/'+this.selectedPatrolId)
+                .then(response => {
+                    console.log(response);
+                    this.upcomingEvents = response.data;
                 }).catch(response => {
                     console.log(response);
                 }).finally(response=>this.$store.dispatch('loadingComplete'));
@@ -566,6 +605,10 @@ export default {
             
             if(this.selectedPatrol.enableAnnouncements){
                 this.getAnnouncements();
+            }
+
+            if(this.selectedPatrol.enableEvents){
+                this.getUpcomingEvents();
             }
         }
   },

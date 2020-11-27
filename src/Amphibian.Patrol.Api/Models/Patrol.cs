@@ -11,5 +11,6 @@ namespace Amphibian.Patrol.Api.Models
         public string Name { get; set; }
         public bool EnableTraining { get; set; }
         public bool EnableAnnouncements { get; set; }
+        public bool EnableEvents { get; set; }
     }
 }
