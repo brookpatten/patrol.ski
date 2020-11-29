@@ -34,7 +34,7 @@ namespace Amphibian.Patrol.Tests.Repositories
         {
             var result = await _groupRepository.GetGroupsForUser(1, 2);
 
-            Assert.AreEqual(1, result.Count());
+            Assert.AreEqual(2, result.Count());
         }
 
         [Test]
@@ -55,14 +55,14 @@ namespace Amphibian.Patrol.Tests.Repositories
         public async Task TestGetGroupsForUsers()
         {
             var result = await _groupRepository.GetGroupsForUsers(1,new List<int>() { 1, 2 });
-            Assert.AreEqual(1, result.Count());
+            Assert.AreEqual(3, result.Count());
         }
 
         [Test]
         public async Task TestGetGroupsForPatrol()
         {
             var result = await _groupRepository.GetGroupsForPatrol(1);
-            Assert.AreEqual(1, result.Count());
+            Assert.AreEqual(2, result.Count());
         }
     }
 }

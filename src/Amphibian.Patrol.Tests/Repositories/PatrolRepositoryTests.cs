@@ -33,7 +33,8 @@ namespace Amphibian.Patrol.Tests.Repositories
             _user.Id=(int)_connection.Insert(_user);
             _patrol = new Amphibian.Patrol.Api.Models.Patrol()
             {
-                Name="Test"
+                Name="Test",
+                TimeZone= "Eastern Standard Time"
             };
         }
 
