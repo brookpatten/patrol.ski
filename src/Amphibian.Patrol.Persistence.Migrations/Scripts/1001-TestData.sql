@@ -11,9 +11,9 @@ insert into users(email,firstname,lastname,passwordsalt,passwordhash,passwordhas
 values ('admin','admin','',0xAC174909DBF93DCE1BC0AD2880391A8BACA2207D84FBBD89DB6D5500A20C7DB0,0x2DC0CDA8863338A36E3EDD1E41238B2542252876C4547C5C860F8D0F47A2B832,5);
 --3
 
-insert into patrols(name,EnableTraining,EnableAnnouncements) values ('Big Mountain Patrol',1,1);
+insert into patrols(name,EnableTraining,EnableAnnouncements,EnableEvents,EnableScheduling,EnableShiftSwaps,Timezone) values ('Big Mountain Patrol',1,1,1,1,1,'Eastern Standard Time');
 --1
-insert into patrols(name,EnableTraining,EnableAnnouncements) values ('Tiny Mountain Patrol',1,1);
+insert into patrols(name,EnableTraining,EnableAnnouncements,EnableEvents,EnableScheduling,EnableShiftSwaps,Timezone) values ('Tiny Mountain Patrol',1,1,1,1,1,'Eastern Standard Time');
 --2
 
 insert into patrolusers (patrolid,userid) values (1,1);
@@ -278,13 +278,46 @@ insert into sectiongroups (sectionid,groupid) values (2,1);
 insert into sectiongroups (sectionid,groupid) values (3,1);
 insert into sectiongroups (sectionid,groupid) values (4,2);
 
+--shifts
+insert into shifts (patrolid,name,starthour,startminute,endhour,endminute) values (1,'Morning Shift',9,0,13,0);
+--1
+insert into shifts (patrolid,name,starthour,startminute,endhour,endminute) values (1,'Afternoon Shift',12,0,18,0);
+--2
+insert into shifts (patrolid,name,starthour,startminute,endhour,endminute) values (2,'Day Shift',9,0,16,0);
+--3
+
+--groups for shift
+--big patrol shift group
+insert into groups (name,patrolid) values ('Patrollers',1);
+--3
+insert into groupusers (groupid,userid) values (3,1);
+insert into groupusers (groupid,userid) values (3,2);
+insert into groupusers (groupid,userid) values (3,3);
+
+--tiny patrol shift group
+insert into groups (name,patrolid) values ('Patrollers',2);
+--4
+insert into groupusers (groupid,userid) values (4,1);
+insert into groupusers (groupid,userid) values (4,2);
+insert into groupusers (groupid,userid) values (4,3);
+
+
 --training shift
 --big patrol
-insert into trainingshifts (patrolid,startsat,endsat) values (1,dateadd(MONTH,6,getdate()),dateadd(hour,8,dateadd(MONTH,6,getdate())));
-insert into shifttrainers (trainingshiftid,traineruserid) values (1,2);
+insert into scheduledshifts (patrolid,startsat,endsat,shiftid,groupid) values (1,DATETIMEFROMPARTS(2001,1,1,9,0,0,0),DATETIMEFROMPARTS(2001,1,1,13,0,0,0),1,3);
+--1
+insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status) values (1,1,1,'Assigned');
+insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status) values (1,2,2,'Released');
+insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status,claimedbyuserid) values (1,3,3,'Claimed',2);
+--1
+
 --tiny patrol
-insert into trainingshifts (patrolid,startsat,endsat) values (2,dateadd(MONTH,6,getdate()),dateadd(hour,8,dateadd(MONTH,6,getdate())));
-insert into shifttrainers (trainingshiftid,traineruserid) values (2,2);
+insert into scheduledshifts (patrolid,startsat,endsat,shiftid,groupid) values (2,DATETIMEFROMPARTS(2001,1,1,9,0,0,0),DATETIMEFROMPARTS(2001,1,1,16,0,0,0),3,4);
+--2
+insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status) values (2,1,1,'Assigned');
+insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status) values (2,2,2,'Released');
+insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status,claimedbyuserid) values (2,3,3,'Claimed',2);
+--2
 
 
 --sanity check

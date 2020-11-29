@@ -42,7 +42,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetTraining(int patrolId)
         {
-            var upcomingShifts = await _shiftRepository.GetTrainerShifts(patrolId, this.User.GetUserId(), _clock.UtcNow.DateTime);
+            var upcomingShifts = await _shiftRepository.GetScheduledShiftAssignments(patrolId, this.User.GetUserId(), _clock.UtcNow.DateTime);
             return Ok(upcomingShifts);
         }
 
@@ -68,17 +68,17 @@ namespace Amphibian.Patrol.Api.Controllers
         [Route("trainingshifts/commit/{shiftTrainerId}")]
         [Authorize]
         [UnitOfWork]
-        public async Task<IActionResult> Commit(int shiftTrainerId)
+        public async Task<IActionResult> Commit(int scheduledShiftAssignmentId)
         {
-            var shiftTrainer = await _shiftRepository.GetShiftTrainer(shiftTrainerId);
-            var trainingShift = await _shiftRepository.GetTrainingShift(shiftTrainer.TrainingShiftId);
+            var shiftTrainer = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
+            var trainingShift = await _shiftRepository.GetScheduledShift(shiftTrainer.ScheduledShiftId);
             var patrols = await _patrolRepository.GetPatrolsForUser(this.User.GetUserId());
 
             if(patrols.Any(x=>x.Id==trainingShift.PatrolId))
             {
                 var trainee = new Trainee()
                 {
-                    ShiftTrainerId = shiftTrainerId,
+                    ScheduledShiftAssignmentId = scheduledShiftAssignmentId,
                     TraineeUserId = this.User.GetUserId()
                 };
                 await _shiftRepository.InsertTrainee(trainee);
