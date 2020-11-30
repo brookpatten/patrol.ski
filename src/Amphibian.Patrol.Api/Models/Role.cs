@@ -19,18 +19,27 @@ namespace Amphibian.Patrol.Api.Models
         MaintainGroups,
         MaintainAssignments,
         RevokeSignatures,
-        MaintainShifts,
         MaintainPatrol,
         MaintainAnnouncements,
-        MaintainEvents
+        MaintainEvents,
+        MaintainSchedule
     }
 
     public static class RoleExtensions
     {
         public static Dictionary<Role, IList<Permission>> DefaultPermissions = new Dictionary<Role, IList<Permission>>()
         {
+            //admins get everything
             {Role.Administrator,Enum.GetValues(typeof(Permission)).Cast<Permission>().ToList() },
-            {Role.Coordinator, new List<Permission>(){Permission.MaintainAssignments, Permission.MaintainAnnouncements} }
+            //coordinators get a subset of less destructive things
+            {   Role.Coordinator, new List<Permission>(){
+                Permission.MaintainAssignments, 
+                Permission.RevokeSignatures, 
+                Permission.MaintainAnnouncements, 
+                Permission.MaintainEvents, 
+                Permission.MaintainSchedule
+                } 
+            }
         };
 
         public static IList<Permission> Permissions(this Role? role)
@@ -82,9 +91,9 @@ namespace Amphibian.Patrol.Api.Models
         {
             return role.Can(Permission.RevokeSignatures);
         }
-        public static bool CanMaintainShifts(this Role? role)
+        public static bool CanMaintainSchedule(this Role? role)
         {
-            return role.Can(Permission.MaintainShifts);
+            return role.Can(Permission.MaintainSchedule);
         }
         public static bool CanmaintainPatrol(this Role? role)
         {

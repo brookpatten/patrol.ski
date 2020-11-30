@@ -138,6 +138,7 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<IPatrolService, PatrolService>();
             services.AddScoped<IPatrolCreationService, PatrolCreationService>();
             services.AddScoped<IAnnouncementService, AnnouncementService>();
+            services.AddScoped<IScheduleService, ScheduleService>();
 
             services.AddScoped<ISystemClock, SystemClock>();
 

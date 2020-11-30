@@ -23,13 +23,15 @@ namespace Amphibian.Patrol.Api.Controllers
         private readonly IPatrolRepository _patrolRepository;
         private readonly IPatrolService _patrolService;
         private IPatrolCreationService _patrolCreationService;
+        private IUserRepository _userRepository;
 
-        public PatrolController(ILogger<PatrolController> logger, IPatrolRepository patrolRepository, IPatrolCreationService patrolCreationService, IPatrolService patrolService)
+        public PatrolController(ILogger<PatrolController> logger, IPatrolRepository patrolRepository, IPatrolCreationService patrolCreationService, IPatrolService patrolService, IUserRepository userRepository)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
             _patrolCreationService = patrolCreationService;
             _patrolService = patrolService;
+            _userRepository = userRepository;
         }
 
         [HttpPost]
@@ -62,7 +64,10 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> CreateDemoPatrol(string name)
         {
             var patrol = await _patrolCreationService.CreateNewPatrol(User.GetUserId(), name);
-            await _patrolCreationService.CreateDemoInitialSetup(patrol.Id, User.GetUserId());
+
+            var user = await _userRepository.GetUser(User.GetUserId());
+            
+            await _patrolCreationService.CreateDemoInitialSetup(patrol, user);
             var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
             return Ok(patrols);
         }

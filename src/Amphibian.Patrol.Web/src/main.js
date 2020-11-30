@@ -12,11 +12,15 @@ import Axios from 'axios'
 import lodash from 'lodash'
 import VueLodash from 'vue-lodash'
 import VueBlockUI from 'vue-blockui'
+import VueMoment from 'vue-moment'
+import Moment from 'moment'
 
 Vue.config.performance = true
 Vue.use(CoreuiVue)
 Vue.use(lodash,VueLodash)
 Vue.use(VueBlockUI)
+//Vue.use(VueMoment)
+//Vue.use(Moment)
 Vue.use(VueAxios, Axios)
 
 const token = localStorage.getItem('token')

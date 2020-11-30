@@ -14,7 +14,9 @@ namespace Amphibian.Patrol.Api.Services
 
         Task ReleaseShift(int scheduledShiftAssignmentId);
         Task ClaimShift(int scheduledShiftAssignmentId, int userId);
-        Task ApproveShiftSwap(int scheduledShiftAssignmentId);
+        Task ApproveShiftSwap(int scheduledShiftAssignmentId, int userId);
+        Task DeclineShiftSwap(int scheduledShiftAssignmentId,int userId, string reason);
         Task CancelShiftRelease(int scheduledShiftAssignmentId);
+        Task ReplicatePeriod(int patrolId,bool clearTargetPeriodFirst,DateTime replicatedPeriodStart, DateTime replicatedPeriodEnd, DateTime targetPeriodStart, DateTime targetPeriodEnd);
     }
 }

@@ -61,8 +61,8 @@
           <CDataTable
                 striped
                 bordered
-                :small="small"
-                :fixed="fixed"
+                small
+                fixed
                 :items="members"
                 :fields="[{key:'email',label:'Email'},{key:'firstName',label:'First'},{key:'lastName',label:'Last'},{key:'buttons',label:''}]"
                 sorter>

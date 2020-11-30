@@ -19,19 +19,35 @@
             :invalidFeedback="validationErrors.Name ? validationErrors.Name.join() : 'Invalid'"
             :isValid="validated ? validationErrors.Name==null : null"
             />
+            <CInput
+            label="TimeZone"
+            v-model="editedPatrol.timeZone"
+            disabled
+            :invalidFeedback="validationErrors.timeZone ? validationErrors.timeZone.join() : 'Invalid'"
+            :isValid="validated ? validationErrors.timeZone==null : null"
+            />
             <strong>Enabled Functionality</strong>
             <br/>
             
             
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableAnnouncements" v-bind="labelIcon"/>
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableAnnouncements"/>
             <label for="editedPatrol.enableAnnouncements">Announcements</label>
             <br/>
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableEvents" v-bind="labelIcon"/>
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableEvents"/>
             <label for="editedPatrol.enableEvents">Events</label>
             <br/>
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableTraining" v-bind="labelIcon"/>
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableTraining"/>
             <label for="editedPatrol.enableTraining">Training</label>
             <br/>
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableScheduling"/>
+            <label for="editedPatrol.enableScheduling">Scheduling</label>
+            <br/>
+            <template v-if="editedPatrol.enableScheduling">
+              <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableShiftSwaps"/>
+              <label for="editedPatrol.enableShiftSwaps">Shift Exchange</label>
+              <br/>
+            </template>
+
 
         </CCardBody>
         <CCardFooter>
@@ -79,6 +95,9 @@ export default {
         this.editedPatrol.enableTraining = this.selectedPatrol.enableTraining;
         this.editedPatrol.enableAnnouncements = this.selectedPatrol.enableAnnouncements;
         this.editedPatrol.enableEvents = this.selectedPatrol.enableEvents;
+        this.editedPatrol.enableScheduling = this.selectedPatrol.enableScheduling;
+        this.editedPatrol.enableShiftSwaps = this.selectedPatrol.enableScheduling && this.selectedPatrol.enableShiftSwaps;
+        this.editedPatro.timeZone = this.selectedPatrol.timeZone;
     }
   },
   computed: {

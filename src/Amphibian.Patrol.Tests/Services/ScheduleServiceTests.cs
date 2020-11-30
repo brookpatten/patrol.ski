@@ -154,7 +154,7 @@ namespace Amphibian.Patrol.Tests.Services
             && y.AssignedUserId == userId
             && y.OriginalAssignedUserId ==1))).Verifiable();
 
-            await _scheduleService.ApproveShiftSwap(id);
+            await _scheduleService.ApproveShiftSwap(id,1);
 
             _shiftRepositoryMock.Verify();
         }
@@ -177,7 +177,57 @@ namespace Amphibian.Patrol.Tests.Services
 
             Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                await _scheduleService.ApproveShiftSwap(id);
+                await _scheduleService.ApproveShiftSwap(id,1);
+            });
+
+            _shiftRepositoryMock.Verify();
+        }
+
+        [Test]
+        public async Task CanDeclineClaimedShift()
+        {
+            int id = 1;
+            int userId = 2;
+
+            _shiftRepositoryMock.Setup(x => x.GetScheduledShiftAssignment(id)).Returns(Task.FromResult(new ScheduledShiftAssignment()
+            {
+                Id = 1,
+                AssignedUserId = 1,
+                ClaimedByUserId = userId,
+                OriginalAssignedUserId = 1,
+                ScheduledShiftId = 1,
+                Status = ShiftStatus.Claimed
+            })).Verifiable();
+
+            _shiftRepositoryMock.Setup(x => x.UpdateScheduledShiftAssignment(It.Is<ScheduledShiftAssignment>(y => y.Status == ShiftStatus.Assigned
+            && y.ClaimedByUserId == null
+            && y.AssignedUserId == 1
+            && y.OriginalAssignedUserId == 1))).Verifiable();
+
+            await _scheduleService.DeclineShiftSwap(id, 1,"because");
+
+            _shiftRepositoryMock.Verify();
+        }
+
+        [Test]
+        public async Task DeclineShiftClaimInInvalidStateThrows()
+        {
+            int id = 1;
+            int userId = 2;
+
+            _shiftRepositoryMock.Setup(x => x.GetScheduledShiftAssignment(id)).Returns(Task.FromResult(new ScheduledShiftAssignment()
+            {
+                Id = 1,
+                AssignedUserId = 1,
+                ClaimedByUserId = null,
+                OriginalAssignedUserId = 1,
+                ScheduledShiftId = 1,
+                Status = ShiftStatus.Assigned
+            })).Verifiable();
+
+            Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            {
+                await _scheduleService.DeclineShiftSwap(id, 1, "because");
             });
 
             _shiftRepositoryMock.Verify();
