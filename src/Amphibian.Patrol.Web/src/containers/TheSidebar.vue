@@ -12,34 +12,51 @@
     <!--<CRenderFunction flat :content-to-render="$options.nav"/>-->
     <CSidebarNav>
       <CSidebarNavItem name='Dashboard' :to='{name:"Home"}' icon='cil-speedometer'/>
-      <CSidebarNavItem v-if='selectedPatrol.enableEvents'
+      <CSidebarNavItem v-if="selectedPatrol.enableScheduling && !hasPermission('MaintainSchedule')"
         name='Calendar' :to='{name:"Calendar"}' icon='cil-calendar' />
+      <CSidebarNavItem v-if="selectedPatrol.enableShiftSwaps && !hasPermission('MaintainSchedule')"
+        name='Schedule Swap' :to='{name:"ScheduleSwap"}' icon='cil-calendar' />
       
-      <CSidebarNavTitle v-if="hasPermission('MaintainUsers') || hasPermission('MaintainGroups') || hasPermission('MaintainPatrol')">
-        Administration
-      </CSidebarNavTitle>
-      <CSidebarNavItem v-if='hasPermission("MaintainPatrol")'
-        name='Patrol' :to='{name:"EditPatrol"}' icon='cil-home' />
-      <CSidebarNavItem v-if='hasPermission("MaintainUsers")'
-        name='People' :to='{name:"People"}' icon='cil-user' />
-      <CSidebarNavItem v-if='hasPermission("MaintainGroups")'
-        name='Groups' :to='{name:"Groups"}' icon='cil-people' />
+      <template v-if="hasPermission('MaintainUsers') || hasPermission('MaintainGroups') || hasPermission('MaintainPatrol')">
+        <CSidebarNavTitle>
+          Administration
+        </CSidebarNavTitle>
+        <CSidebarNavItem v-if='hasPermission("MaintainPatrol")'
+          name='Patrol' :to='{name:"EditPatrol"}' icon='cil-home' />
+        <CSidebarNavItem v-if='hasPermission("MaintainUsers")'
+          name='People' :to='{name:"People"}' icon='cil-user' />
+        <CSidebarNavItem v-if='hasPermission("MaintainGroups")'
+          name='Groups' :to='{name:"Groups"}' icon='cil-people' />
+      </template>
 
-      <CSidebarNavTitle v-if="(selectedPatrol.enableAnnouncements && hasPermission('MaintainAnnouncements')) || (selectedPatrol.enableEvents && hasPermission('MaintainEvents'))">
-        Communication
-      </CSidebarNavTitle>
-      <CSidebarNavItem v-if='selectedPatrol.enableAnnouncements && hasPermission("MaintainAnnouncements")'
-        name='Announcements' :to='{name:"Announcements"}' icon='cil-comment-square' />
-      <CSidebarNavItem v-if='selectedPatrol.enableEvents && hasPermission("MaintainEvents")'
-        name='Events' :to='{name:"Events"}' icon='cil-calendar' />
+      <template v-if="(selectedPatrol.enableScheduling && hasPermission('MaintainSchedule'))">
+        <CSidebarNavTitle>
+          Schedule
+        </CSidebarNavTitle>
+        <CSidebarNavItem name='Calendar' :to='{name:"Calendar"}' icon='cil-calendar' />
+        <CSidebarNavItem v-if="selectedPatrol.enableShiftSwaps" name='Schedule Swap' :to='{name:"ScheduleSwap"}' icon='cil-list' />
+        <CSidebarNavItem name='Shifts' :to='{name:"Shifts"}' icon='cil-indent-increase' />
+      </template>
+
+      <template v-if="(selectedPatrol.enableAnnouncements && hasPermission('MaintainAnnouncements')) || (selectedPatrol.enableEvents && hasPermission('MaintainEvents'))">
+        <CSidebarNavTitle>
+          Communication
+        </CSidebarNavTitle>
+        <CSidebarNavItem v-if='selectedPatrol.enableAnnouncements && hasPermission("MaintainAnnouncements")'
+          name='Announcements' :to='{name:"Announcements"}' icon='cil-comment-square' />
+        <CSidebarNavItem v-if='selectedPatrol.enableEvents && hasPermission("MaintainEvents")'
+          name='Events' :to='{name:"Events"}' icon='cil-calendar' />
+      </template>
       
-      <CSidebarNavTitle v-if="selectedPatrol.enableTraining && (hasPermission('MaintainPlans') || hasPermission('MaintainAssignments'))">
-        Training
-      </CSidebarNavTitle>
-      <CSidebarNavItem v-if='selectedPatrol.enableTraining && hasPermission("MaintainPlans")'
-        name='Plans' :to='{name:"Plans"}' icon='cil-spreadsheet' />
-      <CSidebarNavItem v-if='selectedPatrol.enableTraining && hasPermission("MaintainAssignments")'
-        name='Assignments' :to='{name:"Assignments"}' icon='cil-list-rich' />
+      <template v-if="selectedPatrol.enableTraining && (hasPermission('MaintainPlans') || hasPermission('MaintainAssignments'))">
+        <CSidebarNavTitle>
+          Training
+        </CSidebarNavTitle>
+        <CSidebarNavItem v-if='selectedPatrol.enableTraining && hasPermission("MaintainPlans")'
+          name='Plans' :to='{name:"Plans"}' icon='cil-spreadsheet' />
+        <CSidebarNavItem v-if='selectedPatrol.enableTraining && hasPermission("MaintainAssignments")'
+          name='Assignments' :to='{name:"Assignments"}' icon='cil-list-rich' />
+      </template>
 
       
       

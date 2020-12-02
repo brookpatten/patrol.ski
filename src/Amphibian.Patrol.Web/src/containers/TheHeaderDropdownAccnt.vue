@@ -16,7 +16,7 @@
       </CHeaderNavLink>
     </template>
     <CDropdownHeader tag="div" class="text-center" color="light">
-      <strong>Account</strong>
+      <strong>{{user.firstName}} {{user.lastName}}</strong>
     </CDropdownHeader>
     <CDropdownItem>
       <CIcon name="cil-user" /> Profile
@@ -63,6 +63,9 @@ export default {
     },
     selectedPatrolId: function () {
       return this.$store.state.selectedPatrolId;
+    },
+    user: function (){
+        return this.$store.getters.user;
     }
   },
   methods: {

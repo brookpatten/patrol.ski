@@ -146,7 +146,7 @@ namespace Amphibian.Patrol.Api.Repositories
                     ) signatures
                     from assignments a
                     inner join users u on u.id=a.userid
-                    inner join plans p on p.patrolid=@patrolId
+                    inner join plans p on p.patrolid=@patrolId and p.id=a.planid
                     where a.completedat is null
                     and (
                         case when exists(

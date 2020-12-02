@@ -12,5 +12,8 @@ namespace Amphibian.Patrol.Api.Models
         public bool EnableTraining { get; set; }
         public bool EnableAnnouncements { get; set; }
         public bool EnableEvents { get; set; }
+        public bool EnableScheduling { get; set; }
+        public bool EnableShiftSwaps { get; set; }
+        public string TimeZone { get; set; }
     }
 }

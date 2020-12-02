@@ -27,12 +27,14 @@ namespace Amphibian.Patrol.Api.Services
         private IAnnouncementService _announcementService;
         private IPlanService _planService;
         private IEventRepository _eventRepository;
+        private IShiftRepository _shiftRepository;
+        private IScheduleService _scheduleService;
 
         public enum BuiltInPlan { AlpineSki, AlpineSnowboard };
 
         public PatrolCreationService(ILogger<PatrolCreationService> logger, IPatrolRepository patrolRepository, IPlanRepository planRepository, 
             IGroupRepository groupRepository, IUserRepository userRepository, IAssignmentRepository assignmentRepository, IPlanService planService, 
-            IAnnouncementService announcementService, IEventRepository eventRepository)
+            IAnnouncementService announcementService, IEventRepository eventRepository, IShiftRepository shiftRepository, IScheduleService scheduleService)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
@@ -43,6 +45,8 @@ namespace Amphibian.Patrol.Api.Services
             _planService = planService;
             _announcementService = announcementService;
             _eventRepository = eventRepository;
+            _shiftRepository = shiftRepository;
+            _scheduleService = scheduleService;
         }
 
         public async Task CreateBuiltInPlan(BuiltInPlan plan, int patrolId)
@@ -214,76 +218,74 @@ namespace Amphibian.Patrol.Api.Services
             await _planRepository.InsertSectionLevel(sectionFinal);
         }
 
-        public async Task CreateDemoInitialSetup(int patrolId,int adminUserId)
+        public async Task CreateDemoInitialSetup(Models.Patrol patrol, User admin)
         {
             var random = new Random();
 
-            await CreateDefaultInitialSetup(patrolId);
-            
+            await CreateDefaultInitialSetup(patrol.Id);
+
             //trainer setup
-            var skiTrainer = new User() { FirstName = "Jim", LastName = "Teachesskiing", Email = $"Jim.{Guid.NewGuid()}@patrol.training" };
+            var skiTrainer = new User() { FirstName = "Jim", LastName = "Ski", Email = $"Jim.{Guid.NewGuid()}@patrol.ski" };
             await _userRepository.InsertUser(skiTrainer);
             var skiTrainerPatrolUser = new PatrolUser()
             {
-                PatrolId = patrolId,
+                PatrolId = patrol.Id,
                 UserId = skiTrainer.Id
             };
             await _patrolRepository.InsertPatrolUser(skiTrainerPatrolUser);
 
-            var snowboardTrainer = new User() { FirstName = "Stephen", LastName = "Teachessnowboarding", Email = $"Stephen.{Guid.NewGuid()}@patrol.training" };
+            var snowboardTrainer = new User() { FirstName = "Stephen", LastName = "Snowboard", Email = $"Stephen.{Guid.NewGuid()}@patrol.ski" };
             await _userRepository.InsertUser(snowboardTrainer);
             var snowboardTrainerPatrolUser = new PatrolUser()
             {
-                PatrolId = patrolId,
+                PatrolId = patrol.Id,
                 UserId = snowboardTrainer.Id
             };
             await _patrolRepository.InsertPatrolUser(snowboardTrainerPatrolUser);
 
-            var tobogganTrainer = new User() { FirstName = "Vern", LastName = "Teachestoboggan", Email = $"Vern.{Guid.NewGuid()}@patrol.training" };
+            var tobogganTrainer = new User() { FirstName = "Vern", LastName = "Toboggan", Email = $"Vern.{Guid.NewGuid()}@patrol.ski" };
             await _userRepository.InsertUser(tobogganTrainer);
             var tobogganTrainerPatrolUser = new PatrolUser()
             {
-                PatrolId = patrolId,
+                PatrolId = patrol.Id,
                 UserId = tobogganTrainer.Id
             };
             await _patrolRepository.InsertPatrolUser(tobogganTrainerPatrolUser);
-
-            //put the trainers in the right groups
-            var groups = await _groupRepository.GetGroupsForPatrol(patrolId);
-            foreach(var group in groups)
-            {
-                GroupUser gu = new GroupUser() { GroupId = group.Id };
-                if(group.Name.Contains("PSIA"))
-                {
-                    gu.UserId = skiTrainer.Id;
-                }
-                else if(group.Name.Contains("AASI"))
-                {
-                    gu.UserId = snowboardTrainer.Id;
-                }
-                else if(group.Name.Contains("Toboggan"))
-                {
-                    gu.UserId = tobogganTrainer.Id;
-                }
-                else if (group.Name.Contains("Final"))
-                {
-                    gu.UserId = tobogganTrainer.Id;
-                }
-                await _groupRepository.InsertGroupUser(gu);
-            }
-
-            //assignment/trainee setup
-            var now = DateTime.UtcNow;
-            var lastMonth = now - new TimeSpan(30, 0, 0, 0);
-            var in2Years = lastMonth + new TimeSpan(365 * 2, 0, 0, 0);
-
-            var plans = await _planRepository.GetPlansForPatrol(patrolId);
-
             var planDtos = new List<PlanDto>();
-            foreach(var plan in plans)
+
+            if (patrol.EnableTraining)
             {
-                var dto = await _planService.GetPlan(plan.Id);
-                planDtos.Add(dto);
+                //put the trainers in the right groups
+                var groups = await _groupRepository.GetGroupsForPatrol(patrol.Id);
+                foreach (var group in groups)
+                {
+                    GroupUser gu = new GroupUser() { GroupId = group.Id };
+                    if (group.Name.Contains("PSIA"))
+                    {
+                        gu.UserId = skiTrainer.Id;
+                    }
+                    else if (group.Name.Contains("AASI"))
+                    {
+                        gu.UserId = snowboardTrainer.Id;
+                    }
+                    else if (group.Name.Contains("Toboggan"))
+                    {
+                        gu.UserId = tobogganTrainer.Id;
+                    }
+                    else if (group.Name.Contains("Final"))
+                    {
+                        gu.UserId = tobogganTrainer.Id;
+                    }
+                    await _groupRepository.InsertGroupUser(gu);
+                }
+
+                var plans = await _planRepository.GetPlansForPatrol(patrol.Id);
+
+                foreach (var plan in plans)
+                {
+                    var dto = await _planService.GetPlan(plan.Id);
+                    planDtos.Add(dto);
+                }
             }
 
             int randomTraineeCount = 15;
@@ -291,13 +293,8 @@ namespace Amphibian.Patrol.Api.Services
             GenFu.GenFu.Configure<User>();
             var trainees = A.ListOf<User>(randomTraineeCount);
 
-            for(int i=0;i< randomTraineeCount; i++)
+            for (int i = 0; i < randomTraineeCount; i++)
             {
-                bool ski = (new Random().Next(2) == 1);
-                string sport = ski ? "Ski" : "Snowboard";
-
-                var plan = planDtos.Single(x => x.Name == $"{sport} Alpine");
-
                 var skiTrainee = trainees[i];
                 skiTrainee.Id = 0;
                 skiTrainee.Email = skiTrainee.FirstName + "." + skiTrainee.LastName + ".demo." + Guid.NewGuid().ToString() + "@patrol.training";
@@ -306,25 +303,50 @@ namespace Amphibian.Patrol.Api.Services
 
                 var patrolUser = new PatrolUser()
                 {
-                    PatrolId = patrolId,
+                    PatrolId = patrol.Id,
                     UserId = skiTrainee.Id
                 };
                 await _patrolRepository.InsertPatrolUser(patrolUser);
+            }
 
-                var skiAssignment = new Assignment() { AssignedAt = lastMonth+new TimeSpan(random.Next(7),0,0,0,0), DueAt = in2Years, PlanId = plan.Id, UserId = skiTrainee.Id };
-                await _assignmentRepository.InsertAssignment(skiAssignment);
+            var now = DateTime.UtcNow;
+            var lastMonth = now - new TimeSpan(30, 0, 0, 0);
+            var in2Years = lastMonth + new TimeSpan(365 * 2, 0, 0, 0);
+            if (patrol.EnableTraining)
+            {
+                //assignment/trainee setup
+                
+                for (int i = 0; i < randomTraineeCount; i++)
+                {
+                    bool ski = (new Random().Next(2) == 1);
+                    string sport = ski ? "Ski" : "Snowboard";
 
-                await RandomlySignAssignment(skiAssignment,plan, ski ? skiTrainer.Id : snowboardTrainer.Id,tobogganTrainer.Id,tobogganTrainer.Id, skiAssignment.AssignedAt, now, 20 +random.Next(0, 10));
+                    var plan = planDtos.Single(x => x.Name == $"{sport} Alpine");
+
+                    var skiAssignment = new Assignment() { AssignedAt = lastMonth + new TimeSpan(random.Next(7), 0, 0, 0, 0), DueAt = in2Years, PlanId = plan.Id, UserId = trainees[i].Id };
+                    await _assignmentRepository.InsertAssignment(skiAssignment);
+
+                    await RandomlySignAssignment(skiAssignment, plan, ski ? skiTrainer.Id : snowboardTrainer.Id, tobogganTrainer.Id, tobogganTrainer.Id, skiAssignment.AssignedAt, now, 20 + random.Next(0, 10));
+                }
             }
 
 
             //TODO: make up some shift data too
 
-            //announcements
-            var announcement = new Announcement()
+            var beginningOfDay = now - new TimeSpan(0, now.Hour, now.Minute, now.Second, now.Millisecond);
+            var beginningOfWeek = beginningOfDay;
+            while (beginningOfWeek.DayOfWeek != DayOfWeek.Sunday)
             {
-                CreatedByUserId = adminUserId,
-                AnnouncementMarkdown = @"Welcome to <strong>Patrol</strong>.ski.  This is where your patrol announcements are shown.<br/>
+                beginningOfWeek = beginningOfWeek - new TimeSpan(1, 0, 0, 0);
+            }
+
+            if (patrol.EnableAnnouncements)
+            {
+                //announcements
+                var announcement = new Announcement()
+                {
+                    CreatedByUserId = admin.Id,
+                    AnnouncementMarkdown = @"Welcome to <strong>Patrol</strong>.ski.  This is where your patrol announcements are shown.<br/>
 <em>You can use many kinds of formatting</em><br/>
 <ul>
 <li>Lists</li>
@@ -336,26 +358,155 @@ namespace Amphibian.Patrol.Api.Services
 <em>You can also choose to have these announcements emailed to your patrol</em>
 ",
 
-        
-                CreatedAt = DateTime.UtcNow,
-                PatrolId = patrolId,
-                Subject="Announcement",
-                PostAt = DateTime.Now
-            };
-            await _announcementService.PostAnnouncement(announcement);
 
-            //events
-            var patrolEvent = new Event()
+                    CreatedAt = beginningOfWeek,
+                    PatrolId = patrol.Id,
+                    Subject = "Announcement",
+                    PostAt = beginningOfWeek
+                };
+                await _announcementService.PostAnnouncement(announcement);
+            }
+
+            if (patrol.EnableEvents)
             {
-                CreatedAt = DateTime.UtcNow,
-                CreatedByUserId = adminUserId,
-                Name = "Season Begins",
-                Location = "Mt. Dumptruck",
-                StartsAt = DateTime.UtcNow + new TimeSpan(3, 0, 0, 0),
-                EndsAt = DateTime.UtcNow + new TimeSpan(3, 8, 0, 0),
-                PatrolId = patrolId
-            };
-            await _eventRepository.InsertEvent(patrolEvent);
+                //events
+                var patrolEvent = new Event()
+                {
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedByUserId = admin.Id,
+                    Name = "Season Begins",
+                    Location = "Mt. Dumptruck",
+                    StartsAt = beginningOfWeek + new TimeSpan(0, 6, 0, 0),
+                    EndsAt = beginningOfWeek + new TimeSpan(0, 8, 0, 0),
+                    PatrolId = patrol.Id
+                };
+                await _eventRepository.InsertEvent(patrolEvent);
+                var patrolEvent2 = new Event()
+                {
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedByUserId = admin.Id,
+                    Name = "Patrol Meeting",
+                    Location = "Mt. Dumptruck",
+                    StartsAt = now + new TimeSpan(3, 0, 0, 0),
+                    EndsAt = now + new TimeSpan(3, 1, 0, 0),
+                    PatrolId = patrol.Id
+                };
+                await _eventRepository.InsertEvent(patrolEvent2);
+            }
+
+            if (patrol.EnableScheduling)
+            {
+                //make a list of all the people
+                var allPatrollers = new List<User>();
+                allPatrollers.AddRange(trainees);
+                allPatrollers.Add(skiTrainer);
+                allPatrollers.Add(snowboardTrainer);
+                allPatrollers.Add(tobogganTrainer);
+                allPatrollers.Add(admin);
+
+                var morning = new Shift()
+                {
+                    StartHour = 9,
+                    StartMinute = 0,
+                    EndHour = 13,
+                    EndMinute = 0,
+                    Name="Morning",
+                    PatrolId = patrol.Id
+                };
+                await _shiftRepository.InsertShift(morning);
+                var afternoon = new Shift()
+                {
+                    StartHour = 12,
+                    StartMinute = 0,
+                    EndHour = 18,
+                    EndMinute = 0,
+                    Name = "Afternoon",
+                    PatrolId = patrol.Id
+                };
+                await _shiftRepository.InsertShift(afternoon);
+
+                //split patrollers into 4 "crews"
+                var crews = new Dictionary<Group, List<User>>();
+                for (int i = 0; i < allPatrollers.Count; i++)
+                {
+                    var crewIndex = i % 4;
+                    var crewLetter = (char)(65 + crewIndex);
+                    var crewName = crewLetter + " Crew";
+
+                    var group = crews.Keys.SingleOrDefault(x => x.Name == crewName);
+                    if(group==null)
+                    {
+                        group = new Group()
+                        {
+                            Name = crewName,
+                            PatrolId = patrol.Id
+                        };
+                        await _groupRepository.InsertGroup(group);
+                        crews.Add(group, new List<User>());
+                    }
+
+                    crews[group].Add(allPatrollers[i]);
+                    await _groupRepository.InsertGroupUser(new GroupUser()
+                    {
+                        GroupId = group.Id,
+                        UserId = allPatrollers[i].Id
+                    });
+                }
+
+                var allShifts = new List<ScheduledShift>();
+
+                //fill the week with shifts semi-randomly
+                for(int i=0;i<7;i++)
+                {
+                    var shiftDate = beginningOfWeek + new TimeSpan(i, 0, 0, 0, 0);
+
+                    allShifts.Add(await _scheduleService.ScheduleShift(new ScheduledShiftUpdateDto()
+                    {
+                        Day = shiftDate,
+                        ShiftId = morning.Id,
+                        PatrolId = patrol.Id,
+                        GroupId = crews.Keys.ToList()[random.Next(0, crews.Keys.Count)].Id,
+                    }));
+
+                    allShifts.Add(await _scheduleService.ScheduleShift(new ScheduledShiftUpdateDto()
+                    {
+                        Day = shiftDate,
+                        ShiftId = afternoon.Id,
+                        PatrolId = patrol.Id,
+                        GroupId = crews.Keys.ToList()[random.Next(0, crews.Keys.Count)].Id,
+                    }));
+                }
+
+                //replicate that week for 90 more days
+                var replicatedShifts = await _scheduleService.ReplicatePeriod(patrol.Id, false,false, beginningOfWeek, beginningOfWeek + new TimeSpan(6, 23, 59, 59, 999), beginningOfWeek + new TimeSpan(7, 0, 0, 0, 0), beginningOfWeek + new TimeSpan(90, 23, 59, 59));
+
+                allShifts.AddRange(replicatedShifts);
+
+                //randomly release/claim some shifts
+                foreach(var shift in allShifts)
+                {
+                    //one in 10 get released
+                    if (random.Next(8) == 1)
+                    {
+                        var assignees = await _shiftRepository.GetScheduledShiftAssignmentsForScheduledShift(shift.Id);
+                        if(assignees.Count()>0)
+                        {
+                            var assignee = assignees.ToList()[random.Next(assignees.Count())];
+
+                            await _scheduleService.ReleaseShift(assignee.Id);
+
+                            //one in 2 get claimed
+                            if(random.Next(2)==1)
+                            {
+                                var traineeList = trainees.Where(x => x.Id != assignee.AssignedUserId).ToList();
+                                var trainee = traineeList[random.Next(traineeList.Count())];
+                                await _scheduleService.ClaimShift(assignee.Id, trainee.Id);
+                            }
+                        }
+                    }
+                }
+            }
+
         }
 
         private async Task RandomlySignAssignment(Assignment assignment,PlanDto plan, int trainerId, int tobogganTrainerId, int finalTrainerId,DateTime from,DateTime to,int? count)
@@ -516,7 +667,10 @@ namespace Amphibian.Patrol.Api.Services
                 Name = name,
                 EnableAnnouncements = true,
                 EnableTraining = true,
-                EnableEvents = true
+                EnableEvents = true,
+                EnableScheduling=true,
+                EnableShiftSwaps=true,
+                TimeZone= "Eastern Standard Time"
             };
             await _patrolRepository.InsertPatrol(patrol);
             var patrolUser = new PatrolUser()
@@ -533,16 +687,16 @@ namespace Amphibian.Patrol.Api.Services
         {
             var users = A.ListOf<User>(1);
             var user = users.First();
-            user.Email = user.FirstName + "." + user.LastName + ".demo." + Guid.NewGuid() + "@patrol.training";
+            user.Email = user.FirstName + "." + user.LastName + ".demo." + Guid.NewGuid() + "@patrol.ski";
             user.PasswordHashIterations = null;
 
             await _userRepository.InsertUser(user);
 
             
 
-            var patrol = await CreateNewPatrol(user.Id, "Mt. Rumpke Ski Patrol");
+            var patrol = await CreateNewPatrol(user.Id, "Mt. Dumptruck Ski Patrol");
 
-            await CreateDemoInitialSetup(patrol.Id,user.Id);
+            await CreateDemoInitialSetup(patrol,user);
             return new Tuple<User, Models.Patrol>(user, patrol);
         }
     }

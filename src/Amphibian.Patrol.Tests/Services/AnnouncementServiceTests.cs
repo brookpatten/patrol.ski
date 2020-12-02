@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authentication;
 
 namespace Amphibian.Patrol.Tests.Services
 {
+    [TestFixture(Category = "Services")]
     public class AnnouncementServiceTests
     {
         private AnnouncementService _announcementService;

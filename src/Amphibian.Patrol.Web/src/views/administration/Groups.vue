@@ -7,6 +7,17 @@
             </slot>
             </CCardHeader>
             <CCardBody>
+            <CAlert color="info">
+              <p>Create groups of people to make administration tasks easier.  People can belong to many groups at the same time</p>
+              <p>Some examples:</p>
+              <ul>
+                <li>Different categories of trainers who might perform training & sign-offs. eg: "PSIA Level 2" or "Instructor Trainer"</li>
+                <li>People who are frequently scheduled togethor to make scheduling easier.  a "Crew", eg: "A Crew" or "Smith Crew"</li>
+                <li>All alpine patrollers</li>
+                <li>All ski or all snowboard patrollers</li>
+                <li>Everyone interested in leadership announcements/events</li>
+              </ul>
+            </CAlert>
             <CDataTable
                 striped
                 bordered

@@ -21,7 +21,7 @@ namespace Amphibian.Patrol.Persistence.Migrations
                     return (includeInitialData || !scriptName.Contains("-InitialData"))
                         && (includeTestData || !scriptName.Contains("-TestData"));
                 })
-                .WithTransaction()
+                .WithTransactionPerScript()
                 .LogToConsole()
                 .Build();
 

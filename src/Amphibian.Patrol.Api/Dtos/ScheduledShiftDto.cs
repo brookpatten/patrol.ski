@@ -6,14 +6,14 @@ using System.Threading.Tasks;
 
 namespace Amphibian.Patrol.Api.Dtos
 {
-    public class ShiftTrainerDto
+    public class ScheduledShiftDto
     {
         public int Id { get; set; }
-        public int TrainingShiftId { get; set; }
-        public int? TraineeId { get; set; }
+        public int PatrolId { get; set; }
         public DateTime StartsAt { get; set; }
         public DateTime EndsAt { get; set; }
-        public UserIdentifier TrainerUser { get; set; }
-        public int TraineeCount { get; set; }
+        public Shift Shift { get; set; }
+        public Group Group { get; set; }
+        public List<ScheduledShiftAssignmentDto> Assignments { get; set; }
     }
 }

@@ -11,7 +11,7 @@ namespace Amphibian.Patrol.Api.Services
     {
         Task<Models.Patrol> CreateNewPatrol(int userId, string name);
         Task CreateDefaultInitialSetup(int patrolId);
-        Task CreateDemoInitialSetup(int patrolId,int adminUserId);
+        Task CreateDemoInitialSetup(Models.Patrol patrol, User adminUser);
         Task<Tuple<User,Models.Patrol>> CreateDemoUserAndPatrol();
         Task CreateBuiltInPlan(BuiltInPlan plan, int patrolId);
     }

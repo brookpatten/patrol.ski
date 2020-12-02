@@ -27,12 +27,13 @@ namespace Amphibian.Patrol.Tests.Repositories
             _planRepository = new PlanRepository(_connection, mapper);
         }
 
+        //training related tests
         [Test]
         public async Task CanRetrieveRelevantTrainingShiftsForTrainee()
         {
             var traineeUserId = 1;
             var patrolId = 1;
-            var availableShifts = await _shiftRepository.GetAvailableTrainerShiftsForTrainee(patrolId, traineeUserId, DateTime.Now);
+            var availableShifts = await _shiftRepository.GetAvailableTrainerShiftsForTrainee(patrolId, traineeUserId, new DateTime(2001, 1, 1));
             Assert.AreEqual(1, availableShifts.Count());
         }
 
@@ -112,7 +113,7 @@ namespace Amphibian.Patrol.Tests.Repositories
             {
                 var trainee = new Trainee()
                 {
-                    ShiftTrainerId = available.Id,
+                    ScheduledShiftAssignmentId = available.Id,
                     TraineeUserId = traineeUserId
                 };
                 await _shiftRepository.InsertTrainee(trainee);
@@ -145,7 +146,7 @@ namespace Amphibian.Patrol.Tests.Repositories
             {
                 var trainee = new Trainee()
                 {
-                    ShiftTrainerId = available.Id,
+                    ScheduledShiftAssignmentId = available.Id,
                     TraineeUserId = traineeUserId
                 };
                 await _shiftRepository.InsertTrainee(trainee);
@@ -157,14 +158,275 @@ namespace Amphibian.Patrol.Tests.Repositories
         }
 
         [Test]
-        public async Task CanGetTrainingShiftsForTrainer()
+        public async Task CanGetScheduledShiftAssignmentsForUser()
         {
-            var trainerUserId = 2;
+            var trainerUserId = 1;
             var patrolId = 1;
 
-            var shifts = await _shiftRepository.GetTrainerShifts(patrolId, trainerUserId, DateTime.Now);
+            var shifts = await _shiftRepository.GetScheduledShiftAssignments(patrolId, trainerUserId, new DateTime(2001,1,1));
+            
+            Assert.AreEqual(1, shifts.Count());
+        }
+
+        [Test]
+        public async Task CanGetScheduledShiftAssignmentsByDateRange()
+        {
+            var userId = 1;
+            var patrolId = 1;
+
+            var shifts = await _shiftRepository.GetScheduledShiftAssignments(patrolId, null, new DateTime(2000,12,31), new DateTime(2001,1,2));
+
+            Assert.AreEqual(3, shifts.Count());
+        }
+
+        [Test]
+        public async Task CanGetScheduledShiftAssignmentsByStatus()
+        {
+            var trainerUserId = 1;
+            var patrolId = 1;
+
+            var shifts = await _shiftRepository.GetScheduledShiftAssignments(patrolId, status: ShiftStatus.Released);
 
             Assert.AreEqual(1, shifts.Count());
+        }
+
+        [Test]
+        public async Task CanGetScheduledShiftById()
+        {
+            var shift = await _shiftRepository.GetScheduledShift(1);
+
+            Assert.NotNull(shift);
+        }
+
+        [Test]
+        public async Task CanUpdateScheduledShift()
+        {
+            var before = await _shiftRepository.GetScheduledShift(1);
+            var change = await _shiftRepository.GetScheduledShift(1);
+            change.EndsAt = new DateTime(2001, 1, 1, 8, 0, 0);
+            await _shiftRepository.UpdateScheduledShift(change);
+            var after = await _shiftRepository.GetScheduledShift(1);
+
+            Assert.AreEqual(after.EndsAt, change.EndsAt);
+        }
+
+        [Test]
+        public async Task CanInsertScheduledShift()
+        {
+            var before = new ScheduledShift()
+            {
+                StartsAt = new DateTime(2001, 1, 1, 8, 0, 0),
+                EndsAt = new DateTime(2001, 1, 1, 14, 0, 0),
+                GroupId = null,
+                PatrolId = 1,
+                ShiftId = null
+            };
+
+            await _shiftRepository.InsertScheduledShift(before);
+
+            var after = await _shiftRepository.GetScheduledShift(before.Id);
+
+            Assert.AreEqual(before.StartsAt,after.StartsAt);
+            Assert.AreEqual(before.EndsAt, after.EndsAt);
+            Assert.AreEqual(before.GroupId, after.GroupId);
+            Assert.AreEqual(before.PatrolId, after.PatrolId);
+            Assert.AreEqual(before.ShiftId, after.ShiftId);
+        }
+
+        [Test]
+        public async Task CanDeleteScheduledShift()
+        {
+            var before = new ScheduledShift()
+            {
+                StartsAt = new DateTime(2001, 1, 1, 8, 0, 0),
+                EndsAt = new DateTime(2001, 1, 1, 14, 0, 0),
+                GroupId = null,
+                PatrolId = 1,
+                ShiftId = null
+            };
+
+            await _shiftRepository.InsertScheduledShift(before);
+
+            await _shiftRepository.DeleteScheduledShift(before);
+
+            var after = await _shiftRepository.GetScheduledShift(before.Id);
+
+            Assert.IsNull(after);
+        }
+
+        [Test]
+        public async Task CanGetShiftsForPatrol()
+        {
+            var shifts = await _shiftRepository.GetShifts(1);
+
+            Assert.AreEqual(2, shifts.Count());
+        }
+
+        [Test]
+        public async Task CanGetShiftsByTime()
+        {
+            var shifts = await _shiftRepository.GetShifts(1,9,0,13,0);
+
+            Assert.AreEqual(1, shifts.Count());
+        }
+
+        [Test]
+        public async Task CanGetShiftById()
+        {
+            var shifts = await _shiftRepository.GetShifts(1);
+            var shift = await _shiftRepository.GetShift(shifts.First().Id);
+
+            Assert.NotNull(shift);
+        }
+
+        [Test]
+        public async Task CanInsertShift()
+        {
+            var before = new Shift()
+            {
+                PatrolId = 1,
+                Name="Test",
+                StartHour = 1,
+                StartMinute = 2,
+                EndHour = 3,
+                EndMinute =4
+            };
+
+            await _shiftRepository.InsertShift(before);
+
+            var after = await _shiftRepository.GetShift(before.Id);
+
+            Assert.AreEqual(before.Name, after.Name);
+            Assert.AreEqual(before.StartHour, after.StartHour);
+            Assert.AreEqual(before.StartMinute, after.StartMinute);
+            Assert.AreEqual(before.PatrolId, after.PatrolId);
+            Assert.AreEqual(before.EndHour, after.EndHour);
+            Assert.AreEqual(before.EndMinute, after.EndMinute);
+        }
+
+        [Test]
+        public async Task CanUpdateShift()
+        {
+            var before = new Shift()
+            {
+                PatrolId = 1,
+                Name = "Test",
+                StartHour = 1,
+                StartMinute = 2,
+                EndHour = 3,
+                EndMinute = 4
+            };
+
+            await _shiftRepository.InsertShift(before);
+
+            before.Name = "Test2";
+            before.StartHour = 2;
+            before.StartMinute = 3;
+            before.EndHour = 4;
+            before.EndMinute = 5;
+
+            await _shiftRepository.UpdateShift(before);
+
+
+
+            var after = await _shiftRepository.GetShift(before.Id);
+
+            Assert.AreEqual(before.Name, after.Name);
+            Assert.AreEqual(before.StartHour, after.StartHour);
+            Assert.AreEqual(before.StartMinute, after.StartMinute);
+            Assert.AreEqual(before.PatrolId, after.PatrolId);
+            Assert.AreEqual(before.EndHour, after.EndHour);
+            Assert.AreEqual(before.EndMinute, after.EndMinute);
+        }
+
+        [Test]
+        public async Task CanDeleteShift()
+        {
+            var before = new Shift()
+            {
+                PatrolId = 1,
+                Name = "Test",
+                StartHour = 1,
+                StartMinute = 2,
+                EndHour = 3,
+                EndMinute = 4
+            };
+
+            await _shiftRepository.InsertShift(before);
+            await _shiftRepository.DeleteShift(before);
+
+            var after = await _shiftRepository.GetShift(before.Id);
+
+            Assert.IsNull(after);
+        }
+
+        [Test]
+        public async Task CanInsertScheduledShiftAssignment()
+        {
+            var before = new ScheduledShiftAssignment()
+            {
+                AssignedUserId = 1,
+                OriginalAssignedUserId = 1,
+                ScheduledShiftId = 1,
+                Status = ShiftStatus.Assigned,
+            };
+
+            await _shiftRepository.InsertScheduledShiftAssignment(before);
+
+            var after = await _shiftRepository.GetScheduledShiftAssignment(before.Id);
+
+            Assert.AreEqual(before.AssignedUserId, after.AssignedUserId);
+            Assert.AreEqual(before.OriginalAssignedUserId, after.OriginalAssignedUserId);
+            Assert.AreEqual(before.ScheduledShiftId, after.ScheduledShiftId);
+            Assert.AreEqual(before.Status, after.Status);
+        }
+
+        [Test]
+        public async Task CanUpdateScheduledShiftAssignment()
+        {
+            var before = new ScheduledShiftAssignment()
+            {
+                AssignedUserId = 1,
+                OriginalAssignedUserId = 1,
+                ScheduledShiftId = 1,
+                Status = ShiftStatus.Assigned,
+            };
+
+            await _shiftRepository.InsertScheduledShiftAssignment(before);
+
+            before.Status = ShiftStatus.Released;
+
+            await _shiftRepository.UpdateScheduledShiftAssignment(before);
+
+            var after = await _shiftRepository.GetScheduledShiftAssignment(before.Id);
+
+            Assert.AreEqual(before.Status, after.Status);
+        }
+
+        [Test]
+        public async Task CanDeleteScheduledShiftAssignment()
+        {
+            var before = new ScheduledShiftAssignment()
+            {
+                AssignedUserId = 1,
+                OriginalAssignedUserId = 1,
+                ScheduledShiftId = 1,
+                Status = ShiftStatus.Assigned,
+            };
+
+            await _shiftRepository.InsertScheduledShiftAssignment(before);
+            await _shiftRepository.DeleteScheduledShiftAssignment(before);
+
+            var after = await _shiftRepository.GetScheduledShiftAssignment(before.Id);
+
+            Assert.IsNull(after);
+        }
+        [Test]
+        public async Task CanGetScheduledShiftAssignmentsByScheduledShiftId()
+        {
+            var after = await _shiftRepository.GetScheduledShiftAssignments(1);
+
+            Assert.AreEqual(3, after.Count());
         }
     }
 }

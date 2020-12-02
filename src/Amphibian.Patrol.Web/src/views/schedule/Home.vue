@@ -81,7 +81,7 @@
             <CCard v-if="openAssignments.length>0 && hasPermission('MaintainAssignments')">
                 <CCardHeader>
                 <slot name="header">
-                    <CIcon name="cil-grid"/> Open Assignments
+                    <CIcon name="cil-grid"/> Training Assignments
                 </slot>
                 </CCardHeader>
                 <CCardBody>
@@ -116,7 +116,7 @@
                 </CCardBody>
             </CCard>
 
-            <CCard v-if="openAssignments.length>0 && hasPermission('MaintainAssignments')">
+            <CCard v-if="false && openAssignments.length>0 && hasPermission('MaintainAssignments')">
                 <CCardHeader>
                 <slot name="header">
                     <CIcon name="cil-grid"/> Training Plans
@@ -242,7 +242,7 @@
                         <td>{{(new Date(data.item.startsAt)).toLocaleDateString()}} {{(new Date(data.item.startsAt)).toLocaleTimeString()}}</td>
                     </template>
                     <template #trainer="data">
-                        <td>{{data.item.trainerUser.firstName}} {{data.item.trainerUser.lastName}}</td>
+                        <td>{{data.item.assignedUser.firstName}} {{data.item.assignedUser.lastName}}</td>
                     </template>
                     <template #buttons="data">
                         <td><CButtonGroup><CButton color="warning" size="sm" v-on:click="cancel(data.item.traineeId)">Cancel</CButton></CButtonGroup></td>
@@ -265,7 +265,7 @@
                         <td>{{(new Date(data.item.startsAt)).toLocaleDateString()}} {{(new Date(data.item.startsAt)).toLocaleTimeString()}}</td>
                     </template>
                     <template #trainer="data">
-                        <td>{{data.item.trainerUser.firstName}} {{data.item.trainerUser.lastName}}</td>
+                        <td>{{data.item.assignedUser.firstName}} {{data.item.assignedUser.lastName}}</td>
                     </template>
                     <template #buttons="data">
                         <td><CButtonGroup><CButton color="primary" size="sm" v-on:click="commit(data.item.id)">Sign Up</CButton></CButtonGroup></td>
@@ -461,7 +461,14 @@ export default {
             this.$http.get('trainingshifts/available/'+this.selectedPatrolId)
                 .then(response => {
                     console.log(response);
-                    this.availableShifts = response.data;
+                    var result = response.data;
+                    if(result.length>10){
+                        result = _.take(result,10);
+                    }
+                    
+                    this.availableShifts = result;
+
+
                 }).catch(response => {
                     console.log(response);
                 }).finally(response=>this.$store.dispatch('loadingComplete'));
@@ -552,7 +559,7 @@ export default {
         },
         commit(id){
             this.$store.dispatch('loading','Loading...');
-            this.$http.post('trainingshifts/commit/'+id)
+            this.$http.post('trainingshifts/commit?scheduledShiftAssignmentId='+id)
                 .then(response => {
                     console.log(response);
                     this.getCommittedTrainingShifts();
@@ -563,7 +570,7 @@ export default {
         },
         cancel(id){
             this.$store.dispatch('loading','Loading...');
-            this.$http.post('trainingshifts/cancel/'+id)
+            this.$http.post('trainingshifts/cancel?traineeId='+id)
                 .then(response => {
                     console.log(response);
                     this.getCommittedTrainingShifts();
@@ -597,7 +604,7 @@ export default {
                 }
             }
 
-            if(this.selectedPatrol.enableScheduling){
+            if(this.selectedPatrol.enableTraining && this.selectedPatrol.enableScheduling){
                 this.getCommittedTrainingShifts();
                 this.getAvailableTrainingShifts();
                 this.getTrainerShifts();

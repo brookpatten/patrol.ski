@@ -5,10 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-using Dapper;
-using Dommel;
-
-using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
@@ -42,7 +38,10 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetTraining(int patrolId)
         {
-            var upcomingShifts = await _shiftRepository.GetTrainerShifts(patrolId, this.User.GetUserId(), _clock.UtcNow.DateTime);
+            var upcomingShifts = await _shiftRepository.GetScheduledShiftAssignments(patrolId, this.User.GetUserId(), _clock.UtcNow.DateTime);
+
+            upcomingShifts = upcomingShifts.Where(x => x.TraineeCount > 0);
+
             return Ok(upcomingShifts);
         }
 
@@ -65,20 +64,20 @@ namespace Amphibian.Patrol.Api.Controllers
         }
 
         [HttpPost]
-        [Route("trainingshifts/commit/{shiftTrainerId}")]
+        [Route("trainingshifts/commit")]
         [Authorize]
         [UnitOfWork]
-        public async Task<IActionResult> Commit(int shiftTrainerId)
+        public async Task<IActionResult> Commit(int scheduledShiftAssignmentId)
         {
-            var shiftTrainer = await _shiftRepository.GetShiftTrainer(shiftTrainerId);
-            var trainingShift = await _shiftRepository.GetTrainingShift(shiftTrainer.TrainingShiftId);
+            var shiftTrainer = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
+            var trainingShift = await _shiftRepository.GetScheduledShift(shiftTrainer.ScheduledShiftId);
             var patrols = await _patrolRepository.GetPatrolsForUser(this.User.GetUserId());
 
             if(patrols.Any(x=>x.Id==trainingShift.PatrolId))
             {
                 var trainee = new Trainee()
                 {
-                    ShiftTrainerId = shiftTrainerId,
+                    ScheduledShiftAssignmentId = scheduledShiftAssignmentId,
                     TraineeUserId = this.User.GetUserId()
                 };
                 await _shiftRepository.InsertTrainee(trainee);
@@ -92,7 +91,7 @@ namespace Amphibian.Patrol.Api.Controllers
         }
 
         [HttpPost]
-        [Route("trainingshifts/cancel/{traineeId}")]
+        [Route("trainingshifts/cancel")]
         [Authorize]
         [UnitOfWork]
         public async Task<IActionResult> Cancel(int traineeId)

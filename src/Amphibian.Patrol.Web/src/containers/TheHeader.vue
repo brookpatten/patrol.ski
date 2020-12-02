@@ -20,8 +20,8 @@
 
     <CHeaderNav class="d-md-down-none mr-auto">
       <CHeaderNavItem class="px-3">
-        <CHeaderNavLink v-if="user" :to="{name:'Home'}">
-          Dashboard
+        <CHeaderNavLink v-if="user && selectedPatrol" :to="{name:'Home'}">
+          {{selectedPatrol.name}}
         </CHeaderNavLink>
       </CHeaderNavItem>
     </CHeaderNav>
@@ -54,7 +54,15 @@ export default {
   },
   computed:{
     user: function (){
-        return this.$store.getters.user.id ? this.$store.getters.user : null;
+      if(this.$store.getters.user && this.$store.getters.user.id){
+        return this.$store.getters.user;
+      }
+      else{
+        return null;
+      }
+    },
+    selectedPatrol: function (){
+        return this.$store.getters.selectedPatrol;
     }
   }
 }

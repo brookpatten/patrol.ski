@@ -103,6 +103,8 @@ namespace Amphibian.Patrol.Api.Services
                 dto.Groups = groupUsers.Where(x => x.UserId == dto.Id).Select(x => groups.Single(y => y.Id == x.GroupId)).ToList();
             }
 
+            dtos = dtos.OrderBy(x => x.LastName).ThenBy(x => x.FirstName).ToList();
+
             return dtos;
         }
 

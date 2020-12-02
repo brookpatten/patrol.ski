@@ -25,6 +25,7 @@ const Plan = () => import('@/views/schedule/Plan')
 const Home = () => import('@/views/schedule/Home')
 const Assignment = () => import('@/views/schedule/Assignment')
 const MyCalendar = () => import('@/views/schedule/Calendar')
+const ScheduleSwap = () => import('@/views/schedule/ScheduleSwap')
 
 // Administration
 const Administration = () => import('@/views/administration/Administration')
@@ -43,6 +44,8 @@ const Announcements = () => import('@/views/administration/Announcements')
 const EditPatrol = () => import('@/views/administration/EditPatrol')
 const Events = () => import('@/views/administration/Events')
 const EditEvent = () => import('@/views/administration/EditEvent')
+const Shifts = () => import('@/views/administration/Shifts')
+const EditShift = () => import('@/views/administration/EditShift')
 
 Vue.use(Router)
 
@@ -55,6 +58,7 @@ let router = new Router({
 
 router.beforeEach((to, from, next) => {
   if(to.matched.some(record => record.meta.requiresAuth)) {
+    //if the page being requested needs auth, redirect to auth if it's missing
     console.log('checking auth');
     if (store.getters.isLoggedIn) {
       next()
@@ -62,9 +66,14 @@ router.beforeEach((to, from, next) => {
     }
     console.log('not logged in');
     next('/login') 
+  }
+  else if(to.matched.some(record=> record.name=='Landing') && store.getters.isLoggedIn){
+    //if the user ended up on the landing page (bookmark etc) and they are already logged in, move them to the app
+    next('/app') 
   } else {
     next() 
   }
+  
 })
 
 export default router;
@@ -107,6 +116,15 @@ function configRoutes () {
           name: 'Calendar',
           component: MyCalendar,
           meta: { 
+            requiresAuth: true
+          },
+          props: true
+        },
+        {
+          path: 'schedule-swap',
+          name: 'ScheduleSwap',
+          component: ScheduleSwap,
+          meta: {
             requiresAuth: true
           }
         },
@@ -253,6 +271,23 @@ function configRoutes () {
               meta: { 
                 requiresAuth: true
               }
+            },
+            {
+              path: 'shifts',
+              name: 'Shifts',
+              component: Shifts,
+              meta: { 
+                requiresAuth: true
+              }
+            },
+            {
+              path: 'edit-shift/:shiftId',
+              name: 'EditShift',
+              component: EditShift,
+              meta: { 
+                requiresAuth: true
+              },
+              props: true
             }
           ]
         }

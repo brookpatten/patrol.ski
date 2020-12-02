@@ -71,6 +71,9 @@ namespace Amphibian.Patrol.Api.Repositories
                     ,p.enabletraining
                     ,p.enableannouncements
                     ,p.enableevents
+                    ,p.enablescheduling
+                    ,p.enableshiftswaps
+                    ,p.timezone
                     ,pu.role
                     from patrolusers pu
                     inner join patrols p on p.id=pu.patrolid
