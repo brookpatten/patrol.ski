@@ -306,17 +306,17 @@ insert into groupusers (groupid,userid) values (4,3);
 --big patrol
 insert into scheduledshifts (patrolid,startsat,endsat,shiftid,groupid) values (1,DATETIMEFROMPARTS(2001,1,1,9,0,0,0),DATETIMEFROMPARTS(2001,1,1,13,0,0,0),1,3);
 --1
-insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status) values (1,1,1,'Assigned');
-insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status) values (1,2,2,'Released');
-insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status,claimedbyuserid) values (1,3,3,'Claimed',2);
+insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status) values (1,1,1,'0');
+insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status) values (1,2,2,'1');
+insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status,claimedbyuserid) values (1,3,3,'2',2);
 --1
 
 --tiny patrol
 insert into scheduledshifts (patrolid,startsat,endsat,shiftid,groupid) values (2,DATETIMEFROMPARTS(2001,1,1,9,0,0,0),DATETIMEFROMPARTS(2001,1,1,16,0,0,0),3,4);
 --2
-insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status) values (2,1,1,'Assigned');
-insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status) values (2,2,2,'Released');
-insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status,claimedbyuserid) values (2,3,3,'Claimed',2);
+insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status) values (2,1,1,'0');
+insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status) values (2,2,2,'1');
+insert into scheduledshiftassignments (scheduledshiftid,assigneduserid,originalassigneduserid,status,claimedbyuserid) values (2,3,3,'2',2);
 --2
 
 

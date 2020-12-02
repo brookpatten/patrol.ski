@@ -165,7 +165,7 @@ namespace Amphibian.Patrol.Tests.Repositories
         {
             var assignments = await _assignmentRepository.GetIncompleteAssignments(1,2);
 
-            Assert.AreEqual(2, assignments.Count());
+            Assert.AreEqual(1, assignments.Count());
         }
     }
 }
