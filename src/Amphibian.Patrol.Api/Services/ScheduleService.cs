@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TimeZoneConverter;
 
 namespace Amphibian.Patrol.Api.Services
 {
@@ -127,11 +128,11 @@ namespace Amphibian.Patrol.Api.Services
             TimeZoneInfo timeZone;
             if (!string.IsNullOrEmpty(patrol.TimeZone))
             {
-                timeZone = TimeZoneInfo.FindSystemTimeZoneById(patrol.TimeZone);
+                timeZone = TZConvert.GetTimeZoneInfo(patrol.TimeZone);
             }
             else
             {
-                timeZone = TimeZoneInfo.FindSystemTimeZoneById("Eastern Standard Time");
+                timeZone = TZConvert.GetTimeZoneInfo("Eastern Standard Time");
             }
             return timeZone;
         }
