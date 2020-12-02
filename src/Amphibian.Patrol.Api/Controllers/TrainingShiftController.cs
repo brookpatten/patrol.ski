@@ -39,6 +39,9 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> GetTraining(int patrolId)
         {
             var upcomingShifts = await _shiftRepository.GetScheduledShiftAssignments(patrolId, this.User.GetUserId(), _clock.UtcNow.DateTime);
+
+            upcomingShifts = upcomingShifts.Where(x => x.TraineeCount > 0);
+
             return Ok(upcomingShifts);
         }
 
@@ -61,7 +64,7 @@ namespace Amphibian.Patrol.Api.Controllers
         }
 
         [HttpPost]
-        [Route("trainingshifts/commit/{shiftTrainerId}")]
+        [Route("trainingshifts/commit")]
         [Authorize]
         [UnitOfWork]
         public async Task<IActionResult> Commit(int scheduledShiftAssignmentId)
@@ -88,7 +91,7 @@ namespace Amphibian.Patrol.Api.Controllers
         }
 
         [HttpPost]
-        [Route("trainingshifts/cancel/{traineeId}")]
+        [Route("trainingshifts/cancel")]
         [Authorize]
         [UnitOfWork]
         public async Task<IActionResult> Cancel(int traineeId)

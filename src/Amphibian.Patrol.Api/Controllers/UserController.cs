@@ -75,7 +75,9 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetGroups(int patrolId)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainUsers())
+            var role = await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId);
+            if (role.CanMaintainUsers()
+                || role.CanMaintainSchedule())
             {
                 var groups = await _groupRepository.GetGroupsForPatrol(patrolId);
                 return Ok(groups);

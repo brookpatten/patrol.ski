@@ -41,6 +41,8 @@ using Amphibian.Patrol.Api.Infrastructure;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using Amphibian.Patrol.Api.Dtos;
+using Dapper;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api
 {
@@ -75,7 +77,7 @@ namespace Amphibian.Patrol.Api
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Api", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Patrol.Ski Api", Version = "v1" });
                 c.AddSecurityDefinition("Authorization", new OpenApiSecurityScheme()
                 {
                     Type = SecuritySchemeType.Http,
@@ -111,6 +113,9 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<IUnitOfWork, DbUnitOfWork>();
             //automapper config
             services.AddMappings();
+            //dapper config
+            SqlMapper.AddTypeHandler(new DapperDateTimeHandler());
+            SqlMapper.AddTypeHandler(new DapperShiftStatusHandler());
 
             //persistence
             services.AddScoped<IUserRepository, UserRepository>();
@@ -127,6 +132,8 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<IValidator<AuthenticationController.RegistrationRequest>, RegistrationValidator>();
             services.AddScoped<IValidator<PatrolUserDto>, PatrolUserValidator>();
             services.AddScoped<IValidator<Group>, GroupValidator>();
+            services.AddScoped<IValidator<Shift>, ShiftValidator>();
+            services.AddScoped<IValidator<Event>, EventValidator>();
 
             //services
             services.AddScoped<Services.IAuthenticationService, Services.AuthenticationService>();

@@ -175,7 +175,7 @@ namespace Amphibian.Patrol.Api.Repositories
                     return st;
                 }, new { patrolId, traineeUserId, after });
         }
-        public async Task<IEnumerable<ScheduledShiftAssignmentDto>> GetScheduledShiftAssignments(int patrolId, int? userId=null, DateTime? from = null, DateTime? to = null, ShiftStatus? status=null)
+        public async Task<IEnumerable<ScheduledShiftAssignmentDto>> GetScheduledShiftAssignments(int patrolId, int? userId=null, DateTime? from = null, DateTime? to = null, ShiftStatus? status=null, int? scheduledShiftId=null)
         {
             return await _connection.QueryAsync<ScheduledShiftAssignmentDto, UserIdentifier, UserIdentifier, UserIdentifier,Group,Shift, ScheduledShiftAssignmentDto>(
                 @"select
@@ -231,6 +231,8 @@ namespace Amphibian.Patrol.Api.Repositories
                     or @userId is null)
                     and
                     (@status is null or @status=st.status)
+                    and
+                    (@scheduledShiftId is null or ts.id=@scheduledShiftId)
                 order by
 	                    ts.startsat",
                 (st, au, cbu, ou,g,s) =>
@@ -241,7 +243,7 @@ namespace Amphibian.Patrol.Api.Repositories
                     st.Group = g;
                     st.Shift = s;
                     return st;
-                }, new { patrolId, userId, from,to,status=status.HasValue ? status.Value.ToString() : null });
+                }, new { patrolId, userId, from,to,status, scheduledShiftId });
         }
         public async Task<Trainee> InsertTrainee(Trainee trainee)
         {
@@ -309,7 +311,7 @@ namespace Amphibian.Patrol.Api.Repositories
             and (@startMinute is null or s.startMinute=@startMinute)
             and (@endHour is null or s.endHour=@endHour)
             and (@endMinute is null or s.endMinute=@endMinute)
-            order by s.name
+            order by s.startHour,s.startMinute,s.Name
             ", new { patrolId, startHour, startMinute, endHour, endMinute });
         }
         public Task<Shift> GetShift(int id)

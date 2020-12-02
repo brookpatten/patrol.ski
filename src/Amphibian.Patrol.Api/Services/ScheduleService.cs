@@ -45,12 +45,12 @@ namespace Amphibian.Patrol.Api.Services
             }
         }
 
-        public async Task DeclineShiftSwap(int scheduledShiftAssignmentId, int userId, string reason)
+        public async Task RejectShiftSwap(int scheduledShiftAssignmentId, int userId)
         {
             var ssa = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             if (ssa.Status == ShiftStatus.Claimed && ssa.ClaimedByUserId.HasValue)
             {
-                ssa.Status = ShiftStatus.Assigned;
+                ssa.Status = ShiftStatus.Released;
                 ssa.ClaimedByUserId = null;
                 await _shiftRepository.UpdateScheduledShiftAssignment(ssa);
             }
@@ -294,9 +294,28 @@ namespace Amphibian.Patrol.Api.Services
 
             return await _shiftRepository.GetScheduledShift(scheduledShift.Id);
         }
-
-        public async Task ReplicatePeriod(int patrolId, bool clearTargetPeriodFirst, DateTime replicatedPeriodStart, DateTime replicatedPeriodEnd, DateTime targetPeriodStart, DateTime targetPeriodEnd)
+        public async Task CancelScheduledShiftAssignment(int scheduledShiftAssignmentId)
         {
+            var scheduledShiftAssignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
+            await _shiftRepository.DeleteScheduledShiftAssignment(scheduledShiftAssignment);
+        }
+        public async Task<ScheduledShiftAssignment> AddScheduledShiftAssignment(int scheduledShiftId, int userId)
+        {
+            var scheduledShiftAssignment = new ScheduledShiftAssignment()
+            {
+                AssignedUserId = userId,
+                OriginalAssignedUserId = userId,
+                ScheduledShiftId = scheduledShiftId,
+                Status = ShiftStatus.Assigned
+            };
+            await _shiftRepository.InsertScheduledShiftAssignment(scheduledShiftAssignment);
+            return scheduledShiftAssignment;
+        }
+
+        public async Task<IEnumerable<ScheduledShift>> ReplicatePeriod(int patrolId, bool clearTargetPeriodFirst, bool testOnly, DateTime replicatedPeriodStart, DateTime replicatedPeriodEnd, DateTime targetPeriodStart, DateTime targetPeriodEnd)
+        {
+            var createdShifts = new List<ScheduledShift>();
+
             if(replicatedPeriodEnd<replicatedPeriodStart)
             {
                 throw new InvalidOperationException("replicated period start must be before replicated period end");
@@ -318,7 +337,7 @@ namespace Amphibian.Patrol.Api.Services
             var targetEndLocal = new DateTime(targetPeriodEnd.Year, targetPeriodEnd.Month, targetPeriodEnd.Day, 23, 59, 59, 999, DateTimeKind.Unspecified);
             var targetEndUtc = TimeZoneInfo.ConvertTimeToUtc(targetEndLocal, timeZone);
 
-            if(clearTargetPeriodFirst)
+            if(clearTargetPeriodFirst && !testOnly)
             {
                 var shiftsToRemove = await _shiftRepository.GetScheduledShiftAssignments(patrolId, null, targetStartUtc, targetEndUtc, null);
                 var scheduledShiftIds = shiftsToRemove.Select(x => x.ScheduledShiftId).Distinct().ToList();
@@ -348,18 +367,35 @@ namespace Amphibian.Patrol.Api.Services
                 
                 foreach(var scheduledShift in group)
                 {
-                    await this.ScheduleShift(new ScheduledShiftUpdateDto()
+                    if (!testOnly)
                     {
-                        GroupId = scheduledShift.First().Group?.Id,
-                        ShiftId = scheduledShift.First().Shift?.Id,
-                        PatrolId = patrolId,
-                        Day = scheduledShift.First().Shift !=null ? day : (DateTime?)null,
-                        StartsAt = scheduledShift.First().Shift ==null ? TimeZoneInfo.ConvertTimeToUtc(new DateTime(day.Year,day.Month,day.Day,scheduledShift.First().StartsAt.Hour, scheduledShift.First().StartsAt.Minute,0,DateTimeKind.Unspecified),timeZone) : (DateTime?)null,
-                        EndsAt = scheduledShift.First().Shift == null ? TimeZoneInfo.ConvertTimeToUtc(new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().EndsAt.Hour, scheduledShift.First().EndsAt.Minute, 0, DateTimeKind.Unspecified), timeZone) : (DateTime?)null,
-                        AssignUserIds = scheduledShift.Select(x=>x.AssignedUser.Id).Distinct().ToList()
-                    });
+                        var createdShift = await this.ScheduleShift(new ScheduledShiftUpdateDto()
+                        {
+                            GroupId = scheduledShift.First().Group?.Id,
+                            ShiftId = scheduledShift.First().Shift?.Id,
+                            PatrolId = patrolId,
+                            Day = scheduledShift.First().Shift != null ? day : (DateTime?)null,
+                            StartsAt = scheduledShift.First().Shift == null ? TimeZoneInfo.ConvertTimeToUtc(new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().StartsAt.Hour, scheduledShift.First().StartsAt.Minute, 0, DateTimeKind.Unspecified), timeZone) : (DateTime?)null,
+                            EndsAt = scheduledShift.First().Shift == null ? TimeZoneInfo.ConvertTimeToUtc(new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().EndsAt.Hour, scheduledShift.First().EndsAt.Minute, 0, DateTimeKind.Unspecified), timeZone) : (DateTime?)null,
+                            AssignUserIds = scheduledShift.Select(x => x.AssignedUser.Id).Distinct().ToList()
+                        });
+                        createdShifts.Add(createdShift);
+                    }
+                    else
+                    {
+                        createdShifts.Add(new ScheduledShift()
+                        {
+                            GroupId = scheduledShift.First().Group?.Id,
+                            ShiftId = scheduledShift.First().Shift?.Id,
+                            PatrolId = patrolId,
+                            StartsAt = TimeZoneInfo.ConvertTimeToUtc(new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().StartsAt.Hour, scheduledShift.First().StartsAt.Minute, 0, DateTimeKind.Unspecified), timeZone),
+                            EndsAt = TimeZoneInfo.ConvertTimeToUtc(new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().EndsAt.Hour, scheduledShift.First().EndsAt.Minute, 0, DateTimeKind.Unspecified), timeZone),
+                        });
+                    }
                 }
             }
+
+            return createdShifts;
         }
     }
 }

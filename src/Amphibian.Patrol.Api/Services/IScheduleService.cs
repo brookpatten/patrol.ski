@@ -9,14 +9,20 @@ namespace Amphibian.Patrol.Api.Services
 {
     public interface IScheduleService
     {
+        //admin functions
         Task<ScheduledShift> ScheduleShift(ScheduledShiftUpdateDto dto);
         Task CancelShift(int scheduledShiftId);
+        Task ApproveShiftSwap(int scheduledShiftAssignmentId, int userId);
+        Task RejectShiftSwap(int scheduledShiftAssignmentId, int userId);
+        Task CancelScheduledShiftAssignment(int scheduledShiftAssignmentId);
+        Task<ScheduledShiftAssignment> AddScheduledShiftAssignment(int scheduledShiftId, int userId);
 
+        //swap functions
         Task ReleaseShift(int scheduledShiftAssignmentId);
         Task ClaimShift(int scheduledShiftAssignmentId, int userId);
-        Task ApproveShiftSwap(int scheduledShiftAssignmentId, int userId);
-        Task DeclineShiftSwap(int scheduledShiftAssignmentId,int userId, string reason);
         Task CancelShiftRelease(int scheduledShiftAssignmentId);
-        Task ReplicatePeriod(int patrolId,bool clearTargetPeriodFirst,DateTime replicatedPeriodStart, DateTime replicatedPeriodEnd, DateTime targetPeriodStart, DateTime targetPeriodEnd);
+
+        //utilities
+        Task<IEnumerable<ScheduledShift>> ReplicatePeriod(int patrolId ,bool clearTargetPeriodFirst ,bool testOnly ,DateTime replicatedPeriodStart, DateTime replicatedPeriodEnd, DateTime targetPeriodStart, DateTime targetPeriodEnd);
     }
 }

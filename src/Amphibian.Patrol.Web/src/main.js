@@ -14,12 +14,13 @@ import VueLodash from 'vue-lodash'
 import VueBlockUI from 'vue-blockui'
 import VueMoment from 'vue-moment'
 import Moment from 'moment'
+import VueLazyLoad from 'vue-lazyload'
 
 Vue.config.performance = true
 Vue.use(CoreuiVue)
 Vue.use(lodash,VueLodash)
 Vue.use(VueBlockUI)
-//Vue.use(VueMoment)
+Vue.use(VueLazyLoad)
 //Vue.use(Moment)
 Vue.use(VueAxios, Axios)
 

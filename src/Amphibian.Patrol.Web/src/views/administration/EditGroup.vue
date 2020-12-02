@@ -25,7 +25,38 @@
       </CCard>
       </CForm>
 
-      <CCard v-if="plans && plans.length>0">
+      <CCard v-if="members && members.length>0">
+        <CCardHeader>
+          <slot name="header">
+            <CIcon name="cil-user"/> Members
+          </slot>
+        </CCardHeader>
+        <CCardBody>
+          <CDataTable
+                striped
+                bordered
+                small
+                fixed
+                :items="members"
+                :fields="[{key:'name',label:'Name'},{key:'email',label:'Email'},{key:'buttons',label:''}]"
+                sorter>
+                <template #buttons="data">
+                  <td>
+                    <CButtonGroup size="sm">
+                      <CButton v-if="hasPermission('MaintainUsers')" color="primary" :to="{ name: 'EditUser', params: { userId: data.item.id } }">Edit</CButton>
+                    </CButtonGroup>
+                  </td>
+                </template>
+                <template #name="data">
+                  <td>
+                    {{data.item.lastName}}, {{data.item.firstName}}
+                  </td>
+                </template>
+            </CDataTable>
+        </CCardBody>
+      </CCard>
+
+      <CCard v-if="selectedPatrol.enableTraining && plans && plans.length>0">
         <CCardHeader>
           <slot name="header">
             <CIcon name="cil-user"/> Plans
@@ -44,32 +75,6 @@
                   <td>
                     <CButtonGroup size="sm">
                       <CButton v-if="hasPermission('MaintainPlans')" color="primary" :to="{ name: 'ManagePlan', params: { planId: data.item.id } }">Edit</CButton>
-                    </CButtonGroup>
-                  </td>
-                </template>
-            </CDataTable>
-        </CCardBody>
-      </CCard>
-
-      <CCard v-if="members && members.length>0">
-        <CCardHeader>
-          <slot name="header">
-            <CIcon name="cil-user"/> Members
-          </slot>
-        </CCardHeader>
-        <CCardBody>
-          <CDataTable
-                striped
-                bordered
-                small
-                fixed
-                :items="members"
-                :fields="[{key:'email',label:'Email'},{key:'firstName',label:'First'},{key:'lastName',label:'Last'},{key:'buttons',label:''}]"
-                sorter>
-                <template #buttons="data">
-                  <td>
-                    <CButtonGroup size="sm">
-                      <CButton v-if="hasPermission('MaintainUsers')" color="primary" :to="{ name: 'EditUser', params: { userId: data.item.id } }">Edit</CButton>
                     </CButtonGroup>
                   </td>
                 </template>

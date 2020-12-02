@@ -225,7 +225,7 @@ namespace Amphibian.Patrol.Api.Services
             await CreateDefaultInitialSetup(patrol.Id);
 
             //trainer setup
-            var skiTrainer = new User() { FirstName = "Jim", LastName = "Teachesskiing", Email = $"Jim.{Guid.NewGuid()}@patrol.training" };
+            var skiTrainer = new User() { FirstName = "Jim", LastName = "Ski", Email = $"Jim.{Guid.NewGuid()}@patrol.ski" };
             await _userRepository.InsertUser(skiTrainer);
             var skiTrainerPatrolUser = new PatrolUser()
             {
@@ -234,7 +234,7 @@ namespace Amphibian.Patrol.Api.Services
             };
             await _patrolRepository.InsertPatrolUser(skiTrainerPatrolUser);
 
-            var snowboardTrainer = new User() { FirstName = "Stephen", LastName = "Teachessnowboarding", Email = $"Stephen.{Guid.NewGuid()}@patrol.training" };
+            var snowboardTrainer = new User() { FirstName = "Stephen", LastName = "Snowboard", Email = $"Stephen.{Guid.NewGuid()}@patrol.ski" };
             await _userRepository.InsertUser(snowboardTrainer);
             var snowboardTrainerPatrolUser = new PatrolUser()
             {
@@ -243,7 +243,7 @@ namespace Amphibian.Patrol.Api.Services
             };
             await _patrolRepository.InsertPatrolUser(snowboardTrainerPatrolUser);
 
-            var tobogganTrainer = new User() { FirstName = "Vern", LastName = "Teachestoboggan", Email = $"Vern.{Guid.NewGuid()}@patrol.training" };
+            var tobogganTrainer = new User() { FirstName = "Vern", LastName = "Toboggan", Email = $"Vern.{Guid.NewGuid()}@patrol.ski" };
             await _userRepository.InsertUser(tobogganTrainer);
             var tobogganTrainerPatrolUser = new PatrolUser()
             {
@@ -323,20 +323,7 @@ namespace Amphibian.Patrol.Api.Services
 
                     var plan = planDtos.Single(x => x.Name == $"{sport} Alpine");
 
-                    var skiTrainee = trainees[i];
-                    skiTrainee.Id = 0;
-                    skiTrainee.Email = skiTrainee.FirstName + "." + skiTrainee.LastName + ".demo." + Guid.NewGuid().ToString() + "@patrol.training";
-                    skiTrainee.PasswordHashIterations = null;
-                    await _userRepository.InsertUser(skiTrainee);
-
-                    var patrolUser = new PatrolUser()
-                    {
-                        PatrolId = patrol.Id,
-                        UserId = skiTrainee.Id
-                    };
-                    await _patrolRepository.InsertPatrolUser(patrolUser);
-
-                    var skiAssignment = new Assignment() { AssignedAt = lastMonth + new TimeSpan(random.Next(7), 0, 0, 0, 0), DueAt = in2Years, PlanId = plan.Id, UserId = skiTrainee.Id };
+                    var skiAssignment = new Assignment() { AssignedAt = lastMonth + new TimeSpan(random.Next(7), 0, 0, 0, 0), DueAt = in2Years, PlanId = plan.Id, UserId = trainees[i].Id };
                     await _assignmentRepository.InsertAssignment(skiAssignment);
 
                     await RandomlySignAssignment(skiAssignment, plan, ski ? skiTrainer.Id : snowboardTrainer.Id, tobogganTrainer.Id, tobogganTrainer.Id, skiAssignment.AssignedAt, now, 20 + random.Next(0, 10));
@@ -466,35 +453,58 @@ namespace Amphibian.Patrol.Api.Services
                     });
                 }
 
+                var allShifts = new List<ScheduledShift>();
+
                 //fill the week with shifts semi-randomly
                 for(int i=0;i<7;i++)
                 {
                     var shiftDate = beginningOfWeek + new TimeSpan(i, 0, 0, 0, 0);
 
-                    await _scheduleService.ScheduleShift(new ScheduledShiftUpdateDto()
+                    allShifts.Add(await _scheduleService.ScheduleShift(new ScheduledShiftUpdateDto()
                     {
                         Day = shiftDate,
                         ShiftId = morning.Id,
                         PatrolId = patrol.Id,
                         GroupId = crews.Keys.ToList()[random.Next(0, crews.Keys.Count)].Id,
-                    });
+                    }));
 
-                    await _scheduleService.ScheduleShift(new ScheduledShiftUpdateDto()
+                    allShifts.Add(await _scheduleService.ScheduleShift(new ScheduledShiftUpdateDto()
                     {
                         Day = shiftDate,
                         ShiftId = afternoon.Id,
                         PatrolId = patrol.Id,
                         GroupId = crews.Keys.ToList()[random.Next(0, crews.Keys.Count)].Id,
-                    });
+                    }));
                 }
 
                 //replicate that week for 90 more days
-                await _scheduleService.ReplicatePeriod(patrol.Id, false, beginningOfWeek, beginningOfWeek + new TimeSpan(6, 23, 59, 59, 999), beginningOfWeek + new TimeSpan(7, 0, 0, 0, 0), beginningOfWeek + new TimeSpan(90, 23, 59, 59));
+                var replicatedShifts = await _scheduleService.ReplicatePeriod(patrol.Id, false,false, beginningOfWeek, beginningOfWeek + new TimeSpan(6, 23, 59, 59, 999), beginningOfWeek + new TimeSpan(7, 0, 0, 0, 0), beginningOfWeek + new TimeSpan(90, 23, 59, 59));
 
+                allShifts.AddRange(replicatedShifts);
 
-                //TODO: clone the week for the next couple months
+                //randomly release/claim some shifts
+                foreach(var shift in allShifts)
+                {
+                    //one in 10 get released
+                    if (random.Next(8) == 1)
+                    {
+                        var assignees = await _shiftRepository.GetScheduledShiftAssignmentsForScheduledShift(shift.Id);
+                        if(assignees.Count()>0)
+                        {
+                            var assignee = assignees.ToList()[random.Next(assignees.Count())];
 
-                //TODO: release/claim some shifts
+                            await _scheduleService.ReleaseShift(assignee.Id);
+
+                            //one in 2 get claimed
+                            if(random.Next(2)==1)
+                            {
+                                var traineeList = trainees.Where(x => x.Id != assignee.AssignedUserId).ToList();
+                                var trainee = traineeList[random.Next(traineeList.Count())];
+                                await _scheduleService.ClaimShift(assignee.Id, trainee.Id);
+                            }
+                        }
+                    }
+                }
             }
 
         }
@@ -677,14 +687,14 @@ namespace Amphibian.Patrol.Api.Services
         {
             var users = A.ListOf<User>(1);
             var user = users.First();
-            user.Email = user.FirstName + "." + user.LastName + ".demo." + Guid.NewGuid() + "@patrol.training";
+            user.Email = user.FirstName + "." + user.LastName + ".demo." + Guid.NewGuid() + "@patrol.ski";
             user.PasswordHashIterations = null;
 
             await _userRepository.InsertUser(user);
 
             
 
-            var patrol = await CreateNewPatrol(user.Id, "Mt. Rumpke Ski Patrol");
+            var patrol = await CreateNewPatrol(user.Id, "Mt. Dumptruck Ski Patrol");
 
             await CreateDemoInitialSetup(patrol,user);
             return new Tuple<User, Models.Patrol>(user, patrol);

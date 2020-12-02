@@ -20,7 +20,8 @@
                         :displayPeriodUom="displayPeriod"
                         :enable-drag-drop="false"
                         :enable-date-selection="false"
-                        @click-event="clickEvent">
+                        @click-event="clickEvent"
+                        @click-date="clickDate">
                         <calendar-view-header
                             slot="header"
                             slot-scope="t"
@@ -32,9 +33,17 @@
                 <CRow>
                     <CCol md="3" lg="3" sm="12">
                         <CSelect
-                        :options="['year', 'month', 'week']"
+                        :options="['month', 'week']"
                         :value.sync="displayPeriod"
                         label="View"
+                        add-wrapper-classes="ml-2"
+                        />
+                    </CCol>
+                    <CCol md="3" lg="3" sm="12">
+                        <CSelect
+                        :options="userItems"
+                        :value.sync="viewUserId"
+                        label="Person"
                         add-wrapper-classes="ml-2"
                         />
                     </CCol>
@@ -48,7 +57,8 @@
         :title="selectedEvent.title"
         :show.sync="showSelectedEvent"
         :no-close-on-backdrop="true"
-        color="info"
+        color="success"
+        size="lg"
         >
         {{(new Date(selectedEvent.startsAt)).toLocaleString()}} - {{(new Date(selectedEvent.endsAt)).toLocaleString()}}<br/>
         {{selectedEvent.name}}<br/>
@@ -60,78 +70,174 @@
         </template>
         </CModal>
         <CModal
-        :title="selectedShift.title"
         :show.sync="showSelectedShift"
         :no-close-on-backdrop="true"
         color="primary"
+        size="lg"
         >
-        <template v-if="selectedShift.shiftName">
             <strong>{{selectedShift.shiftName}}</strong><br/>
-        </template>
-        Start:{{(new Date(selectedShift.startsAt+"Z")).toLocaleString()}}<br/>
-        End:{{(new Date(selectedShift.endsAt+"Z")).toLocaleString()}}<br/>
-        <template v-if="selectedShift.groupName">
-            <em>{{selectedShift.groupName}}</em><br/>
-        </template>
-        <CDataTable
-            striped
-            small
-            fixed
-            :items="selectedShift.assignments"
-            :fields="[{key:'assignedUser',label:''},{key:'claimedByUser',label:''},{key:'status',label:''},{key:'traineeCount',label:''},{key:'buttons',label:''}]"
-            >
-            <template #assignedUser="data">
-                <td>{{data.item.assignedUser.lastName}}, {{data.item.assignedUser.firstName}}</td>
+            Start:{{(new Date(selectedShift.startsAt)).toLocaleString()}}<br/>
+            End:{{(new Date(selectedShift.endsAt)).toLocaleString()}}<br/>
+            <template v-if="selectedShift.groupName">
+                <em>{{selectedShift.groupName}}</em><br/>
             </template>
-            <template #claimedByUser="data">
-                <td>
-                    <template v-if="data.item.status=='Claimed'">
-                        {{data.item.claimedByUser.lastName}}, {{data.item.claimedByUser.firstName}}
-                        <c-badge size="sm" color="warning">Pending Approval</c-badge>
-                    </template>
-                    <template v-if="data.item.status=='Released'">
-                        <c-badge size="sm" color="warning">Released</c-badge>
-                    </template>
-                </td>
-            </template>
-            <template #status="data">
-                <td><span v-if="data.item.status!='Assigned'">{{data.item.status}}</span></td>
-            </template>
-            <template #traineeCount="data">
-                <td><span v-if="data.item.traineeCount>0"><c-badge size="sm" color="info">{{data.item.traineeCount}} Trainees</c-badge></span></td>
-            </template>
-            <template #buttons="data">
-                <td>
-                    <CButtonGroup class="float-right" v-if="isFuture(selectedShift.startsAt)">
-                        <CButton size="sm" color="danger" v-if="hasPermission('MaintainSchedule')">Remove</CButton>
-                        <CButton size="sm" color="primary" v-if="data.item.status=='Assigned' && data.item.assignedUser.id == user.id">Release</CButton>
-                        <CButton size="sm" color="success" v-if="data.item.status=='Released' && data.item.assignedUser.id != user.id">Claim</CButton>
-                        <CButton size="sm" color="warning" v-if="(data.item.status=='Claimed' || data.item.status=='Released') && data.item.assignedUser.id == user.id">Cancel Release</CButton>
-                        <CButton size="sm" color="success" v-if="data.item.status=='Claimed' && hasPermission('MaintainSchedule')">Approve</CButton>
-                        <CButton size="sm" color="danger" v-if="data.item.status=='Claimed' && hasPermission('MaintainSchedule')">Reject</CButton>
-                    </CButtonGroup>
-                </td>
-            </template>
-            <template #footer="data">
-                <template v-if="isFuture(selectedShift.startsAt) && hasPermission('MaintainSchedule')">
-                    <tfoot>
-                        <tr>
-                            <td colspan="4"><!--dropdown of users--></td>
-                            <td><CButton size="sm" color="success" class="float-right">Add</CButton></td>
-                        </tr>
-                    </tfoot>
+            <CDataTable
+                striped
+                small
+                fixed
+                :items="selectedShift.assignments"
+                :fields="[{key:'assignedUser',label:''},{key:'claimedByUser',label:''},{key:'status',label:''},{key:'traineeCount',label:''},{key:'buttons',label:''}]"
+                >
+                <template #assignedUser="data">
+                    <td>{{data.item.assignedUser.lastName}}, {{data.item.assignedUser.firstName}}</td>
                 </template>
+                <template #claimedByUser="data">
+                    <td>
+                        <template v-if="data.item.status=='Claimed'">
+                            {{data.item.claimedByUser.lastName}}, {{data.item.claimedByUser.firstName}}
+                        </template>
+                    </td>
+                </template>
+                <template #status="data">
+                    <td>
+                        <template v-if="data.item.status=='Claimed'">
+                            <c-badge size="sm" color="warning">Pending Approval</c-badge>
+                        </template>
+                        <template v-if="data.item.status=='Released'">
+                            <c-badge size="sm" color="warning">Released</c-badge>
+                        </template>
+                    </td>
+                </template>
+                <template #traineeCount="data">
+                    <td><span v-if="data.item.traineeCount>0"><c-badge size="sm" color="info">{{data.item.traineeCount}} Trainees</c-badge></span></td>
+                </template>
+                <template #buttons="data">
+                    <td>
+                        <CButtonGroup class="float-right" v-if="isFuture(selectedShift.startsAt)">
+                            
+                            <CButton size="sm" color="primary" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Assigned' && data.item.assignedUser.id == user.id" @click="releaseScheduledShiftAssignment(data.item)">Release</CButton>
+                            <CButton size="sm" color="success" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Released' && data.item.assignedUser.id != user.id" @click="claimScheduledShiftAssignment(data.item)">Claim</CButton>
+                            <CButton size="sm" color="info" v-if="selectedPatrol.enableShiftSwaps && (data.item.status=='Claimed' || data.item.status=='Released') && data.item.assignedUser.id == user.id" @click="cancelReleaseScheduledShiftAssignment(data.item)">Cancel Release</CButton>
+                            <CButton size="sm" color="success" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Claimed' && hasPermission('MaintainSchedule')" @click="approveScheduledShiftAssignment(data.item)">Approve</CButton>
+                            <CButton size="sm" color="warning" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Claimed' && hasPermission('MaintainSchedule')" @click="rejectScheduledShiftAssignment(data.item)">Reject</CButton>
+                            <CButton size="sm" color="danger" v-if="hasPermission('MaintainSchedule')" @click="removeScheduledShiftAssignment(selectedShift,data.item)">Remove</CButton>
+                        </CButtonGroup>
+                    </td>
+                </template>
+                <template #footer="data">
+                    <template v-if="isFuture(selectedShift.startsAt) && hasPermission('MaintainSchedule')">
+                        <tfoot>
+                            <tr v-if="filteredUserList && filteredUserList.length>0">
+                                <td colspan="4"><CSelect :options="filteredUserList" :value.sync="selectedUserId"></CSelect></td>
+                                <td><CButton @click="addScheduledShiftAssignment(selectedShift,selectedUserId)" size="sm" color="success" class="float-right">Add</CButton></td>
+                            </tr>
+                        </tfoot>
+                    </template>
+                </template>
+            </CDataTable>
+            <template #header>Shift Details
             </template>
-        </CDataTable>
-        <template #header>Shift Details
-        </template>
-        <template #footer>
-            <CButtonGroup class="float-right">
-                <CButton v-if="hasPermission('MaintainSchedule') && isFuture(selectedShift.startsAt)" color="success">Add</CButton>
-                <CButton v-if="hasPermission('MaintainSchedule') && isFuture(selectedShift.startsAt)" color="warning">Cancel Shift</CButton>
-                <CButton @click="showSelectedShift = false" color="primary">Close</CButton>
-            </CButtonGroup>
-        </template>
+            <template #footer>
+                <CButtonGroup class="float-right">
+                    <CButton @click="cancelShift(selectedShift)" v-if="hasPermission('MaintainSchedule') && isFuture(selectedShift.startsAt)" color="warning">Cancel Shift</CButton>
+                    <CButton @click="showSelectedShift = false" color="primary">Close</CButton>
+                </CButtonGroup>
+            </template>
+        </CModal>
+        <CModal
+        :show.sync="newShift.show"
+        :no-close-on-backdrop="true"
+        color="primary"
+        size="lg"
+        >
+
+            <template v-if="shifts.length>0">
+                <CRow>
+                    <CCol md="2">
+                        <label for="newShift.shiftId">Shift</label><br/>
+                    </CCol>
+                    <CCol md="10">
+                        <CSelect :options="shiftItems" :value.sync="newShift.shiftId"></CSelect>
+                    </CCol>
+                </CRow>
+                <CRow v-if="newShift.shiftId!=null">
+                    <CCol md="2">
+                        <label for="newShift.day">Day</label>
+                    </CCol>
+                    <CCol md="10">
+                        <datepicker v-model="newShift.day" input-class="form-control" calendar-class="card"></datepicker>
+                    </CCol>
+                </CRow>
+            </template>
+
+            <CRow v-if="newShift.shiftId==null">
+                <CCol>
+                    <label for="newShift.startsAt">Start</label>
+                    <VueCtkDateTimePicker v-model="newShift.startsAt" dark noClearButton minute-interval="15" color="#3b2fa4" format="YYYY-MM-DDTHH:mm"></VueCtkDateTimePicker><br/>
+                </CCol>
+                <CCol>
+                    <label for="newShift.endsAt">End</label>
+                    <VueCtkDateTimePicker v-model="newShift.endsAt" dark noClearButton minute-interval="15" color="#3b2fa4" format="YYYY-MM-DDTHH:mm"></VueCtkDateTimePicker><br/>
+                </CCol>
+            </CRow>
+
+            <CRow>
+                <CCol md="2">
+                    <label for="newShift.shiftId">Group</label>
+                </CCol>
+                <CCol md="10">
+                    <CSelect :options="groupItems" :value.sync="newShift.groupId"></CSelect>
+                </CCol>
+            </CRow>
+            <CRow v-if="newShift.groupId!=null">
+                <CCol md="2">
+                </CCol>
+                <CCol md="10">
+                    <em>Members of {{getGroupById(newShift.groupId).name}} will be added to the scheduled shift</em>
+                </CCol>
+            </CRow>
+            <CRow>
+                <CCol md="12">
+                    <CDataTable
+                        striped
+                        small
+                        fixed
+                        :items="newShift.assignments"
+                        :fields="[{key:'assignedUser',label:''},{key:'buttons',label:''}]"
+                        >
+                        <template #assignedUser="data">
+                            <td>{{data.item.assignedUser.lastName}}, {{data.item.assignedUser.firstName}}</td>
+                        </template>
+                        <template #buttons="data">
+                            <td>
+                                <CButtonGroup class="float-right">
+                                    <CButton size="sm" color="danger" @click="removeUserFromNewShift(data.item.assignedUser.id)">Remove</CButton>
+                                </CButtonGroup>
+                            </td>
+                        </template>
+                        <template #footer="data">
+                            <tfoot>
+                                <tr v-if="filteredUserList && filteredUserList.length>0">
+                                    <td><CSelect :options="filteredUserList" :value.sync="selectedUserId"></CSelect></td>
+                                    <td><CButton size="sm" color="success" class="float-right" @click="addUserToNewShift(selectedUserId)">Add</CButton></td>
+                                </tr>
+                            </tfoot>
+                        </template>
+                        <template #no-items-view>
+                            <span v-if="newShift.groupId!=null">Add additional people...</span>
+                            <span v-if="newShift.groupId==null">Add people...</span>
+                        </template>
+                    </CDataTable>
+                </CCol>
+            </CRow>
+            <template #header>Schedule New Shift
+            </template>
+            <template #footer>
+                <CButtonGroup class="float-right">
+                    <CButton @click="newShift.show = false" color="info">Cancel</CButton>
+                    <CButton :disabled="!isNewShiftValid()" @click="scheduleShift()" color="primary">Save</CButton>
+                </CButtonGroup>
+            </template>
         </CModal>
     </div>
 </template>
@@ -145,11 +251,17 @@ import { CalendarView, CalendarViewHeader } from "vue-simple-calendar"
 //require("vue-simple-calendar/static/css/default.css")
 //require("vue-simple-calendar/static/css/holidays-us.css")
 
+import Datepicker from 'vuejs-datepicker';
+import VueCtkDateTimePicker from 'vue-ctk-date-time-picker';
+import 'vue-ctk-date-time-picker/dist/vue-ctk-date-time-picker.css';
+
 export default {
   name: 'Calendar',
   freeSet,
   components: {  CalendarView,
-			CalendarViewHeader
+            CalendarViewHeader,
+            Datepicker,
+            VueCtkDateTimePicker
   },
   props: [],
   data () {
@@ -158,23 +270,142 @@ export default {
         from:new Date(),
         to:new Date(),
         events:[],
-        shifts:[],
+        scheduledShifts:[],
+        users:[],
         displayPeriod:'month',
+        viewUserId: null,
+
+        shifts:[],
+        groups:[],
+        
         showSelectedEvent:false,
         selectedEvent:{},
+
         showSelectedShift:false,
-        selectedShift:{}
+        selectedShift:{},
+
+        selectedUserId:0,
+        filteredUserList:[],
+
+        newShift:{
+            show: false,
+            startsAt: new Date(),
+            endsAt: new Date(),
+            day: new Date(),
+            shiftId: 0,
+            groupId: null,
+            patrolId: this.selectedPatrolId,
+            assignments:[]
+        }
     }
   },
+  props: ['userId'],
   methods: {
+        getGroupById(id){
+            return _.find(this.groups,{id:this.newShift.groupId});
+        },
+        addScheduledShiftAssignment(shift,userId){
+            this.$store.dispatch('loading','Loading...');
+            this.$http.post('schedule/scheduled-shift-assignment?scheduledShiftId='+shift.scheduledShiftId+"&userId="+userId)
+                .then(response => {
+                    console.log(response);
+                    this.scheduledShifts = _.filter(this.scheduledShifts,function(s){return s.scheduledShiftId!=shift.scheduledShiftId});
+                    var updatedShift = response.data;
+                    this.scheduledShifts.push(updatedShift[0]);
+                    this.selectedShift = updatedShift[0];
+                    this.filterUserListItems(this.selectedShift.assignments);
+                }).catch(response => {
+                    console.log(response);
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
+        },
+        removeScheduledShiftAssignment(shift,assignment){
+            this.$store.dispatch('loading','Loading...');
+            this.$http.delete('schedule/scheduled-shift-assignment?scheduledShiftAssignmentId='+assignment.id)
+                .then(response => {
+                    console.log(response);
+                    shift.assignments = _.filter(shift.assignments,function(a){return a.id!=assignment.id;});
+                    this.filterUserListItems(shift.assignments);
+                }).catch(response => {
+                    console.log(response);
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
+        },
+        releaseScheduledShiftAssignment(assignment){
+            this.$store.dispatch('loading','Loading...');
+            this.$http.post('schedule/scheduled-shift-assignment/release?scheduledShiftAssignmentId='+assignment.id)
+                .then(response => {
+                    console.log(response);
+                    assignment.status='Released';
+                }).catch(response => {
+                    console.log(response);
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
+        },
+        cancelReleaseScheduledShiftAssignment(assignment){
+            this.$store.dispatch('loading','Loading...');
+            this.$http.post('schedule/scheduled-shift-assignment/cancel-release?scheduledShiftAssignmentId='+assignment.id)
+                .then(response => {
+                    console.log(response);
+                    assignment.status='Assigned';
+                }).catch(response => {
+                    console.log(response);
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
+        },
+        claimScheduledShiftAssignment(assignment){
+            let user = this.user;
+            this.$store.dispatch('loading','Loading...');
+            this.$http.post('schedule/scheduled-shift-assignment/claim?scheduledShiftAssignmentId='+assignment.id)
+                .then(response => {
+                    console.log(response);
+                    assignment.status='Claimed';
+                    assignment.claimedByUser = user;
+                }).catch(response => {
+                    console.log(response);
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
+        },
+        approveScheduledShiftAssignment(assignment){
+            let user = this.user;
+            this.$store.dispatch('loading','Loading...');
+            this.$http.post('schedule/scheduled-shift-assignment/approve?scheduledShiftAssignmentId='+assignment.id)
+                .then(response => {
+                    console.log(response);
+                    assignment.status='Assigned';
+                    assignment.assignedUser = assignment.claimedByUser;
+                    assignment.claimedByUser = null;
+                }).catch(response => {
+                    console.log(response);
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
+        },
+        rejectScheduledShiftAssignment(assignment){
+            let user = this.user;
+            this.$store.dispatch('loading','Loading...');
+            this.$http.post('schedule/scheduled-shift-assignment/reject?scheduledShiftAssignmentId='+assignment.id)
+                .then(response => {
+                    console.log(response);
+                    assignment.status='Released';
+                    assignment.claimedByUser = null;
+                }).catch(response => {
+                    console.log(response);
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
+        },
+        cancelShift(shift){
+            this.$store.dispatch('loading','Loading...');
+            this.$http.delete('schedule/scheduled-shift?scheduledShiftId='+shift.scheduledShiftId)
+                .then(response => {
+                    console.log(response);
+                    this.showSelectedShift=false;
+                    this.getScheduledShifts();
+                    
+                }).catch(response => {
+                    console.log(response);
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
+        },
         isFuture(date){
-            return new Date(date+"Z") > new Date();
+            return new Date(date) > new Date();
         },
         periodChanged(range){
             this.from=range.displayFirstDate;
             this.to=range.displayLastDate;
             this.getEvents();
-            this.getShifts();
+            this.getScheduledShifts();
         },
         clickEvent(event){
             console.log(JSON.stringify(event));
@@ -184,11 +415,85 @@ export default {
                 this.showSelectedEvent=true;
             }
             else if(event.originalEvent.type=='shift'){
-                var e = _.find(this.shifts,{scheduledShiftId:event.id});
+                var e = _.find(this.scheduledShifts,{scheduledShiftId:event.id});
                 this.selectedShift = e;
+                this.filterUserListItems(this.selectedShift.assignments);
                 this.showSelectedShift=true;
             }
             //else: shifts etc
+        },
+        clickDate(date){
+            if(this.isFuture(date) && this.hasPermission('MaintainSchedule')){
+                console.log(JSON.stringify(event));
+
+                this.newShift.groupId = null;
+                this.newShift.patrolId= this.selectedPatrolId;
+                this.newShift.assignments.splice(0,this.newShift.assignments.length);
+
+                this.filterUserListItems(this.newShift.assignments);
+                
+                if(this.shifts.length>0){
+                    this.newShift.shiftId = this.shifts[0].id;
+                    this.newShift.day = date;
+                    this.newShift.startsAt = null;
+                    this.newShift.endsAt = null;
+                }
+                else {
+                    this.newShift.shiftId = null;
+                    this.newShift.day = null;
+                    this.newShift.startsAt = date;
+                    this.newShift.endsAt = date;
+                }
+
+                this.newShift.show=true;
+            }
+        },
+        addUserToNewShift(userId){
+            var user = _.find(this.users,{id:userId});
+            this.newShift.assignments.push({
+                assignedUser:user
+            });
+            this.filterUserListItems(this.newShift.assignments);
+        },
+        removeUserFromNewShift(userId){
+            this.newShift.assignments = _.filter(this.newShift.assignments,function(a){return a.assignedUser.id!=userId;});
+            this.filterUserListItems(this.newShift.assignments);
+        },
+        isNewShiftValid(){
+            return (this.newShift.groupId > 0 || this.newShift.assignments.length>0) // people are selected
+            && (
+                //a day and shift are selected
+                (this.newShift.shiftId!=null && this.newShift.day!=null && this.isFuture(this.newShift.day))
+                //a start and end are selected
+                || (this.newShift.shiftId==null && this.newShift.startsAt!=null && this.newShift.endsAt!=null && this.isFuture(this.newShift.startsAt) && this.isFuture(this.newShift.endsAt))
+            );
+        },
+        scheduleShift(){
+
+            this.newShift.assignUserIds = _.map(this.newShift.assignments,function(a){return a.assignedUser.id;});
+            this.newShift.patrolId = this.selectedPatrolId;
+
+            if(this.newShift.shiftId==null){
+                this.newShift.day=null;
+                this.newShift.startsAt = new Date(this.newShift.startsAt).toISOString();
+                this.newShift.endsAt = new Date(this.newShift.endsAt).toISOString();
+            }
+            else{
+                this.newShift.day = new Date(this.newShift.day);
+                this.newShift.startsAt = null;
+                this.newShift.endsAt = null;
+            }
+
+            this.$store.dispatch('loading','Loading...');
+            this.$http.post('schedule/scheduled-shift',this.newShift)
+                .then(response => {
+                    console.log(response);
+                    this.newShift.show=false;
+                    this.getScheduledShifts();
+                    
+                }).catch(response => {
+                    console.log(response);
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         setShowDate(d) {
             this.selectedDate = d;
@@ -203,12 +508,42 @@ export default {
                     console.log(response);
                 }).finally(response=>this.$store.dispatch('loadingComplete'));
             },
+        getScheduledShifts() {
+            this.$store.dispatch('loading','Loading...');
+            this.$http.post('schedule/search',{patrolId:this.selectedPatrolId,from:this.from,to:this.to,userId:this.viewUserId})
+                .then(response => {
+                    console.log(response);
+                    this.scheduledShifts = response.data;
+                }).catch(response => {
+                    console.log(response);
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
+            },
+        getUsers() {
+            this.$store.dispatch('loading','Loading...');
+            this.$http.get('user/list/'+this.selectedPatrolId)
+                .then(response => {
+                    console.log(response);
+                    this.users = response.data;
+                }).catch(response => {
+                    console.log(response);
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
+            },
         getShifts() {
             this.$store.dispatch('loading','Loading...');
-            this.$http.post('schedule/search',{patrolId:this.selectedPatrolId,from:this.from,to:this.to})
+            this.$http.get('schedule/shifts?patrolId='+this.selectedPatrolId)
                 .then(response => {
                     console.log(response);
                     this.shifts = response.data;
+                }).catch(response => {
+                    console.log(response);
+                }).finally(response=>this.$store.dispatch('loadingComplete'));
+            },
+        getGroups() {
+            this.$store.dispatch('loading','Loading...');
+            this.$http.get('user/groups/'+this.selectedPatrolId)
+                .then(response => {
+                    console.log(response);
+                    this.groups = response.data;
                 }).catch(response => {
                     console.log(response);
                 }).finally(response=>this.$store.dispatch('loadingComplete'));
@@ -225,16 +560,56 @@ export default {
         },
         hasPermission: function(permission){
           return this.selectedPatrol!=null && this.selectedPatrol.permissions!=null && _.indexOf(this.selectedPatrol.permissions,permission) >= 0;
+        },
+        filterUserListItems:function(assignments){
+
+            let filtered = [];
+
+            if(assignments){
+                filtered = _.filter(this.users,function(u){return _.find(assignments,function(a){return a.assignedUser.id==u.id;})==null;});
+            }
+            else{
+                filtered = this.users;
+            }
+
+            filtered = _.sortBy(filtered,['lastName','firstName']);
+
+            this.filteredUserList = _.map(filtered,function(u){
+                return {
+                    label:u.lastName+", "+u.firstName,
+                    value:u.id
+                };
+            });
+
+            if(this.filteredUserList.length>0){
+                this.selectedUserId = this.filteredUserList[0].value;
+            }
         }
   },
   mounted: function(){
+      if(this.userId!=null){
+          this.viewUserId = this.userId;
+      }
       this.getEvents();
-      this.getShifts();
+      this.getScheduledShifts();
+      if(this.hasPermission('MaintainSchedule')){
+        this.getUsers();
+        this.getShifts();
+        this.getGroups();
+      }
   },
   watch: {
       selectedPatrolId: function(){
           this.getEvents();
-          this.getShifts();
+          this.getScheduledShifts();
+          if(this.hasPermission('MaintainSchedule')){
+            this.getUsers();
+            this.getShifts();
+            this.getGroups();
+          }
+      },
+      viewUserId: function(){
+          this.getScheduledShifts();
       }
   },
   computed: {
@@ -247,6 +622,36 @@ export default {
     user: function (){
         return this.$store.getters.user;
     },
+    shiftItems: function(){
+        var items = _.map(this.shifts,function(s){
+            return {
+                value: s.id,
+                label: s.name + " ("+s.startHour+":"+(s.startMinute+"").padStart(2,"0") +" - "+s.endHour+":"+(s.endMinute+"").padStart(2,"0")+")"
+            }
+        });
+        items.splice(0,0,{value:null,label:'(New)'})
+        return items;
+    },
+    groupItems: function(){
+        var items = _.map(this.groups,function(s){
+            return {
+                value: s.id,
+                label: s.name
+            }
+        });
+        items.splice(0,0,{value:null,label:'(None)'})
+        return items;
+    },
+    userItems: function(){
+        var items = _.map(this.users,function(s){
+            return {
+                value: s.id,
+                label: s.lastName+', '+s.firstName
+            }
+        });
+        items.splice(0,0,{value:null,label:'(All)'})
+        return items;
+    },
     calendarEvents: function(){
         let user = this.user;
         let isFuture = this.isFuture;
@@ -255,23 +660,53 @@ export default {
             return {
                 id: e.id,
                 title: e.name,
-                startDate: e.startsAt,
-                endDate: e.endsAt,
+                startDate: new Date(e.startsAt),
+                endDate: new Date(e.endsAt),
                 classes:'badge-success',
                 type:'event'
             };
         });
 
-        var cShifts = _.map(this.shifts,function(e){
+        var cShifts = _.map(this.scheduledShifts,function(e){
+            var eventClass='';
+
+            var currentUserInShift = _.find(e.assignments,function(a){ 
+                return a.assignedUser.id == user.id || (a.claimedByUser && a.claimedByUser.id == user.id)
+            })!=null;
+            
+            if(isFuture(e.startsAt)){
+                if(currentUserInShift){
+                    eventClass = "badge-info";
+                }
+                else{
+                    eventClass="badge-primary";
+                }
+            }
+            else{
+                if(currentUserInShift){
+                    eventClass = "badge-secondary";
+                }
+                else{
+                    eventClass="badge-dark";
+                }
+            }
+
+            var startsAt = new Date(e.startsAt);
+            var endsAt = new Date(e.endsAt);
+
+            if(e.assignments==null){
+                console.log('assignments is null');
+            }
+
             return {
                 id: e.scheduledShiftId,
-                title: (e.shiftName ? e.shiftName : "") 
-                        + " "+ (new Date(e.startsAt+"Z")).getHours()+":"+((new Date(e.startsAt+"Z")).getMinutes()+"").padStart(2,"0") 
-                        + "-" + (new Date(e.endsAt+"Z")).getHours()+":"+((new Date(e.endsAt+"Z")).getMinutes()+"").padStart(2,"0")
-                        + " ("+(e.groupName ? e.groupName : e.assignments.length) + ")",
+                title: " "+ startsAt.getHours()+":"+(startsAt.getMinutes()+"").padStart(2,"0") 
+                        + "-" + endsAt.getHours()+":"+((endsAt).getMinutes()+"").padStart(2,"0")
+                        + " ("+(e.groupName ? e.groupName : e.assignments.length + " Assigned") + ") "
+                        + (e.shiftName ? e.shiftName : "") ,
                 startDate: e.startsAt,
                 endDate: e.endsAt,
-                classes: isFuture(e.startsAt) ? (_.find(e.assignments,function(a){ return a.assignedUser.id == user.id || (a.claimedByUser && a.claimedByUser.id == user.id)})!=null ? 'badge-info' : 'badge-primary') : 'badge-dark',
+                classes: eventClass,
                 type:'shift'
             };
         });

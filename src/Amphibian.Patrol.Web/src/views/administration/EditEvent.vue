@@ -23,9 +23,9 @@
             />
             
             <label for="event.startsAt">Start</label>
-            <VueCtkDateTimePicker v-model="event.startsAt" dark noClearButton minute-interval="15" color="#3b2fa4" format="YYYY-MM-DDTHH:MMZ"></VueCtkDateTimePicker><br/>
+            <VueCtkDateTimePicker v-model="event.startsAt" dark noClearButton minute-interval="15" color="#3b2fa4" format="YYYY-MM-DDTHH:mm"></VueCtkDateTimePicker><br/>
             <label for="event.endsAt">End</label>
-            <VueCtkDateTimePicker v-model="event.endsAt" dark noClearButton minute-interval="15" color="#3b2fa4" format="YYYY-MM-DDTHH:MMZ"></VueCtkDateTimePicker><br/>
+            <VueCtkDateTimePicker v-model="event.endsAt" dark noClearButton minute-interval="15" color="#3b2fa4" format="YYYY-MM-DDTHH:mm"></VueCtkDateTimePicker><br/>
 
         </CCardBody>
         <CCardFooter>
