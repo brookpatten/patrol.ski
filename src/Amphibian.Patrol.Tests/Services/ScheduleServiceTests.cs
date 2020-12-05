@@ -26,6 +26,8 @@ namespace Amphibian.Patrol.Tests.Services
         private Mock<IGroupRepository> _groupRepositoryMock;
         private Mock<IPatrolRepository> _patrolRepository;
         private Mock<ISystemClock> _systemClockMock;
+        private Mock<IUserRepository> _userRepositoryMock;
+        private Mock<IEmailService> _emailServiceMock;
 
         [SetUp]
         public void Setup()
@@ -37,8 +39,10 @@ namespace Amphibian.Patrol.Tests.Services
             _patrolRepository = new Mock<IPatrolRepository>();
             _groupRepositoryMock = new Mock<IGroupRepository>();
             _systemClockMock = new Mock<ISystemClock>();
+            _userRepositoryMock = new Mock<IUserRepository>();
+            _emailServiceMock = new Mock<IEmailService>();
 
-            _scheduleService = new ScheduleService(_loggerMock.Object, _patrolRepository.Object, _groupRepositoryMock.Object, _shiftRepositoryMock.Object, _systemClockMock.Object);
+            _scheduleService = new ScheduleService(_loggerMock.Object, _patrolRepository.Object, _groupRepositoryMock.Object, _shiftRepositoryMock.Object, _systemClockMock.Object,_emailServiceMock.Object,_userRepositoryMock.Object);
         }
 
         [Test]
@@ -102,6 +106,13 @@ namespace Amphibian.Patrol.Tests.Services
                 Status = ShiftStatus.Released
             })).Verifiable();
 
+            _shiftRepositoryMock.Setup(x => x.GetScheduledShift(id)).Returns(Task.FromResult(new ScheduledShift()
+            {
+                Id = 1,
+                StartsAt = DateTime.Now,
+                EndsAt = DateTime.Now
+            })).Verifiable();
+
             _shiftRepositoryMock.Setup(x => x.UpdateScheduledShiftAssignment(It.Is<ScheduledShiftAssignment>(y => y.Status == ShiftStatus.Claimed && y.ClaimedByUserId == userId))).Verifiable();
 
             await _scheduleService.ClaimShift(id, userId);
@@ -147,6 +158,13 @@ namespace Amphibian.Patrol.Tests.Services
                 OriginalAssignedUserId = 1,
                 ScheduledShiftId = 1,
                 Status = ShiftStatus.Claimed
+            })).Verifiable();
+
+            _shiftRepositoryMock.Setup(x => x.GetScheduledShift(1)).Returns(Task.FromResult(new ScheduledShift()
+            {
+                Id = 1,
+                StartsAt = DateTime.Now,
+                EndsAt = DateTime.Now
             })).Verifiable();
 
             _shiftRepositoryMock.Setup(x => x.UpdateScheduledShiftAssignment(It.Is<ScheduledShiftAssignment>(y => y.Status == ShiftStatus.Assigned 
@@ -197,6 +215,13 @@ namespace Amphibian.Patrol.Tests.Services
                 OriginalAssignedUserId = 1,
                 ScheduledShiftId = 1,
                 Status = ShiftStatus.Claimed
+            })).Verifiable();
+
+            _shiftRepositoryMock.Setup(x => x.GetScheduledShift(id)).Returns(Task.FromResult(new ScheduledShift()
+            {
+                Id = 1,
+                StartsAt = DateTime.Now,
+                EndsAt = DateTime.Now
             })).Verifiable();
 
             _shiftRepositoryMock.Setup(x => x.UpdateScheduledShiftAssignment(It.Is<ScheduledShiftAssignment>(y => y.Status == ShiftStatus.Released

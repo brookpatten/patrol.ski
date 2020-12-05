@@ -24,18 +24,23 @@ namespace Amphibian.Patrol.Api.Services
         private ILogger<AnnouncementService> _logger;
         private IMapper _mapper;
         private ISystemClock _clock;
-        public AnnouncementService(IAnnouncementRepository announcementRepository, ILogger<AnnouncementService> logger, IMapper mapper, ISystemClock clock)
+        private IEmailService _emailService;
+        private IPatrolRepository _patrolRepository;
+        private IUserRepository _userRepository;
+        public AnnouncementService(IAnnouncementRepository announcementRepository, ILogger<AnnouncementService> logger, IMapper mapper, 
+            ISystemClock clock, IEmailService emailService, IPatrolRepository patrolRepository, IUserRepository userRepository)
         {
             _logger = logger;
             _mapper = mapper;
             _announcementRepository = announcementRepository;
             _clock = clock;
+            _userRepository = userRepository;
+            _patrolRepository = patrolRepository;
+            _emailService = emailService;
         }
         public async Task PostAnnouncement(Announcement announcement)
         {
-            
-
-            SanitizeAndNormalize(announcement);
+            var plainText = SanitizeAndNormalize(announcement);
             if (announcement.Id == default(int))
             {
                 announcement.CreatedAt = _clock.UtcNow.DateTime;
@@ -49,22 +54,22 @@ namespace Amphibian.Patrol.Api.Services
             {
                 await _announcementRepository.UpdateAnnouncement(announcement);
             }
+
+            var createdBy = await _userRepository.GetUser(announcement.CreatedByUserId);
+            var patrol = await _patrolRepository.GetPatrol(announcement.PatrolId);
+
+            if(announcement.Emailed)
+            {
+                var users = (await _patrolRepository.GetUsersForPatrol(announcement.PatrolId)).ToList();
+                await _emailService.SendAnnouncementEmail(createdBy,users,patrol.Name,announcement.Subject, plainText, announcement.AnnouncementHtml);
+            }
         }
         public async Task PreviewAnnouncement(Announcement announcement)
         {
             SanitizeAndNormalize(announcement);
         }
-        public async Task UpdateAnnouncement(Announcement announcement)
-        {
-            if (!announcement.PostAt.HasValue)
-            {
-                announcement.PostAt = _clock.UtcNow.DateTime;
-            }
-            SanitizeAndNormalize(announcement);
-            await _announcementRepository.UpdateAnnouncement(announcement);
-        }
-
-        private void SanitizeAndNormalize(Announcement announcement)
+        
+        private string SanitizeAndNormalize(Announcement announcement)
         {
             var sanitizer = new HtmlSanitizer();
 
@@ -77,6 +82,9 @@ namespace Amphibian.Patrol.Api.Services
 
             announcement.AnnouncementMarkdown = normalized;
             announcement.AnnouncementHtml = html;
+
+            var plainText = Markdown.ToPlainText(html);
+            return plainText;
         }
 
         

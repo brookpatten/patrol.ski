@@ -11,6 +11,7 @@ namespace Amphibian.Patrol.Api.Models
         public string Email { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public bool AllowEmailNotifications { get; set; }
 
         public string GetFullName()
         {

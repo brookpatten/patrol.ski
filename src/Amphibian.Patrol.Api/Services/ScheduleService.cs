@@ -1,4 +1,5 @@
 ﻿using Amphibian.Patrol.Api.Dtos;
+using Amphibian.Patrol.Api.Extensions;
 using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Repositories;
 using Microsoft.AspNetCore.Authentication;
@@ -18,15 +19,19 @@ namespace Amphibian.Patrol.Api.Services
         private IGroupRepository _groupRepository;
         private IShiftRepository _shiftRepository;
         private ISystemClock _clock;
+        private IEmailService _emailService;
+        private IUserRepository _userRepository;
 
         public ScheduleService(ILogger<ScheduleService> logger, IPatrolRepository patrolRepository, 
-            IGroupRepository groupRepository,IShiftRepository shiftRepository, ISystemClock clock)
+            IGroupRepository groupRepository,IShiftRepository shiftRepository, ISystemClock clock, IEmailService emailService, IUserRepository userRepository)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
             _groupRepository = groupRepository;
             _shiftRepository = shiftRepository;
             _clock = clock;
+            _emailService = emailService;
+            _userRepository = userRepository;
         }
 
 
@@ -35,10 +40,21 @@ namespace Amphibian.Patrol.Api.Services
             var ssa = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             if (ssa.Status == ShiftStatus.Claimed && ssa.ClaimedByUserId.HasValue)
             {
+                int assignedUserId = ssa.AssignedUserId;
+                int claimedUserId = ssa.ClaimedByUserId.Value;
+
                 ssa.Status = ShiftStatus.Assigned;
                 ssa.AssignedUserId = ssa.ClaimedByUserId.Value;
                 ssa.ClaimedByUserId = null;
                 await _shiftRepository.UpdateScheduledShiftAssignment(ssa);
+
+                //send notification email to assignee
+                var assigned = await _userRepository.GetUser(assignedUserId);
+                var claimed = await _userRepository.GetUser(claimedUserId);
+                var approved = await _userRepository.GetUser(userId);
+                var shift = await _shiftRepository.GetScheduledShift(ssa.ScheduledShiftId);
+                var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
+                await _emailService.SendShiftApproved(assigned, patrol, claimed,approved, shift);
             }
             else
             {
@@ -51,9 +67,20 @@ namespace Amphibian.Patrol.Api.Services
             var ssa = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             if (ssa.Status == ShiftStatus.Claimed && ssa.ClaimedByUserId.HasValue)
             {
+                int assignedUserId = ssa.AssignedUserId;
+                int claimedUserId = ssa.ClaimedByUserId.Value;
+
                 ssa.Status = ShiftStatus.Released;
                 ssa.ClaimedByUserId = null;
                 await _shiftRepository.UpdateScheduledShiftAssignment(ssa);
+
+                //send notification email to assignee
+                var assigned = await _userRepository.GetUser(assignedUserId);
+                var claimed = await _userRepository.GetUser(claimedUserId);
+                var rejected = await _userRepository.GetUser(userId);
+                var shift = await _shiftRepository.GetScheduledShift(ssa.ScheduledShiftId);
+                var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
+                await _emailService.SendShiftRejected(assigned, patrol, claimed, rejected, shift);
             }
             else
             {
@@ -65,12 +92,28 @@ namespace Amphibian.Patrol.Api.Services
         {
             var scheduledShift = await _shiftRepository.GetScheduledShift(scheduledShiftId);
             var scheduledShiftAssignments = await _shiftRepository.GetScheduledShiftAssignmentsForScheduledShift(scheduledShiftId);
+            var patrol = await _patrolRepository.GetPatrol(scheduledShift.PatrolId);
 
-            foreach(var ssa in scheduledShiftAssignments)
+
+            foreach (var ssa in scheduledShiftAssignments)
             {
                 await _shiftRepository.DeleteScheduledShiftAssignment(ssa);
+
+                //send notification to any trainees that the shift has been cancelled
+                var trainees = await _shiftRepository.GetTrainees(ssa.Id);
+                if (trainees.Any())
+                {
+                    var trainer = await _userRepository.GetUser(ssa.AssignedUserId);
+                    var shift = await _shiftRepository.GetScheduledShift(ssa.ScheduledShiftId);
+                    var traineeUsers = await _userRepository.GetUsers(trainees.Select(x => x.TraineeUserId).ToList());
+                    await _emailService.SendTrainerShiftRemoved(trainer, traineeUsers.ToList(), patrol, shift);
+                }
             }
             await _shiftRepository.DeleteScheduledShift(scheduledShift);
+
+            //notify users in the shift
+            var assignedUsers = await _userRepository.GetUsers(scheduledShiftAssignments.Select(x => x.AssignedUserId).ToList());
+            await _emailService.SendShiftCancelled(assignedUsers.ToList(),patrol,scheduledShift);
         }
 
         public async Task ClaimShift(int scheduledShiftAssignmentId, int userId)
@@ -81,6 +124,13 @@ namespace Amphibian.Patrol.Api.Services
                 ssa.Status = ShiftStatus.Claimed;
                 ssa.ClaimedByUserId = userId;
                 await _shiftRepository.UpdateScheduledShiftAssignment(ssa);
+
+                //send notification email to assignee
+                var assigned = await _userRepository.GetUser(ssa.AssignedUserId);
+                var claimed = await _userRepository.GetUser(ssa.ClaimedByUserId.Value);
+                var shift = await _shiftRepository.GetScheduledShift(ssa.ScheduledShiftId);
+                var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
+                await _emailService.SendShiftClaimed(assigned, patrol, claimed, shift);
             }
             else
             {
@@ -96,6 +146,17 @@ namespace Amphibian.Patrol.Api.Services
                 ssa.Status = ShiftStatus.Released;
                 ssa.ClaimedByUserId = null;
                 await _shiftRepository.UpdateScheduledShiftAssignment(ssa);
+
+                //send notification to any trainees that the shift has been released
+                var trainees = await _shiftRepository.GetTrainees(scheduledShiftAssignmentId);
+                if(trainees.Any())
+                {
+                    var trainer = await _userRepository.GetUser(ssa.AssignedUserId);
+                    var shift = await _shiftRepository.GetScheduledShift(ssa.ScheduledShiftId);
+                    var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
+                    var traineeUsers = await _userRepository.GetUsers(trainees.Select(x => x.TraineeUserId).ToList());
+                    await _emailService.SendTrainerShiftReleased(trainer, traineeUsers.ToList(), patrol, shift);
+                }
             }
             else if(ssa.Status == ShiftStatus.Released)
             {
@@ -115,6 +176,8 @@ namespace Amphibian.Patrol.Api.Services
                 ssa.Status = ShiftStatus.Assigned;
                 ssa.ClaimedByUserId = null;
                 await _shiftRepository.UpdateScheduledShiftAssignment(ssa);
+
+                //TODO notify claimed if it's not null?
             }
             else
             {
@@ -139,8 +202,8 @@ namespace Amphibian.Patrol.Api.Services
 
         public async Task<ScheduledShift> ScheduleShift(ScheduledShiftUpdateDto dto)
         {
-            TimeZoneInfo timeZone = await GetTimeZoneForPatrolId(dto.PatrolId);
-            
+            var patrol = await _patrolRepository.GetPatrol(dto.PatrolId);
+
             Group group = null;
             IList<User> groupMembers = null;
             if(dto.GroupId.HasValue)
@@ -152,8 +215,8 @@ namespace Amphibian.Patrol.Api.Services
             Shift shift = null;
             if(dto.StartsAt.HasValue && dto.EndsAt.HasValue && !dto.ShiftId.HasValue)
             {
-                var localizedStart = TimeZoneInfo.ConvertTimeFromUtc(dto.StartsAt.Value, timeZone);
-                var localizedEnd = TimeZoneInfo.ConvertTimeFromUtc(dto.EndsAt.Value, timeZone);
+                var localizedStart = dto.StartsAt.Value.UtcToPatrolLocal(patrol);
+                var localizedEnd = dto.EndsAt.Value.UtcToPatrolLocal(patrol);
                 var shifts = await _shiftRepository.GetShifts(dto.PatrolId, localizedStart.Hour, localizedStart.Minute, localizedEnd.Hour, localizedEnd.Minute);
                 if(shifts.Any())
                 {
@@ -168,12 +231,12 @@ namespace Amphibian.Patrol.Api.Services
                 if(!dto.StartsAt.HasValue)
                 {
                     var start = new DateTime(dto.Day.Value.Year, dto.Day.Value.Month, dto.Day.Value.Day, shift.StartHour, shift.StartMinute, 0, 0, DateTimeKind.Unspecified);
-                    dto.StartsAt = TimeZoneInfo.ConvertTimeToUtc(start, timeZone);
+                    dto.StartsAt = start.UtcFromPatrolLocal(patrol);
                 }
                 if(!dto.EndsAt.HasValue)
                 {
                     var end = new DateTime(dto.Day.Value.Year, dto.Day.Value.Month, dto.Day.Value.Day, shift.EndHour, shift.EndMinute, 0, 0, DateTimeKind.Unspecified);
-                    dto.EndsAt = TimeZoneInfo.ConvertTimeToUtc(end, timeZone);
+                    dto.EndsAt = end.UtcFromPatrolLocal(patrol);
                 }
             }
             else
@@ -185,6 +248,7 @@ namespace Amphibian.Patrol.Api.Services
 
             ScheduledShift scheduledShift = null;
             List<ScheduledShiftAssignment> assignments = null;
+            List<ScheduledShiftAssignment> newAssignments = new List<ScheduledShiftAssignment>();
             if(dto.Id!=default(int))
             {
                 scheduledShift = await _shiftRepository.GetScheduledShift(dto.Id);
@@ -255,6 +319,7 @@ namespace Amphibian.Patrol.Api.Services
                         };
                         assignments.Add(ssa);
                         await _shiftRepository.InsertScheduledShiftAssignment(ssa);
+                        newAssignments.Add(ssa);
                     }
                     else if (existing.Status == ShiftStatus.Claimed && existing.ClaimedByUserId == groupMember.Id)
                     {
@@ -281,6 +346,7 @@ namespace Amphibian.Patrol.Api.Services
                         };
                         assignments.Add(ssa);
                         await _shiftRepository.InsertScheduledShiftAssignment(ssa);
+                        newAssignments.Add(ssa);
                     }
                     else if(existing.Status == ShiftStatus.Claimed && existing.ClaimedByUserId == id)
                     {
@@ -291,6 +357,9 @@ namespace Amphibian.Patrol.Api.Services
                 }
             }
 
+            var newAssignees = await _userRepository.GetUsers(newAssignments.Select(x => x.AssignedUserId).Distinct().ToList());
+            await _emailService.SendShiftAdded(newAssignees.ToList(), patrol, scheduledShift);
+
             //todo: delete things that aren't there?  seems risky if we found the shift by time not id etc   
 
             return await _shiftRepository.GetScheduledShift(scheduledShift.Id);
@@ -298,7 +367,23 @@ namespace Amphibian.Patrol.Api.Services
         public async Task CancelScheduledShiftAssignment(int scheduledShiftAssignmentId)
         {
             var scheduledShiftAssignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
+            var shift = await _shiftRepository.GetScheduledShift(scheduledShiftAssignment.ScheduledShiftId);
+            var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
+
             await _shiftRepository.DeleteScheduledShiftAssignment(scheduledShiftAssignment);
+
+            //notify trainees
+            var trainees = await _shiftRepository.GetTrainees(scheduledShiftAssignment.Id);
+            if (trainees.Any())
+            {
+                var trainer = await _userRepository.GetUser(scheduledShiftAssignment.AssignedUserId);
+                var traineeUsers = await _userRepository.GetUsers(trainees.Select(x => x.TraineeUserId).ToList());
+                await _emailService.SendTrainerShiftRemoved(trainer, traineeUsers.ToList(), patrol, shift);
+            }
+
+            //notify user in the shift
+            var assignedUser = await _userRepository.GetUser(scheduledShiftAssignment.AssignedUserId);
+            await _emailService.SendShiftRemoved(assignedUser, patrol, shift);
         }
         public async Task<ScheduledShiftAssignment> AddScheduledShiftAssignment(int scheduledShiftId, int userId)
         {
@@ -310,11 +395,20 @@ namespace Amphibian.Patrol.Api.Services
                 Status = ShiftStatus.Assigned
             };
             await _shiftRepository.InsertScheduledShiftAssignment(scheduledShiftAssignment);
+
+            //notify assignee
+            var shift = await _shiftRepository.GetScheduledShift(scheduledShiftId);
+            var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
+            var newAssignee = await _userRepository.GetUser(userId);
+            await _emailService.SendShiftAdded(new List<User>() { newAssignee }, patrol, shift);
+
             return scheduledShiftAssignment;
         }
 
         public async Task<IEnumerable<ScheduledShift>> ReplicatePeriod(int patrolId, bool clearTargetPeriodFirst, bool testOnly, DateTime replicatedPeriodStart, DateTime replicatedPeriodEnd, DateTime targetPeriodStart, DateTime targetPeriodEnd)
         {
+            var patrol = await _patrolRepository.GetPatrol(patrolId);
+
             var createdShifts = new List<ScheduledShift>();
 
             if(replicatedPeriodEnd<replicatedPeriodStart)
@@ -326,19 +420,17 @@ namespace Amphibian.Patrol.Api.Services
                 throw new InvalidOperationException("target period cannot intersect replicated period");
             }
 
-            var timeZone = await GetTimeZoneForPatrolId(patrolId);
-
             var replicatedStartLocal = new DateTime(replicatedPeriodStart.Year, replicatedPeriodStart.Month, replicatedPeriodEnd.Day, 0, 0, 0, DateTimeKind.Unspecified);
-            var replicatedStartUtc = TimeZoneInfo.ConvertTimeToUtc(replicatedStartLocal, timeZone);
+            var replicatedStartUtc = replicatedStartLocal.UtcFromPatrolLocal(patrol); // TimeZoneInfo.ConvertTimeToUtc(replicatedStartLocal, timeZone);
             var replicatedEndLocal = new DateTime(replicatedPeriodEnd.Year, replicatedPeriodEnd.Month, replicatedPeriodEnd.Day, 23, 59, 59,999, DateTimeKind.Unspecified);
-            var replicatedEndutc = TimeZoneInfo.ConvertTimeToUtc(replicatedEndLocal, timeZone);
+            var replicatedEndutc = replicatedEndLocal.UtcFromPatrolLocal(patrol); //TimeZoneInfo.ConvertTimeToUtc(replicatedEndLocal, timeZone);
 
             var targetStartLocal = new DateTime(targetPeriodStart.Year, targetPeriodStart.Month, targetPeriodStart.Day, 0, 0, 0, DateTimeKind.Unspecified);
-            var targetStartUtc = TimeZoneInfo.ConvertTimeToUtc(targetStartLocal, timeZone);
+            var targetStartUtc = targetStartLocal.UtcFromPatrolLocal(patrol);// TimeZoneInfo.ConvertTimeToUtc(targetStartLocal, timeZone);
             var targetEndLocal = new DateTime(targetPeriodEnd.Year, targetPeriodEnd.Month, targetPeriodEnd.Day, 23, 59, 59, 999, DateTimeKind.Unspecified);
-            var targetEndUtc = TimeZoneInfo.ConvertTimeToUtc(targetEndLocal, timeZone);
+            var targetEndUtc = targetEndLocal.UtcFromPatrolLocal(patrol);//TimeZoneInfo.ConvertTimeToUtc(targetEndLocal, timeZone);
 
-            if(clearTargetPeriodFirst && !testOnly)
+            if (clearTargetPeriodFirst && !testOnly)
             {
                 var shiftsToRemove = await _shiftRepository.GetScheduledShiftAssignments(patrolId, null, targetStartUtc, targetEndUtc, null);
                 var scheduledShiftIds = shiftsToRemove.Select(x => x.ScheduledShiftId).Distinct().ToList();
@@ -351,8 +443,8 @@ namespace Amphibian.Patrol.Api.Services
             var shiftsToCopy = await _shiftRepository.GetScheduledShiftAssignments(patrolId, null, replicatedStartUtc, replicatedEndutc, null);
             foreach (var shift in shiftsToCopy)
             {
-                shift.StartsAt = TimeZoneInfo.ConvertTimeFromUtc(shift.StartsAt, timeZone);
-                shift.EndsAt = TimeZoneInfo.ConvertTimeFromUtc(shift.EndsAt, timeZone);
+                shift.StartsAt = shift.StartsAt.UtcToPatrolLocal(patrol);
+                shift.EndsAt = shift.EndsAt.UtcToPatrolLocal(patrol);
             }
 
             //group and index by day
@@ -376,8 +468,8 @@ namespace Amphibian.Patrol.Api.Services
                             ShiftId = scheduledShift.First().Shift?.Id,
                             PatrolId = patrolId,
                             Day = scheduledShift.First().Shift != null ? day : (DateTime?)null,
-                            StartsAt = scheduledShift.First().Shift == null ? TimeZoneInfo.ConvertTimeToUtc(new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().StartsAt.Hour, scheduledShift.First().StartsAt.Minute, 0, DateTimeKind.Unspecified), timeZone) : (DateTime?)null,
-                            EndsAt = scheduledShift.First().Shift == null ? TimeZoneInfo.ConvertTimeToUtc(new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().EndsAt.Hour, scheduledShift.First().EndsAt.Minute, 0, DateTimeKind.Unspecified), timeZone) : (DateTime?)null,
+                            StartsAt = scheduledShift.First().Shift == null ? (new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().StartsAt.Hour, scheduledShift.First().StartsAt.Minute, 0, DateTimeKind.Unspecified)).UtcFromPatrolLocal(patrol) : (DateTime?)null,
+                            EndsAt = scheduledShift.First().Shift == null ? (new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().EndsAt.Hour, scheduledShift.First().EndsAt.Minute, 0, DateTimeKind.Unspecified)).UtcFromPatrolLocal(patrol) : (DateTime?)null,
                             AssignUserIds = scheduledShift.Select(x => x.AssignedUser.Id).Distinct().ToList()
                         });
                         createdShifts.Add(createdShift);
@@ -389,8 +481,8 @@ namespace Amphibian.Patrol.Api.Services
                             GroupId = scheduledShift.First().Group?.Id,
                             ShiftId = scheduledShift.First().Shift?.Id,
                             PatrolId = patrolId,
-                            StartsAt = TimeZoneInfo.ConvertTimeToUtc(new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().StartsAt.Hour, scheduledShift.First().StartsAt.Minute, 0, DateTimeKind.Unspecified), timeZone),
-                            EndsAt = TimeZoneInfo.ConvertTimeToUtc(new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().EndsAt.Hour, scheduledShift.First().EndsAt.Minute, 0, DateTimeKind.Unspecified), timeZone),
+                            StartsAt = (new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().StartsAt.Hour, scheduledShift.First().StartsAt.Minute, 0, DateTimeKind.Unspecified)).UtcFromPatrolLocal(patrol),
+                            EndsAt = (new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().EndsAt.Hour, scheduledShift.First().EndsAt.Minute, 0, DateTimeKind.Unspecified)).UtcFromPatrolLocal(patrol),
                         });
                     }
                 }

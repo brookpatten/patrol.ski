@@ -26,6 +26,7 @@ const Home = () => import('@/views/schedule/Home')
 const Assignment = () => import('@/views/schedule/Assignment')
 const MyCalendar = () => import('@/views/schedule/Calendar')
 const ScheduleSwap = () => import('@/views/schedule/ScheduleSwap')
+const Profile = () => import('@/views/schedule/Profile')
 
 // Administration
 const Administration = () => import('@/views/administration/Administration')
@@ -119,6 +120,14 @@ function configRoutes () {
             requiresAuth: true
           },
           props: true
+        },
+        {
+          path: 'profile',
+          name: 'Profile',
+          component: Profile,
+          meta: { 
+            requiresAuth: true
+          }
         },
         {
           path: 'schedule-swap',

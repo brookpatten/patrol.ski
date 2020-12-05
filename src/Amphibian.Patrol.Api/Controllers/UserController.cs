@@ -25,6 +25,7 @@ namespace Amphibian.Patrol.Api.Controllers
         private IPatrolRepository _patrolRepository;
         private IGroupRepository _groupRepository;
         private IPlanRepository _planRepository;
+        private IUserRepository _userRepository;
         
 
         public UserController(ILogger<UserController> logger, IPatrolService patrolService,IUserRepository userRepository,IEmailService emailService
@@ -36,6 +37,7 @@ namespace Amphibian.Patrol.Api.Controllers
             _groupRepository = groupRepository;
             _userService = userService;
             _planRepository = planRepository;
+            _userRepository = userRepository;
         }
 
         [HttpGet]
@@ -68,6 +70,15 @@ namespace Amphibian.Patrol.Api.Controllers
             {
                 return Forbid();
             }
+        }
+
+        [HttpGet]
+        [Route("user")]
+        [Authorize]
+        public async Task<IActionResult> GetSelf()
+        {
+            var user = await _userRepository.GetUser(User.GetUserId());
+            return Ok(user);
         }
 
         [HttpGet]
@@ -186,7 +197,29 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> Save(PatrolUserDto dto)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainUsers())
+            //users can update some things themselves
+            if(dto.Id == User.GetUserId() && !dto.Role.HasValue && dto.Groups==null && dto.PatrolUserId==default(int))
+            {
+                var newEmailUser = await _userRepository.GetUser(dto.Email);
+
+                if (newEmailUser == null || newEmailUser.Id == dto.Id)
+                {
+                    var user = await _userRepository.GetUser(dto.Id);
+
+                    user.FirstName = dto.FirstName;
+                    user.LastName = dto.LastName;
+                    user.Email = dto.Email;
+                    user.AllowEmailNotifications = dto.AllowEmailNotifications;
+                    await _userRepository.UpdateUser(user);
+                }
+                else
+                {
+                    throw new InvalidOperationException("Email in use");
+                }
+                return Ok();
+            }
+            //admins can update some things for people in their patrol
+            else if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainUsers())
             {
                 //ensure the groups specified match the specified patrol
                 var validGroups = await _groupRepository.GetGroupsForPatrol(dto.PatrolId);

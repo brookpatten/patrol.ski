@@ -21,6 +21,10 @@
             <label for="announcement.expireAt">Expire</label>
             <datepicker v-model="announcement.expireAt" input-class="form-control" calendar-class="card"></datepicker><br/>
 
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="announcement.emailed"/>
+            <label for="announcement.emailed">Email to entire patrol</label>
+            <br/>
+
             <quill-editor v-model="announcement.announcementMarkdown"></quill-editor>
         </CCardBody>
         <CCardFooter>
@@ -65,7 +69,8 @@ export default {
             subject:'',
             announcementMarkdown:'',
             announcementHtml:'',
-            patrolId: this.selectedPatrolId
+            patrolId: this.selectedPatrolId,
+            emailed:false
           };
         }
         else{

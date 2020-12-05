@@ -251,6 +251,10 @@ namespace Amphibian.Patrol.Api.Repositories
                 .ConfigureAwait(false);
             return trainee;
         }
+        public Task<IEnumerable<Trainee>> GetTrainees(int scheduledShiftAssignmentId)
+        {
+            return _connection.SelectAsync<Trainee>(x => x.ScheduledShiftAssignmentId == scheduledShiftAssignmentId);
+        }
 
         public async Task<Trainee> GetTrainee(int id)
         {

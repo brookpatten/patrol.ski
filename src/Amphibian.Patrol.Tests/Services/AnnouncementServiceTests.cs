@@ -20,6 +20,9 @@ namespace Amphibian.Patrol.Tests.Services
     {
         private AnnouncementService _announcementService;
         private Mock<IAnnouncementRepository> _announcementRepositoryMock;
+        private Mock<IPatrolRepository> _patrolRepositoryMock;
+        private Mock<IUserRepository> _userRepositoryMock;
+        private Mock<IEmailService> _emailService;
         private IMapper _mapper;
         private Mock<ILogger<AnnouncementService>> _loggerMock;
         private Mock<ISystemClock> _systemClockMock;
@@ -31,8 +34,11 @@ namespace Amphibian.Patrol.Tests.Services
             _mapper = DtoMappings.GetMapperConfiguration().CreateMapper();
             _loggerMock = new Mock<ILogger<AnnouncementService>>();
             _systemClockMock = new Mock<ISystemClock>();
+            _patrolRepositoryMock = new Mock<IPatrolRepository>();
+            _userRepositoryMock = new Mock<IUserRepository>();
+            _emailService = new Mock<IEmailService>();
 
-            _announcementService = new AnnouncementService(_announcementRepositoryMock.Object, _loggerMock.Object, _mapper,_systemClockMock.Object);
+            _announcementService = new AnnouncementService(_announcementRepositoryMock.Object, _loggerMock.Object, _mapper,_systemClockMock.Object,_emailService.Object,_patrolRepositoryMock.Object,_userRepositoryMock.Object);
         }
 
         [Test]

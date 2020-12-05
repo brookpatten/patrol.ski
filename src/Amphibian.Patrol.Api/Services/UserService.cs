@@ -126,22 +126,32 @@ namespace Amphibian.Patrol.Api.Services
 
         public async Task UpdatePatrolUser(PatrolUserDto dto)
         {
-            var user = await _userRepository.GetUser(dto.Id);
-            user.Email = dto.Email;
-            user.FirstName = dto.FirstName;
-            user.LastName = dto.LastName;
-            await _userRepository.UpdateUser(user);
+            var newEmailUser = await _userRepository.GetUser(dto.Email);
 
-            var patrolUser = await _patrolRepository.GetPatrolUser(dto.Id, dto.PatrolId);
-            patrolUser.Role = dto.Role;
-            await _patrolRepository.UpdatePatrolUser(patrolUser);
+            if (newEmailUser == null || newEmailUser.Id == dto.Id)
+            {
+                var user = await _userRepository.GetUser(dto.Id);
+                user.Email = dto.Email;
+                user.FirstName = dto.FirstName;
+                user.LastName = dto.LastName;
+                await _userRepository.UpdateUser(user);
+                //note admins cannot change notification preferences for users, on purpose
 
-            var existingGroupUsers = await _groupRepository.GetGroupUsersForUser(dto.PatrolId, dto.Id);
+                var patrolUser = await _patrolRepository.GetPatrolUser(dto.Id, dto.PatrolId);
+                patrolUser.Role = dto.Role;
+                await _patrolRepository.UpdatePatrolUser(patrolUser);
 
-            await existingGroupUsers.DifferenceWith(dto.Groups
-            , (e, c) => e.GroupId == c.Id
-            , c => _groupRepository.InsertGroupUser(new GroupUser() { UserId = dto.Id, GroupId = c.Id })
-            , e => _groupRepository.DeleteGroupUser(e));
+                var existingGroupUsers = await _groupRepository.GetGroupUsersForUser(dto.PatrolId, dto.Id);
+
+                await existingGroupUsers.DifferenceWith(dto.Groups
+                , (e, c) => e.GroupId == c.Id
+                , c => _groupRepository.InsertGroupUser(new GroupUser() { UserId = dto.Id, GroupId = c.Id })
+                , e => _groupRepository.DeleteGroupUser(e));
+            }
+            else
+            {
+                throw new InvalidOperationException("Email in use");
+            }
         }
     }
 }

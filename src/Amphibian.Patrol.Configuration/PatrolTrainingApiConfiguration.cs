@@ -128,6 +128,7 @@ namespace Amphibian.Patrol.Configuration
         public string SendAllEmailsTo { get; set; }
         public string FromName { get; set; }
         public string FromEmail { get; set; }
+        public string ProfileRoute { get; set; }
     }
 
 }

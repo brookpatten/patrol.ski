@@ -21,6 +21,7 @@
     <None Remove="Scripts\0013-AddAnnouncements.sql" />
     <None Remove="Scripts\0014-AddEvents.sql" />
     <None Remove="Scripts\0015-Scheduling.sql" />
+    <None Remove="Scripts\0016-EmailAnnouncementsAndEvents.sql" />
     <None Remove="Scripts\0999-Indexes.sql" />
     <None Remove="Scripts\1001-TestData.sql" />
   </ItemGroup>
@@ -41,6 +42,7 @@
     <EmbeddedResource Include="Scripts\0014-AddEvents.sql" />
     <EmbeddedResource Include="Scripts\0013-AddAnnouncements.sql" />
     <EmbeddedResource Include="Scripts\0015-Scheduling.sql" />
+    <EmbeddedResource Include="Scripts\0016-EmailAnnouncementsAndEvents.sql" />
     <EmbeddedResource Include="Scripts\0999-Indexes.sql" />
     <EmbeddedResource Include="Scripts\1001-TestData.sql" />
   </ItemGroup>

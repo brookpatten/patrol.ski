@@ -4,27 +4,55 @@
       <CCol md="12" lg="12">
         <CCard>
           <CCardBody>
-            <CJumbotron
-                color="dark"
-                text-color="white"
-                border-color="dark"
-              >
+            <CRow>
+              <CCol md="8">
                 <h1 class="display-4">Patrol<span style="color:#8C0C00">.Ski</span></h1>
                 <p class="lead">
                   An app for ski patrol.  Free for NSP patrols.
                 </p>
-            </CJumbotron>
+              </CCol>
+              <CCol md="4">
+                <CButtonGroup class="float-right">
+                  <CButton
+                    color="success"
+                    :to="{name:'Register'}"
+                  > Register
+                  </CButton>
+                  <CButton color="info" :to="{name:'TestDrive'}">Test Drive</CButton>
+                </CButtonGroup>
+              </CCol>
+            </CRow>
           </CCardBody>
-          <CCardFooter>
-            <CButtonGroup class="float-right">
-                <CButton
-                  color="success"
-                  :to="{name:'Register'}"
-                > Register Now
-                </CButton>
-                <CButton color="info" :to="{name:'TestDrive'}">Test Drive</CButton>
-              </CButtonGroup>
-          </CCardFooter>
+        </CCard>
+      </CCol>
+    </CRow>
+    <CRow class="justify-content-center">
+      <CCol md="8" lg="8">
+        <CCard>
+          <CCardBody>
+            <CRow>
+              <CCol md="4" lg="4">
+                <img src="brook.jpg" alt="author's profile pic" class="img-fluid rounded"/>
+              </CCol>
+              <CCol>
+                  <p>Hi, My name is Brook and I am a volunteer ski patroller in Central division, Ohio region</p>
+                  <p>I'm fairly new to patrolling, but I'm an experienced software developer.  After my first season I had 
+                    some ideas for tools I could make that might be helpful to volunteer ski patrols like ours.  
+                    I quickly found that patrollers I spoke to online had different ideas about what kinds of apps their patrol needed.
+                  </p>
+                  <p>
+                    From those ideas this project has grown.  It now includes OET Training plans and trainee progress tracking, trainer/trainee signups, 
+                    scheduling, shift swapping, event calendar, announcements, and email notifications for all of the above.  None of these features are forced on you, if you're only interested in one 
+                    part, just use that part and turn the rest off.
+                  </p>
+                  <p>
+                    I intend for this to be a free app for volunteer patrols, and for the source code to be freely available as well.
+                    If you have questions, comments, problems, or feature requests feel free to shoot me an email help@patrol.ski or visit the
+                    <a href='https://github.com/brookpatten/patrol.ski'> GitHub project</a>
+                  </p>
+              </CCol>
+            </CRow>
+          </CCardBody>
         </CCard>
       </CCol>
     </CRow>

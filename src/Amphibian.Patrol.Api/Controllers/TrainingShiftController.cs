@@ -14,6 +14,7 @@ using Amphibian.Patrol.Api.Repositories;
 using Microsoft.AspNetCore.Authentication;
 using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Infrastructure;
+using Amphibian.Patrol.Api.Services;
 
 namespace Amphibian.Patrol.Api.Controllers
 {
@@ -24,13 +25,17 @@ namespace Amphibian.Patrol.Api.Controllers
         private readonly IShiftRepository _shiftRepository;
         private readonly IPatrolRepository _patrolRepository;
         private readonly ISystemClock _clock;
+        private readonly IEmailService _emailService;
+        private readonly IUserRepository _userRepository;
         
-        public TrainingShiftController(ILogger<TrainingShiftController> logger, IShiftRepository shiftRepository,IPatrolRepository patrolRepository, ISystemClock clock)
+        public TrainingShiftController(ILogger<TrainingShiftController> logger, IShiftRepository shiftRepository,IPatrolRepository patrolRepository, ISystemClock clock, IEmailService emailService, IUserRepository userRepository)
         {
             _logger = logger;
             _shiftRepository = shiftRepository;
             _patrolRepository = patrolRepository;
             _clock = clock;
+            _emailService = emailService;
+            _userRepository = userRepository;
         }
 
         [HttpGet]
@@ -69,6 +74,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> Commit(int scheduledShiftAssignmentId)
         {
+            //todo: move to service
             var shiftTrainer = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             var trainingShift = await _shiftRepository.GetScheduledShift(shiftTrainer.ScheduledShiftId);
             var patrols = await _patrolRepository.GetPatrolsForUser(this.User.GetUserId());
@@ -81,6 +87,13 @@ namespace Amphibian.Patrol.Api.Controllers
                     TraineeUserId = this.User.GetUserId()
                 };
                 await _shiftRepository.InsertTrainee(trainee);
+
+                //send notification to trainer
+                var trainer = await _userRepository.GetUser(shiftTrainer.AssignedUserId);
+                var patrol = await _patrolRepository.GetPatrol(trainingShift.PatrolId);
+                var traineeUser = await _userRepository.GetUser(trainee.TraineeUserId);
+                await _emailService.SendTraineeSignup(trainer, traineeUser, patrol, trainingShift);
+
                 return Ok();
             }
             else
@@ -101,6 +114,15 @@ namespace Amphibian.Patrol.Api.Controllers
             if (trainee.TraineeUserId == this.User.GetUserId())
             {
                 await _shiftRepository.DeleteTrainee(trainee);
+
+                //send notification to trainer
+                var assignment = await _shiftRepository.GetScheduledShiftAssignment(trainee.ScheduledShiftAssignmentId);
+                var shift = await _shiftRepository.GetScheduledShift(assignment.ScheduledShiftId);
+                var trainer = await _userRepository.GetUser(assignment.AssignedUserId);
+                var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
+                var traineeUser = await _userRepository.GetUser(trainee.TraineeUserId);
+                await _emailService.SendTraineeCancel(trainer, traineeUser, patrol, shift);
+
                 return Ok();
             }
             else

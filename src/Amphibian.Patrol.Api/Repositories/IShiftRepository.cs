@@ -18,6 +18,7 @@ namespace Amphibian.Patrol.Api.Repositories
         Task<Trainee> InsertTrainee(Trainee trainee);
         Task DeleteTrainee(Trainee trainee);
         Task<Trainee> GetTrainee(int id);
+        Task<IEnumerable<Trainee>> GetTrainees(int scheduledShiftAssignmentId);
         
         //scheduled shifts
         Task<ScheduledShift> GetScheduledShift(int id);

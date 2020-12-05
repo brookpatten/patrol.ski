@@ -16,5 +16,6 @@ namespace Amphibian.Patrol.Api.Models
         public DateTime CreatedAt { get; set; }
         public DateTime? PostAt { get; set; }
         public DateTime? ExpireAt { get; set; }
+        public bool Emailed { get; set; }
     }
 }

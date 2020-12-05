@@ -225,7 +225,7 @@ namespace Amphibian.Patrol.Api.Services
             await CreateDefaultInitialSetup(patrol.Id);
 
             //trainer setup
-            var skiTrainer = new User() { FirstName = "Jim", LastName = "Ski", Email = $"Jim.{Guid.NewGuid()}@patrol.ski" };
+            var skiTrainer = new User() { FirstName = "Jim", LastName = "Ski", Email = $"Jim.{Guid.NewGuid()}@patrol.ski",AllowEmailNotifications=false };
             await _userRepository.InsertUser(skiTrainer);
             var skiTrainerPatrolUser = new PatrolUser()
             {
@@ -234,7 +234,7 @@ namespace Amphibian.Patrol.Api.Services
             };
             await _patrolRepository.InsertPatrolUser(skiTrainerPatrolUser);
 
-            var snowboardTrainer = new User() { FirstName = "Stephen", LastName = "Snowboard", Email = $"Stephen.{Guid.NewGuid()}@patrol.ski" };
+            var snowboardTrainer = new User() { FirstName = "Stephen", LastName = "Snowboard", Email = $"Stephen.{Guid.NewGuid()}@patrol.ski", AllowEmailNotifications = false };
             await _userRepository.InsertUser(snowboardTrainer);
             var snowboardTrainerPatrolUser = new PatrolUser()
             {
@@ -243,7 +243,7 @@ namespace Amphibian.Patrol.Api.Services
             };
             await _patrolRepository.InsertPatrolUser(snowboardTrainerPatrolUser);
 
-            var tobogganTrainer = new User() { FirstName = "Vern", LastName = "Toboggan", Email = $"Vern.{Guid.NewGuid()}@patrol.ski" };
+            var tobogganTrainer = new User() { FirstName = "Vern", LastName = "Toboggan", Email = $"Vern.{Guid.NewGuid()}@patrol.ski", AllowEmailNotifications = false };
             await _userRepository.InsertUser(tobogganTrainer);
             var tobogganTrainerPatrolUser = new PatrolUser()
             {
@@ -297,8 +297,9 @@ namespace Amphibian.Patrol.Api.Services
             {
                 var skiTrainee = trainees[i];
                 skiTrainee.Id = 0;
-                skiTrainee.Email = skiTrainee.FirstName + "." + skiTrainee.LastName + ".demo." + Guid.NewGuid().ToString() + "@patrol.training";
+                skiTrainee.Email = skiTrainee.FirstName + "." + skiTrainee.LastName + ".demo." + Guid.NewGuid().ToString() + "@patrol.ski";
                 skiTrainee.PasswordHashIterations = null;
+                skiTrainee.AllowEmailNotifications = false;
                 await _userRepository.InsertUser(skiTrainee);
 
                 var patrolUser = new PatrolUser()
@@ -689,6 +690,7 @@ namespace Amphibian.Patrol.Api.Services
             var user = users.First();
             user.Email = user.FirstName + "." + user.LastName + ".demo." + Guid.NewGuid() + "@patrol.ski";
             user.PasswordHashIterations = null;
+            user.AllowEmailNotifications = false;
 
             await _userRepository.InsertUser(user);
 

@@ -18,7 +18,7 @@
     <CDropdownHeader tag="div" class="text-center" color="light">
       <strong>{{user.firstName}} {{user.lastName}}</strong>
     </CDropdownHeader>
-    <CDropdownItem>
+    <CDropdownItem :to="{name:'Profile'}">
       <CIcon name="cil-user" /> Profile
     </CDropdownItem>
     <CDropdownItem v-on:click="logout">

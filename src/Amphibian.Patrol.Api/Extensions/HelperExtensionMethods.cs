@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Security.Principal;
+using TimeZoneConverter;
+using SendGrid.Helpers.Mail;
+using Amphibian.Patrol.Api.Models;
 
 namespace Amphibian.Patrol.Api.Extensions
 {
@@ -15,6 +18,59 @@ namespace Amphibian.Patrol.Api.Extensions
         {
             var id = principal.FindFirst(ClaimTypes.NameIdentifier).Value;
             return int.Parse(id);
+        }
+
+        public static TimeZoneInfo LocalTimeZone(this Models.Patrol patrol)
+        {
+            TimeZoneInfo timeZone;
+            if (!string.IsNullOrEmpty(patrol.TimeZone))
+            {
+                timeZone = TZConvert.GetTimeZoneInfo(patrol.TimeZone);
+            }
+            else
+            {
+                timeZone = TZConvert.GetTimeZoneInfo("Eastern Standard Time");
+            }
+            return timeZone;
+        }
+
+        public static DateTime UtcToPatrolLocal(this DateTime utc,Models.Patrol patrol)
+        {
+            return TimeZoneInfo.ConvertTimeFromUtc(utc, patrol.LocalTimeZone());
+        }
+
+        public static DateTime? UtcToPatrolLocal(this DateTime? utc, Models.Patrol patrol)
+        {
+            if (utc.HasValue)
+            {
+                return utc.Value.UtcToPatrolLocal(patrol);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static DateTime UtcFromPatrolLocal(this DateTime local, Models.Patrol patrol)
+        {
+            return TimeZoneInfo.ConvertTimeToUtc(local, patrol.LocalTimeZone());
+        }
+
+        public static DateTime? UtcFromPatrolLocal(this DateTime? local, Models.Patrol patrol)
+        {
+            if (local.HasValue)
+            {
+                return local.Value.UtcFromPatrolLocal(patrol);
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        public static EmailAddress ToEmailAddress(this User user)
+        {
+            return new EmailAddress(user.Email, user.GetFullName());
         }
 
         public static async Task<EnumberableDiff<T,K>> DifferenceWith<T,K>(
