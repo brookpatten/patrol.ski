@@ -47,6 +47,7 @@ const Events = () => import('@/views/administration/Events')
 const EditEvent = () => import('@/views/administration/EditEvent')
 const Shifts = () => import('@/views/administration/Shifts')
 const EditShift = () => import('@/views/administration/EditShift')
+const SwapApproval = () => import('@/views/administration/SwapApproval')
 
 Vue.use(Router)
 
@@ -297,7 +298,15 @@ function configRoutes () {
                 requiresAuth: true
               },
               props: true
-            }
+            },
+            {
+              path: 'swap-approval',
+              name: 'SwapApproval',
+              component: SwapApproval,
+              meta: {
+                requiresAuth: true
+              }
+            },
           ]
         }
       ]

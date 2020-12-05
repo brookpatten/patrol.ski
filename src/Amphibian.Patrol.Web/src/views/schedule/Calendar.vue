@@ -22,11 +22,11 @@
                         :enable-date-selection="false"
                         @click-event="clickEvent"
                         @click-date="clickDate">
-                        <calendar-view-header
+                        <calendar-header
                             slot="header"
                             slot-scope="t"
                             :header-props="t.headerProps"
-                            @input="setShowDate" />
+                            @input="setShowDate"/>
                         </calendar-view>
                     </CCol>
                 </CRow>
@@ -245,7 +245,7 @@
 <script>
 import { freeSet } from '@coreui/icons'
 
-import { CalendarView, CalendarViewHeader } from "vue-simple-calendar"
+import { CalendarView } from "vue-simple-calendar"
 // The next two lines are processed by webpack. If you're using the component without webpack compilation,
 // you should just create <link> elements for these. Both are optional, you can create your own theme if you prefer.
 //require("vue-simple-calendar/static/css/default.css")
@@ -255,11 +255,13 @@ import Datepicker from 'vuejs-datepicker';
 import VueCtkDateTimePicker from 'vue-ctk-date-time-picker';
 import 'vue-ctk-date-time-picker/dist/vue-ctk-date-time-picker.css';
 
+import CalendarHeader from './CalendarHeader';
+
 export default {
   name: 'Calendar',
   freeSet,
   components: {  CalendarView,
-            CalendarViewHeader,
+            CalendarHeader,
             Datepicker,
             VueCtkDateTimePicker
   },

@@ -35,6 +35,7 @@
         </CSidebarNavTitle>
         <CSidebarNavItem name='Calendar' :to='{name:"Calendar"}' icon='cil-calendar' />
         <CSidebarNavItem v-if="selectedPatrol.enableShiftSwaps" name='Schedule Swap' :to='{name:"ScheduleSwap"}' icon='cil-list' />
+        <CSidebarNavItem v-if="selectedPatrol.enableShiftSwaps" name='Swap Approval' :to='{name:"SwapApproval"}' icon='cil-list' />
         <CSidebarNavItem name='Shifts' :to='{name:"Shifts"}' icon='cil-indent-increase' />
       </template>
 
