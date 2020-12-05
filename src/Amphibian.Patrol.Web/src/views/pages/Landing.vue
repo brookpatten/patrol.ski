@@ -57,101 +57,79 @@
       </CCol>
     </CRow>
     <CRow>
-      <CCol md="6" lg="6">
+      <CCol md="6">
         <CCard>
-          <CCardHeader>For Administrators</CCardHeader>
+          <CCardHeader>
+            Scheduling
+          </CCardHeader>
           <CCardBody>
-              <ul>
-                <li><p>Create your schedule quickly.  Schedule every shift individually or create "cookie cutter" shifts</p>
-                  <img src="feature-schedule-calendar.png" alt="announcement screenshot" style="width:300px" @click="openGallery(12)"/>
-                </li>
-                <li><p>Allow your patrol to swap & pick up shifts, but you retain final approval</p>
-                  <img src="feature-schedule-swap.png" alt="announcement screenshot" style="width:300px" @click="openGallery(15)"/>
-                </li>
-                <li><p>Quickly duplicate your schedule out of any period of time desired</p></li>
-                <li><p>Create announcements and calendar events and communicate them to your patrol</p>
-                  <img src="feature-announcement.png" alt="announcement screenshot" style="width:300px" @click="openGallery(0)"/>
-                </li>
-                <li><p>Assign training to members of your patrol and track their progress</p>
-                  <img src="feature-assignments.png" alt="announcement screenshot" style="width:300px" @click="openGallery(2)"/>
-                </li>
-                <li><p>Manage multiple simultaneous training plans in a structured, consistent way</p>
-                  <img src="feature-training-plans.png" alt="announcement screenshot" style="width:300px" @click="openGallery(16)"/>
-                </li>
-                <li><p>Choose from an existing library of training plans, customize them, or start from scratch.</p>
-                  <img src="feature-edit-plan.png" alt="announcement screenshot" style="width:300px" @click="openGallery(6)"/>
-                </li>
-                <li><p>Fine grained control of which trainers can sign off on each requirement</p>
-                  <img src="feature-edit-section.png" alt="announcement screenshot" style="width:300px" @click="openGallery(7)"/>
-                </li>
-                <li><p>Allow trainees to quickly find trainers that can help them by joining trainer credentials, training plans, and the schedule</p>
-                  <img src="feature-available-training-shifts.png" alt="announcement screenshot" style="width:300px" @click="openGallery(3)"/>
-                </li>
-                <li><p>Manage training group sizes and help trainees find the trainers who can best help them.</p></li>
-                <li><p>Use all of the above or just the parts you want.  Disable the parts you don't want</p>
-                  <img src="feature-edit-patrol.png" alt="announcement screenshot" style="width:300px" @click="openGallery(5)"/>
-                </li>
-                <li><p>Track time, missed/late shifts from the built in timeclock (Coming soon)</p></li>
-              </ul>
+            <ul>
+              <li><p>Create your schedule quickly.  Schedule every shift individually or create "cookie cutter" shifts</p>
+                <img src="feature-schedule-calendar.png" alt="announcement screenshot" style="width:300px" @click="openGallery(12)"/>
+              </li>
+              <li><p>Allow your patrol to swap & pick up shifts, but you retain final approval</p>
+                <img src="feature-schedule-swap.png" alt="announcement screenshot" style="width:300px" @click="openGallery(15)"/>
+              </li>
+              <li><p>Quickly duplicate your schedule out of any period of time desired</p></li>
+            </ul>
           </CCardBody>
         </CCard>
       </CCol>
-      <CCol md="6" lg="6">
+      <CCol md="6">
         <CCard>
-          <CCardHeader>For Patrollers</CCardHeader>
+          <CCardHeader>
+            Training
+          </CCardHeader>
           <CCardBody>
-              <ul>
-                <li><p>Easily access the schedule.</p>
-                  <img src="feature-schedule-calendar.png" alt="announcement screenshot" style="width:300px" @click="openGallery(12)"/>
-                </li>
-                <li><p>Release shifts you need someone else to cover, Claim shifts you would like to cover.</p>
-                  <img src="feature-schedule-swap.png" alt="announcement screenshot" style="width:300px" @click="openGallery(15)"/>
-                </li>
-                <li><p>Keep in touch with announcements and patrol events</p>
-                  <img src="feature-announcement.png" alt="announcement screenshot" style="width:300px" @click="openGallery(0)"/>
-                </li>
-                <li><p>Stay aware of required training, frosties etc</p>
-                  <img src="feature-my-assignments.png" alt="announcement screenshot" style="width:300px" @click="openGallery(9)"/>
-                </li>
-                <li><p>For Trainers, allow trainees to "sign up" to train with you on your shift.  Automatically notify them if your shift is cancelled or swapped.</p>
-                </li>
-              </ul>
+            <ul>
+              <li><p>Assign training to members of your patrol and track their progress</p>
+                <img src="feature-assignments.png" alt="announcement screenshot" style="width:300px" @click="openGallery(2)"/>
+              </li>
+              <li><p>Manage multiple simultaneous training plans in a structured, consistent way</p>
+                <img src="feature-training-plans.png" alt="announcement screenshot" style="width:300px" @click="openGallery(16)"/>
+              </li>
+              <li><p>Choose from an existing library of training plans, customize them, or start from scratch.</p>
+                <img src="feature-edit-plan.png" alt="announcement screenshot" style="width:300px" @click="openGallery(6)"/>
+              </li>
+              <li><p>Fine grained control of which trainers can sign off on each requirement</p>
+                <img src="feature-edit-section.png" alt="announcement screenshot" style="width:300px" @click="openGallery(7)"/>
+              </li>
+              <li><p>Allow trainees to quickly find trainers that can help them by joining trainer credentials, training plans, and the schedule</p>
+                <img src="feature-available-training-shifts.png" alt="announcement screenshot" style="width:300px" @click="openGallery(3)"/>
+              </li>
+              <li><p>Manage training group sizes and help trainees find the trainers who can best help them.</p></li>
+            </ul>
           </CCardBody>
         </CCard>
       </CCol>
     </CRow>
     <CRow>
-      <CCol md="6" lg="6">
+      <CCol md="6">
         <CCard>
-          <CCardHeader>For Trainees</CCardHeader>
+          <CCardHeader>
+            Communication
+          </CCardHeader>
           <CCardBody>
-              <ul>
-                <li><p>Easily check progress on training assignments</p>
-                  <img src="feature-assignment.png" alt="announcement screenshot" style="width:300px" @click="openGallery(1)"/>
+            <ul>
+                <li><p>Create announcements and calendar events, pin them to the dashboard and email the entire patrol</p>
+                  <img src="feature-announcement.png" alt="announcement screenshot" style="width:300px" @click="openGallery(0)"/>
                 </li>
-                <li><p>Receive notifications when sign-offs are completed</p></li>
-                <li><p>View upcoming shifts filtered by which trainers can help with your specific outstanding training requirements</p>
-                  <img src="feature-available-training-shifts.png" alt="announcement screenshot" style="width:300px" @click="openGallery(3)"/>
-                </li>
-                <li><p>Sign up to train with trainers and let them know you're coming</p></li>
-                <li><p>Receive a notification if a trainer releases a shift where you had planned to train with them</p></li>
-              </ul>
+            </ul>
           </CCardBody>
         </CCard>
       </CCol>
-      <CCol md="6" lg="6">
+      <CCol md="6">
         <CCard>
-          <CCardHeader>For Everybody</CCardHeader>
+          <CCardHeader>
+            Mobile friendly, Notifications for everything
+          </CCardHeader>
           <CCardBody>
-              <ul>
+            <ul>
                 <li><p>Receive email notifications for events that effect you directly</p></li>
                 <li><p>Use the app with a PC, tablet, or mobile</p>
-                  <img src="feature-mobile.png" alt="announcement screenshot" style="height:200px" @click="openGallery(20)"/>
+                  <img src="feature-mobile.png" alt="announcement screenshot" style="height:200px" @click="openGallery(19)"/>
                 </li>
-                <li><p>Log in with google, microsoft, or other account (Coming soon)</p></li>
-                <li><p>Clock in/out of your shift (Coming soon)</p></li>
-                <li><p>View "Who's On" to quickly see who is currently clocked in</p></li>
-              </ul>
+            </ul>
           </CCardBody>
         </CCard>
       </CCol>
