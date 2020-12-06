@@ -48,6 +48,9 @@
               <label for="editedPatrol.enableShiftSwaps">Shift Exchange</label>
               <br/>
             </template>
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableTimeClock"/>
+            <label for="editedPatrol.enableTimeClock">Time Clock</label>
+            <br/>
 
 
         </CCardBody>
@@ -70,7 +73,7 @@ export default {
   props: [],
   data () {
     return {
-      editedPatrol:{id:0,name:'',timeZone:'',enableTraining:false,enableAnnouncements:false,enableEvents:false},
+      editedPatrol:{id:0,name:'',timeZone:'',enableTraining:false,enableAnnouncements:false,enableEvents:false,enableScheduling:false,enableShiftSwaps:false,enableTimeClock:false},
       validationMessage:'',
       validationErrors:{},
       validated:false,
@@ -99,6 +102,7 @@ export default {
         this.editedPatrol.enableEvents = this.selectedPatrol.enableEvents;
         this.editedPatrol.enableScheduling = this.selectedPatrol.enableScheduling;
         this.editedPatrol.enableShiftSwaps = this.selectedPatrol.enableScheduling && this.selectedPatrol.enableShiftSwaps;
+        this.editedPatrol.enableTimeClock = this.selectedPatrol.enableTimeClock;
         this.editedPatrol.timeZone = this.selectedPatrol.timeZone;
     },
     getTimeZones() {
