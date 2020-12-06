@@ -1,5 +1,10 @@
 <template>
     <div>
+        <CAlert color="warning" v-if="!selectedPatrol.enableAnnouncements && !selectedPatrol.enableEvents && !selectedPatrol.enableScheduling && !selectedPatrol.enableTraining && !selectedPatrol.enableShiftSwaps">
+            You have disabled all the the functionality<br/>
+            <CButton color="link" :to="{name:'EditPatrol'}">You might want to turn at least one function on.</CButton>
+        </CAlert>
+
         <template v-if="selectedPatrol.enableAnnouncements">
             <CRow v-for="announcement in announcements" :key="'announcement-'+announcement.id">
                 <CCol>

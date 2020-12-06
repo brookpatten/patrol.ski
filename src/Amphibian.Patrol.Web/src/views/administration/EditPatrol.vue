@@ -19,13 +19,14 @@
             :invalidFeedback="validationErrors.Name ? validationErrors.Name.join() : 'Invalid'"
             :isValid="validated ? validationErrors.Name==null : null"
             />
-            <CInput
+            
+            <CSelect
             label="TimeZone"
-            v-model="editedPatrol.timeZone"
-            disabled
-            :invalidFeedback="validationErrors.timeZone ? validationErrors.timeZone.join() : 'Invalid'"
-            :isValid="validated ? validationErrors.timeZone==null : null"
+            :value.sync="editedPatrol.timeZone"
+            :options="timeZones"
+            placeholder="None"
             />
+
             <strong>Enabled Functionality</strong>
             <br/>
             
@@ -69,10 +70,11 @@ export default {
   props: [],
   data () {
     return {
-      editedPatrol:{id:0,name:'',enableTraining:false,enableAnnouncements:false,enableEvents:false},
+      editedPatrol:{id:0,name:'',timeZone:'',enableTraining:false,enableAnnouncements:false,enableEvents:false},
       validationMessage:'',
       validationErrors:{},
-      validated:false
+      validated:false,
+      timeZones:[]
     }
   },
   methods: {
@@ -97,8 +99,18 @@ export default {
         this.editedPatrol.enableEvents = this.selectedPatrol.enableEvents;
         this.editedPatrol.enableScheduling = this.selectedPatrol.enableScheduling;
         this.editedPatrol.enableShiftSwaps = this.selectedPatrol.enableScheduling && this.selectedPatrol.enableShiftSwaps;
-        this.editedPatro.timeZone = this.selectedPatrol.timeZone;
-    }
+        this.editedPatrol.timeZone = this.selectedPatrol.timeZone;
+    },
+    getTimeZones() {
+      this.$store.dispatch('loading','Loading...');
+        this.$http.get('timezones')
+          .then(response => {
+              this.timeZones = response.data;
+              console.log(response);
+          }).catch(response => {
+              console.log(response);
+          }).finally(response=>this.$store.dispatch('loadingComplete'));
+    },
   },
   computed: {
     selectedPatrolId: function () {
@@ -114,6 +126,7 @@ export default {
     }
   },
   mounted: function(){
+     this.getTimeZones();
      this.load();
   }
 }

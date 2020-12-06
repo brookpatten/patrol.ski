@@ -15,9 +15,9 @@ namespace Amphibian.Patrol.Api.Models
     {
         public int Id { get; set; }
         public int ScheduledShiftId { get; set; }
-        public int AssignedUserId { get; set; }
+        public int? AssignedUserId { get; set; }
         public int? ClaimedByUserId { get; set; }
-        public int OriginalAssignedUserId { get; set; }
+        public int? OriginalAssignedUserId { get; set; }
         public ShiftStatus Status { get; set; }
     }
 }

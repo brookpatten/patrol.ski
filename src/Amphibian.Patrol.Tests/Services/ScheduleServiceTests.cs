@@ -628,7 +628,7 @@ namespace Amphibian.Patrol.Tests.Services
 
             DateTime day = new DateTime(2001, 1, 1);
 
-            var assignUserIds = new List<int>() { 1 };
+            var assignUserIds = new List<int?>() { 1 };
 
             _shiftRepositoryMock.Setup(x => x.InsertScheduledShift(It.Is<ScheduledShift>(y => y.GroupId == null
             && y.ShiftId == shift.Id

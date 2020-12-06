@@ -61,8 +61,8 @@ export default {
     return {
       scheduledShifts: [],
       scheduledShiftFields:[
-          {key:'name',label:'Name',sortable:true},
           {key:'date',label:'Date'},
+          {key:'name',label:'',sortable:false},
           {key:'assignee',label:'From => To'}
       ]
     }

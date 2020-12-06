@@ -60,11 +60,11 @@ namespace Amphibian.Patrol.Api.Repositories
 	                    ts.Id = st.scheduledshiftid
 	                    and ts.PatrolId = @patrolId
 	                    and ts.StartsAt > @after
-                    inner join users au on 
+                    left join users au on 
 	                    au.id=st.assigneduserid
                     left join users cbu on 
 	                    cbu.id=st.claimedbyuserid
-                    inner join users ou on 
+                    left join users ou on 
 	                    ou.id=st.originalassigneduserid
                     --join assignments to exclude trainers who cannot help
                     inner join assignments asmnts on 
@@ -155,11 +155,11 @@ namespace Amphibian.Patrol.Api.Repositories
                     ts.Id = st.scheduledshiftid
                     and ts.PatrolId = @patrolId
                     and ts.StartsAt > @after
-                inner join users au on 
+                left join users au on 
 	                au.id=st.assigneduserid
                 left join users cbu on 
 	                cbu.id=st.claimedbyuserid
-                inner join users ou on 
+                left join users ou on 
 	                ou.id=st.originalassigneduserid
                 left join groups g on g.id=ts.groupid
                 left join shifts s on s.id=ts.shiftid
@@ -215,11 +215,11 @@ namespace Amphibian.Patrol.Api.Repositories
                     
                     and (@from is null or ts.StartsAt > @from or ts.endsat > @from)
                     and (@to is null or ts.startsAt < @to or ts.endsat < @to)
-                inner join users au on 
+                left join users au on 
 	                au.id=st.assigneduserid
                 left join users cbu on 
 	                cbu.id=st.claimedbyuserid
-                inner join users ou on 
+                left join users ou on 
 	                ou.id=st.originalassigneduserid
 
                 left join groups g on g.id=ts.groupid

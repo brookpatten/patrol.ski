@@ -15,7 +15,7 @@ namespace Amphibian.Patrol.Api.Services
         Task ApproveShiftSwap(int scheduledShiftAssignmentId, int userId);
         Task RejectShiftSwap(int scheduledShiftAssignmentId, int userId);
         Task CancelScheduledShiftAssignment(int scheduledShiftAssignmentId);
-        Task<ScheduledShiftAssignment> AddScheduledShiftAssignment(int scheduledShiftId, int userId);
+        Task<ScheduledShiftAssignment> AddScheduledShiftAssignment(int scheduledShiftId, int? userId);
 
         //swap functions
         Task ReleaseShift(int scheduledShiftAssignmentId);

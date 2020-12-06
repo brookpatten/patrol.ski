@@ -17,6 +17,6 @@ namespace Amphibian.Patrol.Api.Dtos
         public DateTime? EndsAt { get; set; }
 
         public int? GroupId { get; set; }
-        public List<int> AssignUserIds { get; set; }
+        public List<int?> AssignUserIds { get; set; }
     }
 }

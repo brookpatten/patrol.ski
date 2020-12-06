@@ -92,6 +92,7 @@ namespace Amphibian.Patrol.Api.Controllers
                     y.OriginalAssignedUser,
                     y.Status,
                     y.TraineeCount,
+                    x.Key.ScheduledShiftId
                 })
             });
 
@@ -102,7 +103,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Route("schedule/scheduled-shift-assignment")]
         [Authorize]
         [UnitOfWork]
-        public async Task<IActionResult> AddScheduledShiftAssignment(int scheduledShiftId,int userId)
+        public async Task<IActionResult> AddScheduledShiftAssignment(int scheduledShiftId,int? userId)
         {
             var now = _clock.UtcNow.DateTime;
             //ensure the shift exists and that the user is allowed to modify it
@@ -110,9 +111,13 @@ namespace Amphibian.Patrol.Api.Controllers
             if((await _patrolService.GetUserRoleInPatrol(User.GetUserId(),shift.PatrolId)).CanMaintainSchedule()
                 && now < shift.StartsAt)
             {
-                //ensure the user is in the patrol
-                var patrolUser = await _patrolRepository.GetPatrolUser(userId, shift.PatrolId);
-                if(patrolUser!=null)
+                //ensure if the user is specified they are in the patrol
+                PatrolUser patrolUser = null;
+                if(userId.HasValue)
+                {
+                    patrolUser = await _patrolRepository.GetPatrolUser(userId.Value, shift.PatrolId);
+                }
+                if(!userId.HasValue || patrolUser!=null)
                 {
                     var assignment = await _scheduleService.AddScheduledShiftAssignment(scheduledShiftId, userId);
 

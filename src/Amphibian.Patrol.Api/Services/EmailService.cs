@@ -396,32 +396,65 @@ Please follow use link to reset your password {_urlRoot}{resetRoute}",
             var localStart = shift.StartsAt.UtcToPatrolLocal(patrol);
             var localEnd = shift.EndsAt.UtcToPatrolLocal(patrol);
 
-            var msg = new SendGridMessage()
+            if(assigned==null)
             {
-                Subject = $"Shift swap on {localStart.ToShortDateString()} from {assigned.GetFullName()} to {claimed.GetFullName()} Approved",
-                PlainTextContent = $"The shift swap on {localStart.ToShortDateString()} from {assigned.GetFullName()} to {claimed.GetFullName()} has been approved",
-                HtmlContent = $"The shift swap on {localStart.ToShortDateString()} from {assigned.GetFullName()} to {claimed.GetFullName()} has been approved",
-            };
+                var msg = new SendGridMessage()
+                {
+                    Subject = $"Shift claim on {localStart.ToShortDateString()} to {claimed.GetFullName()} Approved",
+                    PlainTextContent = $"Your shift claim on {localStart.ToShortDateString()} to {claimed.GetFullName()} has been approved",
+                    HtmlContent = $"Your shift Claim on {localStart.ToShortDateString()} to {claimed.GetFullName()} has been approved",
+                };
 
-            this.AddOnBehalfOf(msg, patrol);
+                this.AddOnBehalfOf(msg, patrol);
 
-            var response = await Send(msg, patrol, assigned,claimed);
+                var response = await Send(msg, patrol, claimed);
+            }
+            else
+            {
+                var msg = new SendGridMessage()
+                {
+                    Subject = $"Shift swap on {localStart.ToShortDateString()} from {assigned.GetFullName()} to {claimed.GetFullName()} Approved",
+                    PlainTextContent = $"The shift swap on {localStart.ToShortDateString()} from {assigned.GetFullName()} to {claimed.GetFullName()} has been approved",
+                    HtmlContent = $"The shift swap on {localStart.ToShortDateString()} from {assigned.GetFullName()} to {claimed.GetFullName()} has been approved",
+                };
+
+                this.AddOnBehalfOf(msg, patrol);
+
+                var response = await Send(msg, patrol, assigned, claimed);
+            }
+            
         }
         public async Task SendShiftRejected(User assigned, Models.Patrol patrol, User claimed, User rejected, ScheduledShift shift)
         {
             var localStart = shift.StartsAt.UtcToPatrolLocal(patrol);
             var localEnd = shift.EndsAt.UtcToPatrolLocal(patrol);
 
-            var msg = new SendGridMessage()
+            if (assigned == null)
             {
-                Subject = $"Shift swap on {localStart.ToShortDateString()} from {assigned.GetFullName()} to {claimed.GetFullName()} Rejected",
-                PlainTextContent = $"The shift swap on {localStart.ToShortDateString()} from {assigned.GetFullName()} to {claimed.GetFullName()} has been rejected",
-                HtmlContent = $"The shift swap on {localStart.ToShortDateString()} from {assigned.GetFullName()} to {claimed.GetFullName()} has been rejected",
-            };
+                var msg = new SendGridMessage()
+                {
+                    Subject = $"Shift claim on {localStart.ToShortDateString()} to {claimed.GetFullName()} Rejected",
+                    PlainTextContent = $"Your shift claim on {localStart.ToShortDateString()} to {claimed.GetFullName()} has been rejected",
+                    HtmlContent = $"Your shift Claim on {localStart.ToShortDateString()} to {claimed.GetFullName()} has been rejected",
+                };
 
-            this.AddOnBehalfOf(msg, patrol);
+                this.AddOnBehalfOf(msg, patrol);
 
-            var response = await Send(msg, patrol, assigned, claimed);
+                var response = await Send(msg, patrol, claimed);
+            }
+            else
+            {
+                var msg = new SendGridMessage()
+                {
+                    Subject = $"Shift swap on {localStart.ToShortDateString()} from {assigned.GetFullName()} to {claimed.GetFullName()} Rejected",
+                    PlainTextContent = $"The shift swap on {localStart.ToShortDateString()} from {assigned.GetFullName()} to {claimed.GetFullName()} has been rejected",
+                    HtmlContent = $"The shift swap on {localStart.ToShortDateString()} from {assigned.GetFullName()} to {claimed.GetFullName()} has been rejected",
+                };
+
+                this.AddOnBehalfOf(msg, patrol);
+
+                var response = await Send(msg, patrol, assigned, claimed);
+            }
         }
         public async Task SendShiftRemoved(User assigned, Models.Patrol patrol, ScheduledShift shift)
         {

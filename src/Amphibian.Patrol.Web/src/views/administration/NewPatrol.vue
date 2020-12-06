@@ -8,19 +8,47 @@
           </slot> New Patrol
         </CCardHeader>
         <CCardBody>
-            <CAlert color="success" v-if="patrols.length==0">You are not currently associated with a patrol.  You may start a new patrol, or you may need to wait until your training administrator adds you to their patrol.  Be sure you have used the same email address.</CAlert>
+            <CAlert color="success" v-if="patrols.length==0">You have not been added to a patrol.  You may start a new patrol, or you may need to wait until your patrol administrator adds you to their patrol.  Be sure you have logged in using the same email address you gave your patrol administrator.</CAlert>
             <CAlert color="danger" v-if="validationMessage">{{validationMessage}}</CAlert>
             <CInput
             label="New Patrol Name"
             v-model="patrolName"
             />
+
+            <CSelect
+            label="TimeZone"
+            :value.sync="timeZone"
+            :options="timeZones"
+            placeholder="None"
+            />
             
 
             <label>Initial Setup</label>
             <CInputRadioGroup
-            :options="[{value:'default',label:'Default (Create initial training plans and trainer groups which may be changed later)'},{value:'empty',label:'Empty (Create nothing other than an empty patrol, for experienced users only)'},{value:'demo',label:'Demo (Create a patrol with training plans, trainees, trainers, assignments, and sample signatures.  Great if you just want to see how things work)'}]"
+            :options="[{value:'default',label:'Default (Create initial training plans and trainer groups which may be changed later)'},{value:'empty',label:'Empty (Create nothing other than an empty patrol, for experienced users only)'},{value:'demo',label:'Demo (Create a patrol with training plans, trainees, trainers, assignments, and sample signatures.  Great if you just want to see how things work.)'}]"
             :checked.sync="initialType"
             />
+
+            <br/>
+            <label>Enabled Functionality</label> <em>(You can change this later)</em>
+            <br/>
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="enableAnnouncements"/>
+            <label for="enableAnnouncements">Announcements</label>
+            <br/>
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="enableEvents"/>
+            <label for="enableEvents">Events</label>
+            <br/>
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="enableTraining"/>
+            <label for="enableTraining">Training</label>
+            <br/>
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="enableScheduling"/>
+            <label for="enableScheduling">Scheduling</label>
+            <br/>
+            <template v-if="enableScheduling">
+              <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="enableShiftSwaps"/>
+              <label for="enableShiftSwaps">Shift Exchange</label>
+              <br/>
+            </template>
 
             
         </CCardBody>
@@ -44,10 +72,17 @@ export default {
   data () {
     return {
       patrolName:'',
+      timeZone:'Eastern Standard Time',
+      enableAnnouncements:true,
+      enableEvents:true,
+      enableTraining:true,
+      enableScheduling:true,
+      enableShiftSwaps:true,
       initialType:'default',
       validationMessage:'',
       validationErrors:{},
-      validated:false
+      validated:false,
+      timeZones: []
     }
   },
   methods: {
@@ -55,9 +90,19 @@ export default {
         if(this.patrolName && this.patrolName.length>0 && this.patrolName.length<256)
         {
           this.$store.dispatch('loading','Loading...');
+
+            var patrol = {
+              name : this.patrolName,
+              timeZone: this.timeZone,
+              enableAnnouncements: this.enableAnnouncements,
+              enableEvents: this.enableEvents,
+              enableTraining:this.enableTraining,
+              enableScheduling:this.enableScheduling,
+              enableShiftSwaps:this.enableShiftSwaps
+            }
         
             //create the new patrl
-            this.$http.post('patrol/create/'+this.initialType+'?name='+this.patrolName)
+            this.$http.post('patrol/create/'+this.initialType,patrol)
                 .then(response=>{
                     var patrols = response.data;
                     var newPatrol = _.find(patrols,{'name':this.patrolName});
@@ -76,6 +121,16 @@ export default {
                     this.validationErrors = response.response.data.errors;
                 }).finally(response=>this.$store.dispatch('loadingComplete'));
         }
+    },
+    getTimeZones() {
+      this.$store.dispatch('loading','Loading...');
+        this.$http.get('timezones')
+          .then(response => {
+              this.timeZones = response.data;
+              console.log(response);
+          }).catch(response => {
+              console.log(response);
+          }).finally(response=>this.$store.dispatch('loadingComplete'));
     }
   },
   computed: {
@@ -87,7 +142,7 @@ export default {
     
   },
   mounted: function(){
-    
+    this.getTimeZones();
   }
 }
 </script>

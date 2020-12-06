@@ -40,7 +40,7 @@ namespace Amphibian.Patrol.Api.Services
             var ssa = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             if (ssa.Status == ShiftStatus.Claimed && ssa.ClaimedByUserId.HasValue)
             {
-                int assignedUserId = ssa.AssignedUserId;
+                int? assignedUserId = ssa.AssignedUserId;
                 int claimedUserId = ssa.ClaimedByUserId.Value;
 
                 ssa.Status = ShiftStatus.Assigned;
@@ -49,7 +49,11 @@ namespace Amphibian.Patrol.Api.Services
                 await _shiftRepository.UpdateScheduledShiftAssignment(ssa);
 
                 //send notification email to assignee
-                var assigned = await _userRepository.GetUser(assignedUserId);
+                User assigned = null;
+                if (assignedUserId.HasValue)
+                {
+                    assigned = await _userRepository.GetUser(assignedUserId.Value);
+                }
                 var claimed = await _userRepository.GetUser(claimedUserId);
                 var approved = await _userRepository.GetUser(userId);
                 var shift = await _shiftRepository.GetScheduledShift(ssa.ScheduledShiftId);
@@ -67,7 +71,7 @@ namespace Amphibian.Patrol.Api.Services
             var ssa = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             if (ssa.Status == ShiftStatus.Claimed && ssa.ClaimedByUserId.HasValue)
             {
-                int assignedUserId = ssa.AssignedUserId;
+                int? assignedUserId = ssa.AssignedUserId;
                 int claimedUserId = ssa.ClaimedByUserId.Value;
 
                 ssa.Status = ShiftStatus.Released;
@@ -75,7 +79,11 @@ namespace Amphibian.Patrol.Api.Services
                 await _shiftRepository.UpdateScheduledShiftAssignment(ssa);
 
                 //send notification email to assignee
-                var assigned = await _userRepository.GetUser(assignedUserId);
+                User assigned = null;
+                if (assignedUserId.HasValue)
+                {
+                    assigned = await _userRepository.GetUser(assignedUserId.Value);
+                }
                 var claimed = await _userRepository.GetUser(claimedUserId);
                 var rejected = await _userRepository.GetUser(userId);
                 var shift = await _shiftRepository.GetScheduledShift(ssa.ScheduledShiftId);
@@ -101,9 +109,9 @@ namespace Amphibian.Patrol.Api.Services
 
                 //send notification to any trainees that the shift has been cancelled
                 var trainees = await _shiftRepository.GetTrainees(ssa.Id);
-                if (trainees.Any())
+                if (trainees.Any() && ssa.AssignedUserId.HasValue)
                 {
-                    var trainer = await _userRepository.GetUser(ssa.AssignedUserId);
+                    var trainer = await _userRepository.GetUser(ssa.AssignedUserId.Value);
                     var shift = await _shiftRepository.GetScheduledShift(ssa.ScheduledShiftId);
                     var traineeUsers = await _userRepository.GetUsers(trainees.Select(x => x.TraineeUserId).ToList());
                     await _emailService.SendTrainerShiftRemoved(trainer, traineeUsers.ToList(), patrol, shift);
@@ -112,7 +120,7 @@ namespace Amphibian.Patrol.Api.Services
             await _shiftRepository.DeleteScheduledShift(scheduledShift);
 
             //notify users in the shift
-            var assignedUsers = await _userRepository.GetUsers(scheduledShiftAssignments.Select(x => x.AssignedUserId).ToList());
+            var assignedUsers = await _userRepository.GetUsers(scheduledShiftAssignments.Where(x=>x.AssignedUserId.HasValue).Select(x => x.AssignedUserId.Value).ToList());
             await _emailService.SendShiftCancelled(assignedUsers.ToList(),patrol,scheduledShift);
         }
 
@@ -126,11 +134,14 @@ namespace Amphibian.Patrol.Api.Services
                 await _shiftRepository.UpdateScheduledShiftAssignment(ssa);
 
                 //send notification email to assignee
-                var assigned = await _userRepository.GetUser(ssa.AssignedUserId);
-                var claimed = await _userRepository.GetUser(ssa.ClaimedByUserId.Value);
-                var shift = await _shiftRepository.GetScheduledShift(ssa.ScheduledShiftId);
-                var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
-                await _emailService.SendShiftClaimed(assigned, patrol, claimed, shift);
+                if (ssa.AssignedUserId.HasValue)
+                {
+                    var assigned = await _userRepository.GetUser(ssa.AssignedUserId.Value);
+                    var claimed = await _userRepository.GetUser(ssa.ClaimedByUserId.Value);
+                    var shift = await _shiftRepository.GetScheduledShift(ssa.ScheduledShiftId);
+                    var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
+                    await _emailService.SendShiftClaimed(assigned, patrol, claimed, shift);
+                }
             }
             else
             {
@@ -149,9 +160,9 @@ namespace Amphibian.Patrol.Api.Services
 
                 //send notification to any trainees that the shift has been released
                 var trainees = await _shiftRepository.GetTrainees(scheduledShiftAssignmentId);
-                if(trainees.Any())
+                if(trainees.Any() && ssa.AssignedUserId.HasValue)
                 {
-                    var trainer = await _userRepository.GetUser(ssa.AssignedUserId);
+                    var trainer = await _userRepository.GetUser(ssa.AssignedUserId.Value);
                     var shift = await _shiftRepository.GetScheduledShift(ssa.ScheduledShiftId);
                     var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
                     var traineeUsers = await _userRepository.GetUsers(trainees.Select(x => x.TraineeUserId).ToList());
@@ -183,21 +194,6 @@ namespace Amphibian.Patrol.Api.Services
             {
                 throw new InvalidOperationException($"ScheduledShiftAssignment is not in a valid state for cancel release");
             }
-        }
-
-        private async Task<TimeZoneInfo> GetTimeZoneForPatrolId(int patrolId)
-        {
-            var patrol = await _patrolRepository.GetPatrol(patrolId);
-            TimeZoneInfo timeZone;
-            if (!string.IsNullOrEmpty(patrol.TimeZone))
-            {
-                timeZone = TZConvert.GetTimeZoneInfo(patrol.TimeZone);
-            }
-            else
-            {
-                timeZone = TZConvert.GetTimeZoneInfo("Eastern Standard Time");
-            }
-            return timeZone;
         }
 
         public async Task<ScheduledShift> ScheduleShift(ScheduledShiftUpdateDto dto)
@@ -335,11 +331,11 @@ namespace Amphibian.Patrol.Api.Services
                 foreach (var id in dto.AssignUserIds)
                 {
                     var existing = assignments.FirstOrDefault(x => x.OriginalAssignedUserId == id || x.AssignedUserId == id || x.ClaimedByUserId == id);
-                    if (existing == null)
+                    if (existing == null || !id.HasValue)
                     {
                         var ssa = new ScheduledShiftAssignment()
                         {
-                            Status = ShiftStatus.Assigned,
+                            Status = id.HasValue ? ShiftStatus.Assigned : ShiftStatus.Released,
                             AssignedUserId = id,
                             OriginalAssignedUserId = id,
                             ScheduledShiftId = scheduledShift.Id
@@ -357,8 +353,12 @@ namespace Amphibian.Patrol.Api.Services
                 }
             }
 
-            var newAssignees = await _userRepository.GetUsers(newAssignments.Select(x => x.AssignedUserId).Distinct().ToList());
-            await _emailService.SendShiftAdded(newAssignees.ToList(), patrol, scheduledShift);
+            var assigneeUserIds = newAssignments.Where(x => x.AssignedUserId.HasValue).Select(x => x.AssignedUserId.Value).Distinct().ToList();
+            if (assigneeUserIds.Count > 0)
+            {
+                var newAssignees = await _userRepository.GetUsers(assigneeUserIds);
+                await _emailService.SendShiftAdded(newAssignees.ToList(), patrol, scheduledShift);
+            }
 
             //todo: delete things that aren't there?  seems risky if we found the shift by time not id etc   
 
@@ -374,33 +374,39 @@ namespace Amphibian.Patrol.Api.Services
 
             //notify trainees
             var trainees = await _shiftRepository.GetTrainees(scheduledShiftAssignment.Id);
-            if (trainees.Any())
+            if (trainees.Any() && scheduledShiftAssignment.AssignedUserId.HasValue)
             {
-                var trainer = await _userRepository.GetUser(scheduledShiftAssignment.AssignedUserId);
+                var trainer = await _userRepository.GetUser(scheduledShiftAssignment.AssignedUserId.Value);
                 var traineeUsers = await _userRepository.GetUsers(trainees.Select(x => x.TraineeUserId).ToList());
                 await _emailService.SendTrainerShiftRemoved(trainer, traineeUsers.ToList(), patrol, shift);
             }
 
             //notify user in the shift
-            var assignedUser = await _userRepository.GetUser(scheduledShiftAssignment.AssignedUserId);
-            await _emailService.SendShiftRemoved(assignedUser, patrol, shift);
+            if (scheduledShiftAssignment.AssignedUserId.HasValue)
+            {
+                var assignedUser = await _userRepository.GetUser(scheduledShiftAssignment.AssignedUserId.Value);
+                await _emailService.SendShiftRemoved(assignedUser, patrol, shift);
+            }
         }
-        public async Task<ScheduledShiftAssignment> AddScheduledShiftAssignment(int scheduledShiftId, int userId)
+        public async Task<ScheduledShiftAssignment> AddScheduledShiftAssignment(int scheduledShiftId, int? userId)
         {
             var scheduledShiftAssignment = new ScheduledShiftAssignment()
             {
                 AssignedUserId = userId,
                 OriginalAssignedUserId = userId,
                 ScheduledShiftId = scheduledShiftId,
-                Status = ShiftStatus.Assigned
+                Status = userId.HasValue ? ShiftStatus.Assigned : ShiftStatus.Released
             };
             await _shiftRepository.InsertScheduledShiftAssignment(scheduledShiftAssignment);
 
             //notify assignee
-            var shift = await _shiftRepository.GetScheduledShift(scheduledShiftId);
-            var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
-            var newAssignee = await _userRepository.GetUser(userId);
-            await _emailService.SendShiftAdded(new List<User>() { newAssignee }, patrol, shift);
+            if (userId.HasValue)
+            {
+                var shift = await _shiftRepository.GetScheduledShift(scheduledShiftId);
+                var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
+                var newAssignee = await _userRepository.GetUser(userId.Value);
+                await _emailService.SendShiftAdded(new List<User>() { newAssignee }, patrol, shift);
+            }
 
             return scheduledShiftAssignment;
         }
@@ -470,7 +476,7 @@ namespace Amphibian.Patrol.Api.Services
                             Day = scheduledShift.First().Shift != null ? day : (DateTime?)null,
                             StartsAt = scheduledShift.First().Shift == null ? (new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().StartsAt.Hour, scheduledShift.First().StartsAt.Minute, 0, DateTimeKind.Unspecified)).UtcFromPatrolLocal(patrol) : (DateTime?)null,
                             EndsAt = scheduledShift.First().Shift == null ? (new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().EndsAt.Hour, scheduledShift.First().EndsAt.Minute, 0, DateTimeKind.Unspecified)).UtcFromPatrolLocal(patrol) : (DateTime?)null,
-                            AssignUserIds = scheduledShift.Select(x => x.AssignedUser.Id).Distinct().ToList()
+                            AssignUserIds = scheduledShift.Select(x => x.AssignedUser != null ? x.AssignedUser.Id : (int?)null).Distinct().ToList()
                         });
                         createdShifts.Add(createdShift);
                     }

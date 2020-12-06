@@ -9,7 +9,7 @@ namespace Amphibian.Patrol.Api.Services
 {
     public interface IPatrolCreationService
     {
-        Task<Models.Patrol> CreateNewPatrol(int userId, string name);
+        Task<Models.Patrol> CreateNewPatrol(int userId, Models.Patrol patrolSetup);
         Task CreateDefaultInitialSetup(int patrolId);
         Task CreateDemoInitialSetup(Models.Patrol patrol, User adminUser);
         Task<Tuple<User,Models.Patrol>> CreateDemoUserAndPatrol();

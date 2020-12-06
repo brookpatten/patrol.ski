@@ -10,6 +10,7 @@ using Dommel;
 using Amphibian.Patrol.Api.Models;
 using System.Data.Common;
 using Amphibian.Patrol.Api.Dtos;
+using TimeZoneConverter;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -30,12 +31,24 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertPatrol(Amphibian.Patrol.Api.Models.Patrol patrol)
         {
+            //TODO: hack job, move this to a service
+            if (!string.IsNullOrEmpty(patrol.TimeZone))
+            {
+                patrol.TimeZone = TZConvert.GetTimeZoneInfo(patrol.TimeZone).Id;
+            }
+
             patrol.Id = (int)await _connection.InsertAsync(patrol)
                 .ConfigureAwait(false);
         }
 
         public async Task UpdatePatrol(Amphibian.Patrol.Api.Models.Patrol patrol)
         {
+            //TODO: hack job, move this to a service
+            if(!string.IsNullOrEmpty(patrol.TimeZone))
+            {
+                patrol.TimeZone = TZConvert.GetTimeZoneInfo(patrol.TimeZone).Id;
+            }
+
             await _connection.UpdateAsync(patrol)
                 .ConfigureAwait(false);
         }
@@ -64,7 +77,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task<IEnumerable<CurrentUserPatrolDto>> GetPatrolsForUser(int userId)
         {
-            return await _connection.QueryAsync<CurrentUserPatrolDto>(
+            var patrolUsers = await _connection.QueryAsync<CurrentUserPatrolDto>(
                 @$"select 
                     p.id
                     ,p.name
@@ -80,6 +93,17 @@ namespace Amphibian.Patrol.Api.Repositories
                    where 
                     pu.userid=@userId", new { userId })
                 .ConfigureAwait(false);
+
+            //TODO: hack job, this should be in a service method
+            foreach(var pu in patrolUsers)
+            {
+                if (!string.IsNullOrEmpty(pu.TimeZone))
+                {
+                    pu.TimeZone = TZConvert.GetTimeZoneInfo(pu.TimeZone).Id;
+                }
+            }
+
+            return patrolUsers;
         }
 
         public async Task<IEnumerable<PatrolUser>> GetPatrolUsersForUser(int userId)

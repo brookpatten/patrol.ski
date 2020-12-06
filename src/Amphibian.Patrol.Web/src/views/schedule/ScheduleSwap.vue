@@ -21,14 +21,13 @@
                             <em v-if="data.item.groupId">{{data.item.groupName}}</em>
                         </td>
                     </template>
-                    <template #date="data">
-                        <td>{{new Date(data.item.startsAt).toLocaleDateString()}}</td>
-                    </template>
                     <template #startsAt="data">
-                        <td>{{new Date(data.item.startsAt).getHours()+":"+(new Date(data.item.startsAt).getMinutes()+"").padStart(2,"0")}}</td>
-                    </template>
-                    <template #endsAt="data">
-                        <td>{{new Date(data.item.endsAt).getHours()+":"+(new Date(data.item.endsAt).getMinutes()+"").padStart(2,"0")}}</td>
+                        <td>
+                          {{new Date(data.item.startsAt).toLocaleDateString()}}
+                          {{new Date(data.item.startsAt).getHours()+":"+(new Date(data.item.startsAt).getMinutes()+"").padStart(2,"0")}}
+                          -
+                          {{new Date(data.item.endsAt).getHours()+":"+(new Date(data.item.endsAt).getMinutes()+"").padStart(2,"0")}}
+                        </td>
                     </template>
                     <template #assignee="data">
                         <td>
@@ -56,10 +55,8 @@ export default {
     return {
       scheduledShifts: [],
       scheduledShiftFields:[
-          {key:'name',label:'Name',sortable:true},
-          {key:'date',label:'Date'},
-          {key:'startsAt',label:'Start',sortable:true},
-          {key:'endsAt',label:'End',sortable:true},
+          {key:'startsAt',label:'Shift',sortable:true},
+          {key:'name',label:'',sortable:false},
           {key:'assignee',label:'Released By'}
       ]
     }
@@ -77,10 +74,18 @@ export default {
         },
     claimScheduledShiftAssignment(scheduledShiftAssignment){
       this.$store.dispatch('loading','Claiming...');
+      let scheduledShifts = this.scheduledShifts;
       this.$http.post('schedule/scheduled-shift-assignment/claim?scheduledShiftAssignmentId='+scheduledShiftAssignment.id)
         .then(response=>{
           scheduledShiftAssignment.status='Claimed';
           scheduledShiftAssignment.claimedByUser = this.user;
+
+          var shift = _.find(scheduledShifts,function(s)
+          {
+            return s.scheduledShiftId == scheduledShiftAssignment.scheduledShiftId;
+          });
+          shift.assignments = _.filter(shift.assignments,{id:scheduledShiftAssignment.id});
+
         }).catch(response=>{
           console.log(response);
         }).finally(response=>this.$store.dispatch('loadingComplete'));

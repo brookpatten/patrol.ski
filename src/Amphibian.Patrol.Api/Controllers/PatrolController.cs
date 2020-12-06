@@ -38,9 +38,9 @@ namespace Amphibian.Patrol.Api.Controllers
         [Route("patrol/create/empty")]
         [Authorize]
         [UnitOfWork]
-        public async Task<IActionResult> CreateEmptyPatrol(string name)
+        public async Task<IActionResult> CreateEmptyPatrol(Models.Patrol patrolSetup)
         {
-            var patrol = await _patrolCreationService.CreateNewPatrol(User.GetUserId(), name);
+            var patrol = await _patrolCreationService.CreateNewPatrol(User.GetUserId(), patrolSetup);
             var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
             return Ok(patrols);
         }
@@ -49,9 +49,9 @@ namespace Amphibian.Patrol.Api.Controllers
         [Route("patrol/create/default")]
         [Authorize]
         [UnitOfWork]
-        public async Task<IActionResult> CreateDefaultPatrol(string name)
+        public async Task<IActionResult> CreateDefaultPatrol(Models.Patrol patrolSetup)
         {
-            var patrol = await _patrolCreationService.CreateNewPatrol(User.GetUserId(), name);
+            var patrol = await _patrolCreationService.CreateNewPatrol(User.GetUserId(), patrolSetup);
             await _patrolCreationService.CreateDefaultInitialSetup(patrol.Id);
             var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
             return Ok(patrols);
@@ -61,9 +61,9 @@ namespace Amphibian.Patrol.Api.Controllers
         [Route("patrol/create/demo")]
         [Authorize]
         [UnitOfWork]
-        public async Task<IActionResult> CreateDemoPatrol(string name)
+        public async Task<IActionResult> CreateDemoPatrol(Models.Patrol patrolSetup)
         {
-            var patrol = await _patrolCreationService.CreateNewPatrol(User.GetUserId(), name);
+            var patrol = await _patrolCreationService.CreateNewPatrol(User.GetUserId(), patrolSetup);
 
             var user = await _userRepository.GetUser(User.GetUserId());
             

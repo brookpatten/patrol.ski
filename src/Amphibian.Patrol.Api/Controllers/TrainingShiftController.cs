@@ -76,6 +76,10 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             //todo: move to service
             var shiftTrainer = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
+            if(!shiftTrainer.AssignedUserId.HasValue)
+            {
+                throw new InvalidOperationException("The specified shift assignment does not have a person associated with it");
+            }
             var trainingShift = await _shiftRepository.GetScheduledShift(shiftTrainer.ScheduledShiftId);
             var patrols = await _patrolRepository.GetPatrolsForUser(this.User.GetUserId());
 
@@ -89,7 +93,7 @@ namespace Amphibian.Patrol.Api.Controllers
                 await _shiftRepository.InsertTrainee(trainee);
 
                 //send notification to trainer
-                var trainer = await _userRepository.GetUser(shiftTrainer.AssignedUserId);
+                var trainer = await _userRepository.GetUser(shiftTrainer.AssignedUserId.Value);
                 var patrol = await _patrolRepository.GetPatrol(trainingShift.PatrolId);
                 var traineeUser = await _userRepository.GetUser(trainee.TraineeUserId);
                 await _emailService.SendTraineeSignup(trainer, traineeUser, patrol, trainingShift);
@@ -118,10 +122,15 @@ namespace Amphibian.Patrol.Api.Controllers
                 //send notification to trainer
                 var assignment = await _shiftRepository.GetScheduledShiftAssignment(trainee.ScheduledShiftAssignmentId);
                 var shift = await _shiftRepository.GetScheduledShift(assignment.ScheduledShiftId);
-                var trainer = await _userRepository.GetUser(assignment.AssignedUserId);
-                var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
-                var traineeUser = await _userRepository.GetUser(trainee.TraineeUserId);
-                await _emailService.SendTraineeCancel(trainer, traineeUser, patrol, shift);
+
+                //this shouldn't really happen since we don't let people sign up to train on empty assignments, but just in case
+                if (assignment.AssignedUserId.HasValue)
+                {
+                    var trainer = await _userRepository.GetUser(assignment.AssignedUserId.Value);
+                    var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
+                    var traineeUser = await _userRepository.GetUser(trainee.TraineeUserId);
+                    await _emailService.SendTraineeCancel(trainer, traineeUser, patrol, shift);
+                }
 
                 return Ok();
             }

@@ -89,7 +89,8 @@
                 :fields="[{key:'assignedUser',label:''},{key:'claimedByUser',label:''},{key:'status',label:''},{key:'traineeCount',label:''},{key:'buttons',label:''}]"
                 >
                 <template #assignedUser="data">
-                    <td>{{data.item.assignedUser.lastName}}, {{data.item.assignedUser.firstName}}</td>
+                    <td v-if="data.item.assignedUser">{{data.item.assignedUser.lastName}}, {{data.item.assignedUser.firstName}}</td>
+                    <td v-if="!data.item.assignedUser"><c-badge color="warning">Available</c-badge></td>
                 </template>
                 <template #claimedByUser="data">
                     <td>
@@ -100,11 +101,13 @@
                 </template>
                 <template #status="data">
                     <td>
-                        <template v-if="data.item.status=='Claimed'">
-                            <c-badge size="sm" color="warning">Pending Approval</c-badge>
-                        </template>
-                        <template v-if="data.item.status=='Released'">
-                            <c-badge size="sm" color="warning">Released</c-badge>
+                        <template v-if="data.item.assignedUser">
+                            <template v-if="data.item.status=='Claimed'">
+                                <c-badge color="warning">Pending Approval</c-badge>
+                            </template>
+                            <template v-if="data.item.status=='Released'">
+                                <c-badge color="warning">Released</c-badge>
+                            </template>
                         </template>
                     </td>
                 </template>
@@ -115,9 +118,9 @@
                     <td>
                         <CButtonGroup class="float-right" v-if="isFuture(selectedShift.startsAt)">
                             
-                            <CButton size="sm" color="primary" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Assigned' && data.item.assignedUser.id == user.id" @click="releaseScheduledShiftAssignment(data.item)">Release</CButton>
-                            <CButton size="sm" color="success" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Released' && data.item.assignedUser.id != user.id" @click="claimScheduledShiftAssignment(data.item)">Claim</CButton>
-                            <CButton size="sm" color="info" v-if="selectedPatrol.enableShiftSwaps && (data.item.status=='Claimed' || data.item.status=='Released') && data.item.assignedUser.id == user.id" @click="cancelReleaseScheduledShiftAssignment(data.item)">Cancel Release</CButton>
+                            <CButton size="sm" color="primary" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Assigned' && data.item.assignedUser && data.item.assignedUser.id == user.id" @click="releaseScheduledShiftAssignment(data.item)">Release</CButton>
+                            <CButton size="sm" color="success" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Released' && (!data.item.assignedUser || data.item.assignedUser.id != user.id)" @click="claimScheduledShiftAssignment(data.item)">Claim</CButton>
+                            <CButton size="sm" color="info" v-if="selectedPatrol.enableShiftSwaps && (data.item.status=='Claimed' || data.item.status=='Released') && data.item.assignedUser && data.item.assignedUser.id == user.id" @click="cancelReleaseScheduledShiftAssignment(data.item)">Cancel Release</CButton>
                             <CButton size="sm" color="success" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Claimed' && hasPermission('MaintainSchedule')" @click="approveScheduledShiftAssignment(data.item)">Approve</CButton>
                             <CButton size="sm" color="warning" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Claimed' && hasPermission('MaintainSchedule')" @click="rejectScheduledShiftAssignment(data.item)">Reject</CButton>
                             <CButton size="sm" color="danger" v-if="hasPermission('MaintainSchedule')" @click="removeScheduledShiftAssignment(selectedShift,data.item)">Remove</CButton>
@@ -206,7 +209,8 @@
                         :fields="[{key:'assignedUser',label:''},{key:'buttons',label:''}]"
                         >
                         <template #assignedUser="data">
-                            <td>{{data.item.assignedUser.lastName}}, {{data.item.assignedUser.firstName}}</td>
+                            <td v-if="data.item.assignedUser.id">{{data.item.assignedUser.lastName}}, {{data.item.assignedUser.firstName}}</td>
+                            <td v-if="!data.item.assignedUser.id">Available</td>
                         </template>
                         <template #buttons="data">
                             <td>
@@ -308,7 +312,7 @@ export default {
         },
         addScheduledShiftAssignment(shift,userId){
             this.$store.dispatch('loading','Loading...');
-            this.$http.post('schedule/scheduled-shift-assignment?scheduledShiftId='+shift.scheduledShiftId+"&userId="+userId)
+            this.$http.post('schedule/scheduled-shift-assignment?scheduledShiftId='+shift.scheduledShiftId+(userId ? "&userId="+userId : ""))
                 .then(response => {
                     console.log(response);
                     this.scheduledShifts = _.filter(this.scheduledShifts,function(s){return s.scheduledShiftId!=shift.scheduledShiftId});
@@ -419,6 +423,24 @@ export default {
             else if(event.originalEvent.type=='shift'){
                 var e = _.find(this.scheduledShifts,{scheduledShiftId:event.id});
                 this.selectedShift = e;
+
+                if(this.selectedShift.assignments){
+                    this.selectedShift.assignments = _.sortBy(this.selectedShift.assignments,function(a){
+                        if(a.assignedUser){
+                            return a.assignedUser.lastName+", "+a.assignedUser.firstName;
+                        }
+                        else if(a.claimedByUser){
+                            return "ZZZZZZZZZZZZZZZZZZZZZZZZ"+a.claimedByUser.lastName+", "+a.claimedByUser.firstName;
+                        }
+                        else{
+                            return null;
+                        }
+                    });
+                }
+                else{
+                    this.selectedShift.assignments=[];
+                }
+
                 this.filterUserListItems(this.selectedShift.assignments);
                 this.showSelectedShift=true;
             }
@@ -451,14 +473,19 @@ export default {
             }
         },
         addUserToNewShift(userId){
-            var user = _.find(this.users,{id:userId});
+            var user = {id: null};
+            if(userId){
+                user = _.find(this.users,{id:userId});
+            }
             this.newShift.assignments.push({
                 assignedUser:user
             });
             this.filterUserListItems(this.newShift.assignments);
         },
         removeUserFromNewShift(userId){
-            this.newShift.assignments = _.filter(this.newShift.assignments,function(a){return a.assignedUser.id!=userId;});
+            var lastIndex = _.findLastIndex(this.newShift.assignments,function(a){return a.assignedUser.id==userId;});
+            this.newShift.assignments.splic(lastIndex,1);
+            //this.newShift.assignments = _.filter(this.newShift.assignments,function(a){return a.assignedUser.id!=userId;});
             this.filterUserListItems(this.newShift.assignments);
         },
         isNewShiftValid(){
@@ -568,7 +595,7 @@ export default {
             let filtered = [];
 
             if(assignments){
-                filtered = _.filter(this.users,function(u){return _.find(assignments,function(a){return a.assignedUser.id==u.id;})==null;});
+                filtered = _.filter(this.users,function(u){return _.find(assignments,function(a){return a.assignedUser && a.assignedUser.id==u.id;})==null;});
             }
             else{
                 filtered = this.users;
@@ -582,6 +609,11 @@ export default {
                     value:u.id
                 };
             });
+
+            //if shift swap is enabled, the admin can choose to assign nobody and just leave a slot open
+            if(this.selectedPatrol.enableShiftSwaps){
+                this.filteredUserList.splice(0,0,{label:'(Available)',value:null});
+            }
 
             if(this.filteredUserList.length>0){
                 this.selectedUserId = this.filteredUserList[0].value;
@@ -673,7 +705,7 @@ export default {
             var eventClass='';
 
             var currentUserInShift = _.find(e.assignments,function(a){ 
-                return a.assignedUser.id == user.id || (a.claimedByUser && a.claimedByUser.id == user.id)
+                return (a.assignedUser && a.assignedUser.id == user.id) || (a.claimedByUser && a.claimedByUser.id == user.id)
             })!=null;
             
             if(isFuture(e.startsAt)){
@@ -706,8 +738,8 @@ export default {
                         + "-" + endsAt.getHours()+":"+((endsAt).getMinutes()+"").padStart(2,"0")
                         + " ("+(e.groupName ? e.groupName : e.assignments.length + " Assigned") + ") "
                         + (e.shiftName ? e.shiftName : "") ,
-                startDate: e.startsAt,
-                endDate: e.endsAt,
+                startDate: startsAt,
+                endDate: endsAt,
                 classes: eventClass,
                 type:'shift'
             };

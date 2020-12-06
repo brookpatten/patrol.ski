@@ -483,6 +483,7 @@ namespace Amphibian.Patrol.Api.Services
 
                 allShifts.AddRange(replicatedShifts);
 
+
                 //randomly release/claim some shifts
                 foreach(var shift in allShifts)
                 {
@@ -503,6 +504,18 @@ namespace Amphibian.Patrol.Api.Services
                                 var trainee = traineeList[random.Next(traineeList.Count())];
                                 await _scheduleService.ClaimShift(assignee.Id, trainee.Id);
                             }
+                        }
+                    }
+
+                    if (patrol.EnableShiftSwaps)
+                    {
+                        if (random.Next(8) == 1)
+                        {
+                            await _shiftRepository.InsertScheduledShiftAssignment(new ScheduledShiftAssignment()
+                            {
+                                ScheduledShiftId = shift.Id,
+                                Status = ShiftStatus.Released
+                            });
                         }
                     }
                 }
@@ -661,28 +674,18 @@ namespace Amphibian.Patrol.Api.Services
             }
         }
 
-        public async Task<Models.Patrol> CreateNewPatrol(int userId, string name)
+        public async Task<Models.Patrol> CreateNewPatrol(int userId, Models.Patrol patrolSetup)
         {
-            var patrol = new Models.Patrol()
-            {
-                Name = name,
-                EnableAnnouncements = true,
-                EnableTraining = true,
-                EnableEvents = true,
-                EnableScheduling=true,
-                EnableShiftSwaps=true,
-                TimeZone= "Eastern Standard Time"
-            };
-            await _patrolRepository.InsertPatrol(patrol);
+            await _patrolRepository.InsertPatrol(patrolSetup);
             var patrolUser = new PatrolUser()
             {
-                PatrolId = patrol.Id,
+                PatrolId = patrolSetup.Id,
                 Role = Role.Administrator,
                 UserId = userId,
                 
             };
             await _patrolRepository.InsertPatrolUser(patrolUser);
-            return patrol;
+            return patrolSetup;
         }
         public async Task<Tuple<User, Models.Patrol>> CreateDemoUserAndPatrol()
         {
@@ -696,7 +699,16 @@ namespace Amphibian.Patrol.Api.Services
 
             
 
-            var patrol = await CreateNewPatrol(user.Id, "Mt. Dumptruck Ski Patrol");
+            var patrol = await CreateNewPatrol(user.Id, new Models.Patrol()
+            {
+                Name = "Mt. Dumptruck Ski Patrol",
+                TimeZone = "Eastern Standard Time",
+                EnableAnnouncements = true,
+                EnableEvents = true,
+                EnableScheduling = true,
+                EnableShiftSwaps = true,
+                EnableTraining = true
+            });
 
             await CreateDemoInitialSetup(patrol,user);
             return new Tuple<User, Models.Patrol>(user, patrol);
