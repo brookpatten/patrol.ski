@@ -59,8 +59,8 @@ namespace Amphibian.Patrol.Api.Controllers
                     userId = User.GetUserId();
                 }
 
-                var entry = await _timeClockService.ClockIn(patrolId, userId.Value);
-                return Ok(entry);
+                var result = await _timeClockService.ClockIn(patrolId, userId.Value);
+                return Ok(result);
             }
             else
             {
@@ -87,8 +87,8 @@ namespace Amphibian.Patrol.Api.Controllers
                 (entry.UserId==User.GetUserId() 
                 || (await _patrolService.GetUserRoleInPatrol(User.GetUserId(),entry.PatrolId)).CanMaintainTimeClock())) //or the user is an admin
             {
-                entry = await _timeClockService.ClockOut(timeEntryid);
-                return Ok(entry);
+                var result = await _timeClockService.ClockOut(timeEntryid);
+                return Ok(result);
             }
             else
             {
@@ -260,8 +260,8 @@ namespace Amphibian.Patrol.Api.Controllers
             //ensure the entry belongs to the current user and that the current user is still in the specified patrol
             if (patrols.Any(x => x.Id == patrolId)) //or the user is an admin
             {
-                var activeEntries = await _timeEntryRepository.GetActiveTimeEntries(patrolId, User.GetUserId());
-                return Ok(activeEntries.OrderBy(x=>x.ClockIn).FirstOrDefault());
+                var result = await _timeClockService.GetCurrent(patrolId, User.GetUserId());
+                return Ok(result);
             }
             else
             {

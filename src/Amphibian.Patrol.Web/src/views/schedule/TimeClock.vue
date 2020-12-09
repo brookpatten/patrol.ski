@@ -1,30 +1,47 @@
 <template>
     <div>
         <CCard :border-color="timeEntry.id ? (timeEntry.clockOut ? 'danger' : 'primary') : 'info'">
-            <CCardBody>
+            <CCardHeader>
+              <CIcon name="cil-bell"/>Time Clock
+              <CButtonGroup class="float-right">
+                <CButton color="success" size="sm" v-if="!timeEntry.id || timeEntry.clockOut" @click="clockIn">Clock In</CButton>
+                <CButton color="danger" size="sm" v-if="timeEntry.id && !timeEntry.clockOut" @click="clockOut">Clock Out</CButton>
+              </CButtonGroup>
+            </CCardHeader>
+            <CCardBody v-if="timeEntry.id">
                 <CRow>
-                  <CCol md="4">
-                    <CButtonGroup>
-                      <CButton color="success" size="lg" v-if="!timeEntry.id || timeEntry.clockOut" @click="clockIn">Clock In</CButton>
-                      <CButton color="danger" size="lg" v-if="timeEntry.id && !timeEntry.clockOut" @click="clockOut">Clock Out</CButton>
-                    </CButtonGroup>
-                  </CCol>
-                  <CCol md="8">
-                    <CRow v-if="timeEntry.id && timeEntry.clockIn">
-                      <CCol md="4"><label>Clocked In:</label></CCol>
-                      <CCol md="8">{{new Date(timeEntry.clockIn).toLocaleTimeString() }}</CCol>
-                    </CRow>
-                    <CRow v-if="timeEntry.id && timeEntry.clockOut">
-                      <CCol md="4"><label>Clocked Out:</label> </CCol>
-                      <CCol md="8">{{new Date(timeEntry.clockOut).toLocaleTimeString() }}</CCol>
-                    </CRow>
+                  <CCol md="6">
                     <CRow v-if="timeEntry.id && timeEntry.clockIn && !timeEntry.clockOut">
-                      <CCol md="4"><label>Hours:</label></CCol>
-                      <CCol md="8">{{duration(timeEntry.clockIn,now)}}</CCol>
+                      <CCol><span class="display-3">{{duration(timeEntry.clockIn,now)}}</span></CCol>
                     </CRow>
                     <CRow v-if="timeEntry.id && timeEntry.clockIn && timeEntry.clockOut">
-                      <CCol md="4"><label>Hours:</label></CCol>
-                      <CCol md="8">{{duration(timeEntry.clockIn,timeEntry.clockOut)}}</CCol>
+                      <CCol><span class="display-3">{{duration(timeEntry.clockIn,timeEntry.clockOut)}}</span></CCol>
+                    </CRow>
+                  </CCol>
+                  <CCol md="6">
+                    <CRow v-if="timeEntry.id && timeEntry.clockIn">
+                      <CCol><label>Clocked In:</label></CCol>
+                      <CCol>{{new Date(timeEntry.clockIn).toLocaleTimeString() }}</CCol>
+                    </CRow>
+                    <CRow v-if="timeEntry.id && timeEntry.clockOut">
+                      <CCol><label>Clocked Out:</label> </CCol>
+                      <CCol>{{new Date(timeEntry.clockOut).toLocaleTimeString() }}</CCol>
+                    </CRow>
+                    <CRow v-if="scheduledShift.id && (shift.id || group.id)">
+                      <CCol>
+                        <label>Shift:</label>
+                      </CCol>
+                      <CCol>
+                        <template v-if="shift"><strong>{{shift.name}}</strong></template>  <template v-if="group"><em>{{group.name}}</em></template>
+                      </CCol>
+                    </CRow>
+                    <CRow v-if="scheduledShift.id">
+                      <CCol>
+                        <label>Scheduled:</label>
+                      </CCol>
+                      <CCol>
+                        {{(new Date(scheduledShift.startsAt)).toLocaleTimeString()}} - {{(new Date(scheduledShift.endsAt)).toLocaleTimeString()}}
+                      </CCol>
                     </CRow>
                   </CCol>
                 </CRow>
@@ -42,6 +59,9 @@ export default {
   data () {
     return {
       timeEntry:{},
+      scheduledShift:{},
+      shift:{},
+      group:{},
       timer: '',
       now:new Date()
     }
@@ -53,31 +73,40 @@ export default {
       return diffDate.getUTCHours()+":"+(diffDate.getUTCMinutes()+"").padStart(2,"0")+":"+(diffDate.getUTCSeconds()+"").padStart(2,"0");
     },
     getCurrentTimeEntry() {
-      this.$store.dispatch('loading','Loading...');
+      this.$store.dispatch('loading','Checking Time Clock...');
         this.$http.get('timeclock/current/mine/'+this.selectedPatrolId)
             .then(response => {
                 console.log("timeEntry:",response.data);
-                this.timeEntry = response.data;
+                this.timeEntry = response.data.timeEntry;
+                this.scheduledShift = response.data.scheduledShift;
+                this.shift = response.data.shift;
+                this.group = response.data.group;
             }).catch(response => {
                 console.log(response);
             }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     clockIn() {
-      this.$store.dispatch('loading','Loading...');
+      this.$store.dispatch('loading','Clocking In...');
         this.$http.post('timeclock/clock-in/'+this.selectedPatrolId)
             .then(response => {
                 console.log("clock-in",response.data);
-                this.timeEntry = response.data;
+                this.timeEntry = response.data.timeEntry;
+                this.scheduledShift = response.data.scheduledShift;
+                this.shift = response.data.shift;
+                this.group = response.data.group;
             }).catch(response => {
                 console.log(response);
             }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     clockOut() {
-      this.$store.dispatch('loading','Loading...');
+      this.$store.dispatch('loading','Clocking Out...');
         this.$http.post('timeclock/clock-out/'+this.timeEntry.id)
             .then(response => {
                 console.log("clock-out",response.data);
-                this.timeEntry = response.data;
+                this.timeEntry = response.data.timeEntry;
+                this.scheduledShift = response.data.scheduledShift;
+                this.shift = response.data.shift;
+                this.group = response.data.group;
             }).catch(response => {
                 console.log(response);
             }).finally(response=>this.$store.dispatch('loadingComplete'));

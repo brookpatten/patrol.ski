@@ -32,22 +32,28 @@
           <CCardBody>
             <CRow>
               <CCol md="4" lg="4">
+                <CRow><CCol>
                 <img src="brook.jpg" alt="author's profile pic" class="img-fluid rounded"/>
+                </CCol></CRow>
+                <CRow><CCol>
+                  <br/>
+                  <CAlert color="info">Take a tour of the app below, or click "Test Drive" to dive right in.</CAlert>
+                </CCol></CRow>
               </CCol>
               <CCol>
                   <p>Hi, My name is Brook and I am a volunteer ski patroller in Central division, Ohio region</p>
                   <p>I'm fairly new to patrolling, but I'm an experienced software developer.  After my first season I had 
-                    some ideas for tools I could make that might be helpful to volunteer ski patrols like ours.  
-                    I quickly found that patrollers I spoke to online had different ideas about what kinds of apps their patrol needed.
+                    some ideas for tools I could make that might be helpful to volunteer patrols like ours.  
+                    I quickly found that patrollers I spoke to had different ideas about what kinds of apps their patrol needed.
                   </p>
                   <p>
-                    From those ideas this project has grown.  It now includes OET Training plans and trainee progress tracking, trainer/trainee signups, 
-                    scheduling, shift swapping, event calendar, announcements, and email notifications for all of the above.  None of these features are forced on you, if you're only interested in one 
-                    part, just use that part and turn the rest off.
+                    From those ideas, this project has grown.  Realizing that patrols from different host areas have varying needs and resources, <strong>all functions are optional</strong>.
+                    You can enable the functions you want, and disable the ones you don't.  Maybe your area already has a good scheduling/time solution and you like the training functions.
+                    Maybe you prefer to use social media for your calendar and notifications.  That's perfectly fine and this App won't get in your way.
                   </p>
                   <p>
-                    I intend for this to be a free app for volunteer patrols, and for the source code to be freely available as well.
-                    If you have questions, comments, problems, or feature requests feel free to shoot me an email help@patrol.ski or visit the
+                    I intend for this to be a <strong>free app for volunteer patrols</strong>, and for the source code to be freely available as well.
+                    If you have questions, comments, problems, or feature requests feel free to shoot me an email <strong>help@patrol.ski</strong> or visit the
                     <a href='https://github.com/brookpatten/patrol.ski'> GitHub project</a>
                   </p>
               </CCol>
@@ -58,22 +64,51 @@
     </CRow>
     <CRow>
       <CCol md="6">
-        <CCard>
-          <CCardHeader>
-            Scheduling
-          </CCardHeader>
-          <CCardBody>
-            <ul>
-              <li><p>Create your schedule quickly.  Schedule every shift individually or create "cookie cutter" shifts</p>
-                <img src="feature-schedule-calendar.png" alt="announcement screenshot" style="width:300px" @click="openGallery(12)"/>
-              </li>
-              <li><p>Allow your patrol to swap & pick up shifts, but you retain final approval</p>
-                <img src="feature-schedule-swap.png" alt="announcement screenshot" style="width:300px" @click="openGallery(15)"/>
-              </li>
-              <li><p>Quickly duplicate your schedule out of any period of time desired</p></li>
-            </ul>
-          </CCardBody>
-        </CCard>
+        <CRow>
+          <CCol>
+            <CCard>
+              <CCardHeader>
+                Scheduling
+              </CCardHeader>
+              <CCardBody>
+                <ul>
+                  <li><p>Create your schedule quickly.  Schedule every shift individually or create "cookie cutter" shifts</p>
+                    <img src="feature-schedule-calendar.png" alt="announcement screenshot" style="width:300px" @click="openGallery(12)"/>
+                  </li>
+                  <li><p>Allow your patrol to swap & pick up shifts, but administrators retain final approval</p>
+                    <img src="feature-schedule-swap.png" alt="announcement screenshot" style="width:300px" @click="openGallery(15)"/>
+                  </li>
+                  <li><p>Quickly duplicate your schedule out of any period of time desired</p></li>
+                  <li><p>Schedule Available shifts which patrollers can claim to schedule themselves</p>
+                    <img src="feature-schedule-available.png" alt="available scheduling screenshot" style="width:300px" @click="openGallery(23)"/>
+                  </li>
+                </ul>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+        <CRow>
+          <CCol>
+            <CCard>
+              <CCardHeader>
+                TimeClock
+              </CCardHeader>
+              <CCardBody>
+                <ul>
+                  <li><p>Clock In/Out, View who's currently clocked in, and who's late gone early (if also using scheduling)</p>
+                    <img src="feature-timeclock-dashboard.png" alt="Dashboard screenshot" style="width:300px" @click="openGallery(20)"/>
+                  </li>
+                  <li><p>Report hours per day per person</p>
+                    <img src="feature-timeclock-days.png" alt="Timecard screenshot" style="width:300px" @click="openGallery(21)"/>
+                  </li>
+                  <li><p>Report late arrival, early leaving, and missed shifts (if also using scheduling)</p>
+                    <img src="feature-timeclock-missing.png" alt="Missed shift screenshot" style="width:300px" @click="openGallery(22)"/>
+                  </li>
+                </ul>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
       </CCol>
       <CCol md="6">
         <CCard>
@@ -257,6 +292,26 @@ export default {
           src:'feature-mobile.png',
           thumb:'feature-mobile.png',
           caption:'Works on pc, tablet, or mobile'
+        },
+        {
+          src:'feature-timeclock-dashboard.png',
+          thumb:'feature-timeclock-dashboard.png',
+          caption:'Timeclock & Dashboard'
+        },
+        {
+          src:'feature-timeclock-days.png',
+          thumb:'feature-timeclock-days.png',
+          caption:'Report daily hours'
+        },
+        {
+          src:'feature-timeclock-missing.png',
+          thumb:'feature-timeclock-missing.png',
+          caption:'Report missed/late/mia shifts if both timeclock and scheduling are used'
+        },
+        {
+          src:'feature-schedule-available.png',
+          thumb:'feature-schedule-available.png',
+          caption:'Schedule shifts as Available for users to claim'
         }
       ],
     }

@@ -21,12 +21,12 @@
         <CSidebarNavTitle>
           Administration
         </CSidebarNavTitle>
-        <CSidebarNavItem v-if='hasPermission("MaintainPatrol")'
-          name='Patrol' :to='{name:"EditPatrol"}' icon='cil-home' />
         <CSidebarNavItem v-if='hasPermission("MaintainUsers")'
           name='People' :to='{name:"People"}' icon='cil-user' />
         <CSidebarNavItem v-if='hasPermission("MaintainGroups")'
           name='Groups' :to='{name:"Groups"}' icon='cil-people' />
+        <CSidebarNavItem v-if='hasPermission("MaintainPatrol")'
+        name='Patrol Settings' :to='{name:"EditPatrol"}' icon='cil-home' />
       </template>
 
       <template v-if="(selectedPatrol.enableScheduling && hasPermission('MaintainSchedule'))">

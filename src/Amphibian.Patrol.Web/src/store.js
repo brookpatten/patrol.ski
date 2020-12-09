@@ -204,9 +204,26 @@ export default new Vuex.Store({
     authStatus: state => state.status,
     selectedPatrol: function(state){
       console.log('selectedpatrolid:'+state.selectedPatrolId);
-      return _.find(state.patrols,function(s){
+      var patrol = _.find(state.patrols,function(s){
         return s.id==state.selectedPatrolId;
-      })
+      });
+      if(patrol){
+        return patrol;
+      }
+      else{
+        return {
+          permissions:[],
+          id:null,
+          name:null,
+          enableTraining:false,
+          enableAnnouncements:false,
+          enableEvents:false,
+          enableScheduling:false,
+          enableShiftSwaps:false,
+          enableTimeClock:false,
+          timeZone:false
+        }
+      }
     },
     patrols: state => state.patrols,
     user: state=> state.user,

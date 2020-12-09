@@ -1,4 +1,5 @@
-﻿using Amphibian.Patrol.Api.Models;
+﻿using Amphibian.Patrol.Api.Dtos;
+using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Repositories;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
@@ -16,18 +17,20 @@ namespace Amphibian.Patrol.Api.Services
         private IPatrolRepository _patrolRepository;
         private IShiftRepository _shiftRepository;
         private ISystemClock _systemClock;
+        private IGroupRepository _groupRepository;
 
         public TimeClockService(ILogger<TimeClockService> logger,ITimeEntryRepository timeEntryRepository,
-            IPatrolRepository patrolRepository,IShiftRepository shiftRepository, ISystemClock systemClock)
+            IPatrolRepository patrolRepository,IShiftRepository shiftRepository, ISystemClock systemClock, IGroupRepository groupRepository)
         {
             _logger = logger;
             _timeEntryRepository = timeEntryRepository;
             _patrolRepository = patrolRepository;
             _shiftRepository = shiftRepository;
             _systemClock = systemClock;
+            _groupRepository = groupRepository;
         }
 
-        public async Task<TimeEntry> ClockIn(int patrolId, int userId, DateTime? now=null)
+        public async Task<CurrentTimeEntryDto> ClockIn(int patrolId, int userId, DateTime? now=null)
         {
             if(!now.HasValue)
             {
@@ -37,6 +40,7 @@ namespace Amphibian.Patrol.Api.Services
             //if there are existing entries we don't need to do anything
             if(!existingEntries.Any())
             {
+                var result = new CurrentTimeEntryDto();
                 var entry = new TimeEntry()
                 {
                     ClockIn = now.Value,
@@ -44,6 +48,7 @@ namespace Amphibian.Patrol.Api.Services
                     UserId = userId
                 };
                 await _timeEntryRepository.InsertTimeEntry(entry);
+                result.TimeEntry = entry;
 
                 //if the patrol has schedulingenabled, try to find a shift to associate
                 var patrol = await _patrolRepository.GetPatrol(patrolId);
@@ -57,32 +62,93 @@ namespace Amphibian.Patrol.Api.Services
                     {
                         //if there is more than one match, associate the one that starts the earliest
                         var shift = shifts.First();
+                        var scheduledShift = await _shiftRepository.GetScheduledShift(shift.ScheduledShiftId);
                         var timeEntryScheduledShiftAssignment = new TimeEntryScheduledShiftAssignment()
                         {
                             ScheduledShiftAssignmentId = shift.Id,
                             TimeEntryId = entry.Id
                         };
                         await _timeEntryRepository.InsertTimeEntryScheduledShiftAssignment(timeEntryScheduledShiftAssignment);
+                        
+                        result.TimeEntryScheduledShiftAssignment = timeEntryScheduledShiftAssignment;
+                        result.ScheduledShift = scheduledShift;
+                        if(scheduledShift.ShiftId.HasValue)
+                        {
+                            result.Shift = await _shiftRepository.GetShift(scheduledShift.ShiftId.Value);
+                        }
+                        if(scheduledShift.GroupId.HasValue)
+                        {
+                            result.Group = await _groupRepository.GetGroup(scheduledShift.GroupId.Value);
+                        }
                     }
                 }
 
-                return entry;
+                return result;
             }
             else
             {
+                var result = new CurrentTimeEntryDto();
                 var entry = existingEntries.Where(x => x.ClockIn < now).OrderBy(x => x.ClockIn).FirstOrDefault();
-                return entry;
+
+                var timeEntryScheduledShiftAssignments = await _timeEntryRepository.GetScheduledShiftAssignmentsForTimeEntry(entry.Id);
+                if (timeEntryScheduledShiftAssignments.Any())
+                {
+                    var tessa = timeEntryScheduledShiftAssignments.FirstOrDefault();
+                    result.TimeEntryScheduledShiftAssignment = tessa;
+                    var assignment = await _shiftRepository.GetScheduledShiftAssignment(tessa.ScheduledShiftAssignmentId);
+                    result.ScheduledShift = await _shiftRepository.GetScheduledShift(assignment.ScheduledShiftId);
+                    if (result.ScheduledShift.ShiftId.HasValue)
+                    {
+                        result.Shift = await _shiftRepository.GetShift(result.ScheduledShift.ShiftId.Value);
+                    }
+                    if (result.ScheduledShift.GroupId.HasValue)
+                    {
+                        result.Group = await _groupRepository.GetGroup(result.ScheduledShift.GroupId.Value);
+                    }
+                }
+
+                return result;
             }
         }
 
-        public async Task<TimeEntry> ClockOut(int timeEntryId, DateTime? now=null)
+        public async Task<CurrentTimeEntryDto> GetCurrent(int patrolId, int userId)
+        {
+            var result = new CurrentTimeEntryDto();
+            var activeEntries = await _timeEntryRepository.GetActiveTimeEntries(patrolId, userId);
+            result.TimeEntry = activeEntries.OrderBy(x => x.ClockIn).FirstOrDefault();
+            if(result.TimeEntry!=null)
+            {
+                var tessas = await _timeEntryRepository.GetScheduledShiftAssignmentsForTimeEntry(result.TimeEntry.Id);
+                result.TimeEntryScheduledShiftAssignment = tessas.OrderBy(x => x.Id).FirstOrDefault();
+
+                if(result.TimeEntryScheduledShiftAssignment!=null)
+                {
+                    var scheduledShiftAssignment = await _shiftRepository.GetScheduledShiftAssignment(result.TimeEntryScheduledShiftAssignment.ScheduledShiftAssignmentId);
+                    result.ScheduledShift = await _shiftRepository.GetScheduledShift(scheduledShiftAssignment.ScheduledShiftId);
+
+                    if (result.ScheduledShift.ShiftId.HasValue)
+                    {
+                        result.Shift = await _shiftRepository.GetShift(result.ScheduledShift.ShiftId.Value);
+                    }
+                    if (result.ScheduledShift.GroupId.HasValue)
+                    {
+                        result.Group = await _groupRepository.GetGroup(result.ScheduledShift.GroupId.Value);
+                    }
+                }
+            }
+            return result;
+        }
+
+        public async Task<CurrentTimeEntryDto> ClockOut(int timeEntryId, DateTime? now=null)
         {
             if (!now.HasValue)
             {
                 now = _systemClock.UtcNow.UtcDateTime;
             }
 
+            var result = new CurrentTimeEntryDto();
             var entry = await _timeEntryRepository.GetTimeEntry(timeEntryId);
+            result.TimeEntry = entry;
 
             //make sure it's not already been clocked out
             if(!entry.ClockOut.HasValue)
@@ -121,6 +187,7 @@ namespace Amphibian.Patrol.Api.Services
                         
                         //get the schedule entry so we can see how much can be allocated
                         var scheduledShift = await _shiftRepository.GetScheduledShift(shift.ScheduledShiftId);
+                        result.ScheduledShift = scheduledShift;
 
                         //see if this schedule entry is already covered by previous time entries
                         int previouslyAllocatedShiftSeconds = otherEntryAllocatedScheduledShiftAssignments.Sum(x => x.DurationSeconds);
@@ -165,10 +232,21 @@ namespace Amphibian.Patrol.Api.Services
                             //adjust running totals
                             unallocatedSeconds = unallocatedSeconds - secondsToAllocate;
                             allocatedSeconds = allocatedSeconds + secondsToAllocate;
+
+                            result.TimeEntryScheduledShiftAssignment = timeEntryScheduledShiftAssignment;
                         }
                         else
                         {
                             _logger.LogDebug("Previously allocated > current duration");
+                        }
+
+                        if (result.ScheduledShift.ShiftId.HasValue)
+                        {
+                            result.Shift = await _shiftRepository.GetShift(result.ScheduledShift.ShiftId.Value);
+                        }
+                        if (result.ScheduledShift.GroupId.HasValue)
+                        {
+                            result.Group = await _groupRepository.GetGroup(result.ScheduledShift.GroupId.Value);
                         }
                     }
                     
@@ -185,7 +263,7 @@ namespace Amphibian.Patrol.Api.Services
 
             }
 
-            return entry;
+            return result;
         }
     }
 }

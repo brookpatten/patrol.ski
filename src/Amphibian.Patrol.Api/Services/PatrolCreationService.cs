@@ -540,7 +540,7 @@ namespace Amphibian.Patrol.Api.Services
                                     var entry = await _timeClockService.ClockIn(patrol.Id, assignees[a].AssignedUserId.Value, shift.StartsAt - new TimeSpan(0, 30, 0) + new TimeSpan(0, random.Next(45), random.Next(59)));
                                     if (shift.EndsAt < now)
                                     {
-                                        await _timeClockService.ClockOut(entry.Id, shift.EndsAt - new TimeSpan(0, 10, 0) + new TimeSpan(0, random.Next(45), random.Next(59)));
+                                        await _timeClockService.ClockOut(entry.TimeEntry.Id, shift.EndsAt - new TimeSpan(0, 10, 0) + new TimeSpan(0, random.Next(45), random.Next(59)));
                                     }
                                 }
                             }
@@ -566,7 +566,7 @@ namespace Amphibian.Patrol.Api.Services
                         }
 
                         var entry = await _timeClockService.ClockIn(patrol.Id, user.Id, shiftDate + new TimeSpan(8, 50, 0) + new TimeSpan(0, random.Next(30), random.Next(59)));
-                        await _timeClockService.ClockOut(entry.Id, shiftDate + new TimeSpan(16, 50, 0) + new TimeSpan(0, random.Next(30), random.Next(59)));
+                        await _timeClockService.ClockOut(entry.TimeEntry.Id, shiftDate + new TimeSpan(16, 50, 0) + new TimeSpan(0, random.Next(30), random.Next(59)));
                     }
                 }
             }

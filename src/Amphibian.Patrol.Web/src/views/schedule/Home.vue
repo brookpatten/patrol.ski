@@ -4,51 +4,16 @@
             You have disabled all the the functionality<br/>
             <CButton color="link" :to="{name:'EditPatrol'}">You might want to turn at least one function on.</CButton>
         </CAlert>
-
-        <template v-if="selectedPatrol.enableAnnouncements">
-            <CRow v-for="announcement in announcements" :key="'announcement-'+announcement.id">
-                <CCol>
-                    <CCard accent-color="info">
-                        <CCardHeader>
-                            <strong>{{(new Date(announcement.createdAt)).toLocaleDateString()}}</strong>
-                            {{announcement.subject}} 
-                            <CButtonGroup class="float-right" v-if="hasPermission('MaintainAnnouncements')">
-                                <CButton size="sm" color="info" :to="{name:'EditAnnouncement',params:{announcementId:announcement.id}}">Edit</CButton>
-                                <CButton size="sm" color="warning" v-on:click="expireAnnouncement(announcement)">Remove</CButton>
-                            </CButtonGroup>
-                        </CCardHeader>
-                        <CCardBody v-html="announcement.announcementHtml"></CCardBody>
-                    </CCard>
-                </CCol>
-            </CRow>
-        </template>
-        <CCard v-if="upcomingEvents.length>0 && selectedPatrol.enableEvents">
-            <CCardHeader>
-            <slot name="header">
-                <CIcon name="cil-calendar"/> Upcoming Events
-                <CButton size="sm" color="info" class="float-right" :to="{name:'Calendar'}">Calendar</CButton>
-            </slot>
-            </CCardHeader>
-            <CCardBody>
-                <CDataTable
-                    striped
-                    bordered
-                    small
-                    fixed
-                    :items="upcomingEvents"
-                    :fields="upcomingEventsFields"
-                    sorter>
-                    <template #startsAt="data">
-                        <td>{{(data.item.startsAt ? (new Date(data.item.startsAt)).toLocaleString() : '')}}</td>
-                    </template>
-                    <template #endsAt="data">
-                        <td>{{(data.item.endsAt ? (new Date(data.item.endsAt)).toLocaleString() : '')}}</td>
-                    </template>
-                </CDataTable>
-            </CCardBody>
-        </CCard>
         <template v-if="selectedPatrol.enableTimeClock">
             <time-clock></time-clock>
+        </template>
+        <template v-if="selectedPatrol.enableAnnouncements">
+            <announcements></announcements>
+        </template>
+        <template v-if="selectedPatrol.enableEvents">
+            <upcoming-events></upcoming-events>
+        </template>
+        <template v-if="selectedPatrol.enableTimeClock">
             <time-clock-current></time-clock-current>
             <template v-if="selectedPatrol.enableScheduling">
                 <time-clock-missing></time-clock-missing>
@@ -57,7 +22,7 @@
         <template v-if="selectedPatrol.enableTraining">
             <CRow v-if="hasPermission('MaintainAssignments')">
                 <CCol md="6">
-                    <CCard v-if="hasPermission('MaintainAssignments') && assignmentCountsByDay.length>0">
+                    <CCard v-if="assignmentCountsByDay.length>0">
                         <CCardHeader>
                         <slot name="header">
                             <CIcon name="cil-grid"/># Incomplete Assignments, Last 30 Days
@@ -73,7 +38,7 @@
                     </CCard>
                 </CCol>
                 <CCol md="6">
-                    <CCard v-if="hasPermission('MaintainAssignments') && assignmentProgressByDay.length>0">
+                    <CCard v-if="assignmentProgressByDay.length>0">
                         <CCardHeader>
                         <slot name="header">
                             <CIcon name="cil-grid"/>Assignments % Complete, Last 30 Days
@@ -296,11 +261,14 @@ import BlockUI from 'vue-blockui'
 import TimeClockCurrent from './TimeClockCurrent'
 import TimeClockMissing from './TimeClockMissing'
 import TimeClock from './TimeClock'
+import Announcements from './Announcements.vue'
+import UpcomingEvents from './UpcomingEvents.vue'
 
 export default {
   name: 'Home',
   components: { CChartLine, BlockUI, TimeClockCurrent,
-    TimeClockMissing, TimeClock
+    TimeClockMissing, TimeClock, Announcements,
+    UpcomingEvents
   },
   computed: {
     selectedPatrolId: function () {
