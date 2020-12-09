@@ -49,6 +49,9 @@
               <label for="enableShiftSwaps">Shift Exchange</label>
               <br/>
             </template>
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="enableTimeClock"/>
+            <label for="enableTimeClock">Time Clock</label>
+            <br/>
 
             
         </CCardBody>
@@ -78,6 +81,7 @@ export default {
       enableTraining:true,
       enableScheduling:true,
       enableShiftSwaps:true,
+      enableTimeClock:true,
       initialType:'default',
       validationMessage:'',
       validationErrors:{},
@@ -98,7 +102,8 @@ export default {
               enableEvents: this.enableEvents,
               enableTraining:this.enableTraining,
               enableScheduling:this.enableScheduling,
-              enableShiftSwaps:this.enableShiftSwaps
+              enableShiftSwaps:this.enableShiftSwaps,
+              enableTimeClock: this.enableTimeClock
             }
         
             //create the new patrl

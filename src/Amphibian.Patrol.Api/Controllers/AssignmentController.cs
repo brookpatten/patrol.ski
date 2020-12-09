@@ -239,11 +239,11 @@ namespace Amphibian.Patrol.Api.Controllers
             {
                 if (!start.HasValue)
                 {
-                    start = _clock.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0)).DateTime;
+                    start = _clock.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0)).UtcDateTime;
                 }
                 if (!end.HasValue)
                 {
-                    end = _clock.UtcNow.DateTime;
+                    end = _clock.UtcNow.UtcDateTime;
                 }
                 var result = await _assignmentRepository.GetAssignmentCountsByDay(patrolId, start.Value, end.Value);
                 return Ok(result);
@@ -263,11 +263,11 @@ namespace Amphibian.Patrol.Api.Controllers
             {
                 if (!start.HasValue)
                 {
-                    start = _clock.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0)).DateTime;
+                    start = _clock.UtcNow.Subtract(new TimeSpan(30, 0, 0, 0)).UtcDateTime;
                 }
                 if (!end.HasValue)
                 {
-                    end = _clock.UtcNow.DateTime;
+                    end = _clock.UtcNow.UtcDateTime;
                 }
                 var result = await _assignmentRepository.GetAssignmentProgressByDay(patrolId, start.Value, end.Value, planId, userId);
 

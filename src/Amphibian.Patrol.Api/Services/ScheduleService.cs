@@ -253,6 +253,7 @@ namespace Amphibian.Patrol.Api.Services
                 scheduledShift.EndsAt = dto.EndsAt.Value;
                 scheduledShift.GroupId = group != null ? (int?)group.Id : null;
                 scheduledShift.ShiftId = shift != null ? (int?)shift.Id : null;
+                scheduledShift.DurationSeconds = (int)(scheduledShift.EndsAt - scheduledShift.StartsAt).TotalSeconds;
                 await _shiftRepository.UpdateScheduledShift(scheduledShift);
 
                 assignments = (await _shiftRepository.GetScheduledShiftAssignmentsForScheduledShift(dto.Id)).ToList();
@@ -279,6 +280,7 @@ namespace Amphibian.Patrol.Api.Services
                     }
                     if (updated)
                     {
+                        scheduledShift.DurationSeconds = (int)(scheduledShift.EndsAt - scheduledShift.StartsAt).TotalSeconds;
                         await _shiftRepository.UpdateScheduledShift(scheduledShift);
                     }
 
@@ -294,6 +296,7 @@ namespace Amphibian.Patrol.Api.Services
                         StartsAt = dto.StartsAt.Value,
                         EndsAt = dto.EndsAt.Value
                     };
+                    scheduledShift.DurationSeconds = (int)(scheduledShift.EndsAt - scheduledShift.StartsAt).TotalSeconds;
                     await _shiftRepository.InsertScheduledShift(scheduledShift);
                     assignments = new List<ScheduledShiftAssignment>();
                 }

@@ -35,7 +35,7 @@ namespace Amphibian.Patrol.Api.Repositories
         Task DeleteShift(Shift shift);
 
         //scheduled shift assignments
-        Task<IEnumerable<ScheduledShiftAssignmentDto>> GetScheduledShiftAssignments(int patrolId, int? userId=null, DateTime? from = null, DateTime? to = null, ShiftStatus? status=null, int? scheduledShiftId = null);
+        Task<IEnumerable<ScheduledShiftAssignmentDto>> GetScheduledShiftAssignments(int patrolId, int? userId=null, DateTime? from = null, DateTime? to = null, ShiftStatus? status=null, int? scheduledShiftId = null, int? noOverlapWithExistingScheduleUserId=null);
         Task<ScheduledShiftAssignment> GetScheduledShiftAssignment(int id);
         Task<IEnumerable<ScheduledShiftAssignment>> GetScheduledShiftAssignmentsForScheduledShift(int scheduledShiftId);
         Task InsertScheduledShiftAssignment(ScheduledShiftAssignment shift);

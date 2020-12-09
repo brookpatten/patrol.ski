@@ -13,5 +13,6 @@ namespace Amphibian.Patrol.Api.Models
         public DateTime EndsAt { get; set; }
         public int? ShiftId { get; set; }
         public int? GroupId { get; set; }
+        public int DurationSeconds { get; set; }
     }
 }

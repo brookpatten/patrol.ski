@@ -22,7 +22,8 @@ namespace Amphibian.Patrol.Api.Models
         MaintainPatrol,
         MaintainAnnouncements,
         MaintainEvents,
-        MaintainSchedule
+        MaintainSchedule,
+        MaintainTimeClock
     }
 
     public static class RoleExtensions
@@ -37,7 +38,8 @@ namespace Amphibian.Patrol.Api.Models
                 Permission.RevokeSignatures, 
                 Permission.MaintainAnnouncements, 
                 Permission.MaintainEvents, 
-                Permission.MaintainSchedule
+                Permission.MaintainSchedule,
+                Permission.MaintainTimeClock
                 } 
             }
         };
@@ -107,6 +109,11 @@ namespace Amphibian.Patrol.Api.Models
         public static bool CanMaintainEvents(this Role? role)
         {
             return role.Can(Permission.MaintainEvents);
+        }
+
+        public static bool CanMaintainTimeClock(this Role? role)
+        {
+            return role.Can(Permission.MaintainTimeClock);
         }
     }
 }

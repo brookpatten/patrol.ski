@@ -14,6 +14,7 @@ namespace Amphibian.Patrol.Configuration
         public TestConfiguration Test { get; set; }
         public EmailConfiguration Email { get; set; }
         public AppConfiguration App { get; set; }
+        public string Version { get; set; }
 
         public PatrolTrainingApiConfiguration()
         {

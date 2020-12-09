@@ -157,16 +157,23 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> AuthenticateWithThrowaway()
         {
-            var throwaway = await _patrolCreationService.CreateDemoUserAndPatrol();
-
-            var token = await _authenticationService.CreateNewTokenForUser(throwaway.Item1);
-            var patrols = await _patrolRepository.GetPatrolsForUser(throwaway.Item1.Id);
-            return Ok(new
+            try
             {
-                User = (UserIdentifier)throwaway.Item1,
-                Token = token.TokenGuid,
-                Patrols = patrols
-            });
+                var throwaway = await _patrolCreationService.CreateDemoUserAndPatrol();
+
+                var token = await _authenticationService.CreateNewTokenForUser(throwaway.Item1);
+                var patrols = await _patrolRepository.GetPatrolsForUser(throwaway.Item1.Id);
+                return Ok(new
+                {
+                    User = (UserIdentifier)throwaway.Item1,
+                    Token = token.TokenGuid,
+                    Patrols = patrols
+                });
+            }
+            catch(Exception ex)
+            {
+                return this.Problem();
+            }
         }
     }
 }

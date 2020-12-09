@@ -39,6 +39,17 @@
         <CSidebarNavItem name='Shifts' :to='{name:"Shifts"}' icon='cil-indent-increase' />
       </template>
 
+      <template v-if="(selectedPatrol.enableTimeClock && hasPermission('MaintainTimeClock'))">
+        <CSidebarNavTitle>
+          Timeclock
+        </CSidebarNavTitle>
+        <CSidebarNavItem name='Time/Days' :to='{name:"TimeDays"}' icon='cil-calendar' />
+        <template v-if="selectedPatrol.enableScheduling">
+          <CSidebarNavItem name='Time Missing' :to='{name:"TimeMissing"}' icon='cil-calendar' />
+        </template>
+        <CSidebarNavItem name='Clock In/Out' :to='{name:"TimeEntries"}' icon='cil-calendar' />
+      </template>
+
       <template v-if="(selectedPatrol.enableAnnouncements && hasPermission('MaintainAnnouncements')) || (selectedPatrol.enableEvents && hasPermission('MaintainEvents'))">
         <CSidebarNavTitle>
           Communication

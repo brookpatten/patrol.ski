@@ -43,7 +43,7 @@ namespace Amphibian.Patrol.Api.Services
             var plainText = SanitizeAndNormalize(announcement);
             if (announcement.Id == default(int))
             {
-                announcement.CreatedAt = _clock.UtcNow.DateTime;
+                announcement.CreatedAt = _clock.UtcNow.UtcDateTime;
                 if (!announcement.PostAt.HasValue || announcement.PostAt == default(DateTime))
                 {
                     announcement.PostAt = announcement.CreatedAt;
@@ -91,7 +91,7 @@ namespace Amphibian.Patrol.Api.Services
 
         public async Task<IEnumerable<Announcement>> GetAnnouncementsForPatrol(int patrolId,bool currentOnly)
         {
-            var now = _clock.UtcNow.DateTime;
+            var now = _clock.UtcNow.UtcDateTime;
             var announcements = await _announcementRepository.GetAnnouncements(patrolId, currentOnly ? (DateTime?)now: null);
             return announcements;
         }

@@ -48,6 +48,9 @@ const EditEvent = () => import('@/views/administration/EditEvent')
 const Shifts = () => import('@/views/administration/Shifts')
 const EditShift = () => import('@/views/administration/EditShift')
 const SwapApproval = () => import('@/views/administration/SwapApproval')
+const TimeEntries = () => import('@/views/administration/TimeEntries')
+const TimeDays = () => import('@/views/administration/TimeDays')
+const TimeMissing = () => import('@/views/administration/TimeMissing')
 
 Vue.use(Router)
 
@@ -306,6 +309,33 @@ function configRoutes () {
               meta: {
                 requiresAuth: true
               }
+            },
+            {
+              path: 'time-entries',
+              name: 'TimeEntries',
+              component: TimeEntries,
+              meta: {
+                requiresAuth: true
+              },
+              props:true
+            },
+            {
+              path: 'time-days',
+              name: 'TimeDays',
+              component: TimeDays,
+              meta: {
+                requiresAuth: true
+              },
+              props:true
+            },
+            {
+              path: 'time-missing',
+              name: 'TimeMissing',
+              component: TimeMissing,
+              meta: {
+                requiresAuth: true
+              },
+              props:true
             },
           ]
         }

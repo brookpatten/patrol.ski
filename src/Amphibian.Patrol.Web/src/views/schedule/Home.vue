@@ -47,6 +47,13 @@
                 </CDataTable>
             </CCardBody>
         </CCard>
+        <template v-if="selectedPatrol.enableTimeClock">
+            <time-clock></time-clock>
+            <time-clock-current></time-clock-current>
+            <template v-if="selectedPatrol.enableScheduling">
+                <time-clock-missing></time-clock-missing>
+            </template>
+        </template>
         <template v-if="selectedPatrol.enableTraining">
             <CRow v-if="hasPermission('MaintainAssignments')">
                 <CCol md="6">
@@ -286,10 +293,14 @@
 <script>
 import { CChartLine } from '@coreui/vue-chartjs'
 import BlockUI from 'vue-blockui'
+import TimeClockCurrent from './TimeClockCurrent'
+import TimeClockMissing from './TimeClockMissing'
+import TimeClock from './TimeClock'
 
 export default {
   name: 'Home',
-  components: { CChartLine, BlockUI
+  components: { CChartLine, BlockUI, TimeClockCurrent,
+    TimeClockMissing, TimeClock
   },
   computed: {
     selectedPatrolId: function () {
@@ -598,6 +609,7 @@ export default {
                 }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         refresh:function(){
+            console.log(JSON.stringify(this.selectedPatrol));
             if(this.selectedPatrol.enableTraining){
                 this.getMyAssignments();
                 this.getIncompleteTrainerAssignments();

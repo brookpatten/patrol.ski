@@ -175,10 +175,11 @@ namespace Amphibian.Patrol.Api.Repositories
                     return st;
                 }, new { patrolId, traineeUserId, after });
         }
-        public async Task<IEnumerable<ScheduledShiftAssignmentDto>> GetScheduledShiftAssignments(int patrolId, int? userId=null, DateTime? from = null, DateTime? to = null, ShiftStatus? status=null, int? scheduledShiftId=null)
+        public async Task<IEnumerable<ScheduledShiftAssignmentDto>> GetScheduledShiftAssignments(int patrolId, int? userId=null, DateTime? from = null, DateTime? to = null, ShiftStatus? status=null, int? scheduledShiftId=null, int? noOverlapWithExistingScheduleUserId = null)
         {
             return await _connection.QueryAsync<ScheduledShiftAssignmentDto, UserIdentifier, UserIdentifier, UserIdentifier,Group,Shift, ScheduledShiftAssignmentDto>(
                 @"select
+                distinct
                 st.id
                 , st.scheduledshiftid
                 , ts.StartsAt
@@ -223,16 +224,29 @@ namespace Amphibian.Patrol.Api.Repositories
 	                ou.id=st.originalassigneduserid
 
                 left join groups g on g.id=ts.groupid
+
                 left join shifts s on s.id=ts.shiftid
+
                 where
                     ((@userId is not null and 
                     (st.assigneduserid = @userId
                     or st.claimedbyuserid = @userId))
                     or @userId is null)
-                    and
-                    (@status is null or @status=st.status)
-                    and
-                    (@scheduledShiftId is null or ts.id=@scheduledShiftId)
+                    and (@status is null or @status=st.status)
+                    and (@scheduledShiftId is null or ts.id=@scheduledShiftId)
+                    --exclude shifts with overlaps
+                    and (@noOverlapWithExistingScheduleUserId is null or 
+                    (
+		                select count(overlapssa.id) from ScheduledShiftAssignments overlapssa
+		                inner join scheduledshifts overlapss on 
+			                overlapss.id=overlapssa.ScheduledShiftId 
+			                and overlapss.PatrolId=@patrolId
+			                and overlapss.startsat <= ts.endsat
+			                and overlapss.endsat >= ts.startsat
+		                where 
+			                overlapssa.AssignedUserId = @noOverlapWithExistingScheduleUserId
+			                or overlapssa.ClaimedByUserId = @noOverlapWithExistingScheduleUserId
+	                )=0)
                 order by
 	                    ts.startsat",
                 (st, au, cbu, ou,g,s) =>
@@ -243,7 +257,7 @@ namespace Amphibian.Patrol.Api.Repositories
                     st.Group = g;
                     st.Shift = s;
                     return st;
-                }, new { patrolId, userId, from,to,status, scheduledShiftId });
+                }, new { patrolId, userId, from,to,status, scheduledShiftId, noOverlapWithExistingScheduleUserId });
         }
         public async Task<Trainee> InsertTrainee(Trainee trainee)
         {
