@@ -1,4 +1,5 @@
-﻿using Amphibian.Patrol.Api.Models;
+﻿using Amphibian.Patrol.Api.Dtos;
+using Amphibian.Patrol.Api.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,5 +20,10 @@ namespace Amphibian.Patrol.Api.Repositories
         Task UpdateTimeEntryScheduledShiftAssignment(TimeEntryScheduledShiftAssignment timeEntryScheduledShiftAssignment);
         Task DeleteTimeEntryScheduledShiftAssignment(TimeEntryScheduledShiftAssignment timeEntryScheduledShiftAssignment);
         Task<IEnumerable<TimeEntry>> GetActiveTimeEntries(int? patrolId, int? userId);
+
+        Task<IEnumerable<CurrentTimeEntryDto>> GetActiveTimeEntries(int patrolId,DateTime now);
+        Task<IEnumerable<CurrentTimeEntryDto>> GetMissingTimeEntries(int patrolId, DateTime now);
+        Task<IEnumerable<CurrentTimeEntryDto>> GetTimeEntries(int patrolId, int? userId, DateTime from, DateTime to);
+        Task<IEnumerable<CurrentTimeEntryDto>> GetMissingShiftTime(int patrolId, int? userId, DateTime from, DateTime to);
     }
 }

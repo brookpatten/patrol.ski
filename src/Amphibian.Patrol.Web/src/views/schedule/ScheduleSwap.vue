@@ -64,7 +64,7 @@ export default {
   methods: {
     getScheduledShifts() {
       this.$store.dispatch('loading','Loading...');
-        this.$http.post('schedule/search',{patrolId:this.selectedPatrolId,from:new Date(),status:'Released'})
+        this.$http.post('schedule/search',{patrolId:this.selectedPatrolId,from:new Date(),status:'Released',noOverlapWithUserId:this.user.id})
             .then(response => {
                 console.log(response);
                 this.scheduledShifts = response.data;

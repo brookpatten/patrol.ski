@@ -46,6 +46,7 @@ namespace Amphibian.Patrol.Api.Controllers
             public ShiftStatus? Status { get; set; }
             public DateTime? From { get; set; }
             public DateTime? To { get; set; }
+            public int? NoOverlapWithUserId { get; set; }
         }
         [HttpPost]
         [Route("schedule/search")]
@@ -56,7 +57,7 @@ namespace Amphibian.Patrol.Api.Controllers
 
             if (patrols.Any(x => x.Id == query.PatrolId))
             {
-                var shiftAssignments = await _shiftRepository.GetScheduledShiftAssignments(query.PatrolId, query.UserId, query.From, query.To, query.Status);
+                var shiftAssignments = await _shiftRepository.GetScheduledShiftAssignments(query.PatrolId, query.UserId, query.From, query.To, query.Status, null ,query.NoOverlapWithUserId);
                 return MapScheduledShiftAssessments(shiftAssignments);
             }
             else
@@ -105,7 +106,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> AddScheduledShiftAssignment(int scheduledShiftId,int? userId)
         {
-            var now = _clock.UtcNow.DateTime;
+            var now = _clock.UtcNow.UtcDateTime;
             //ensure the shift exists and that the user is allowed to modify it
             var shift = await _shiftRepository.GetScheduledShift(scheduledShiftId);
             if((await _patrolService.GetUserRoleInPatrol(User.GetUserId(),shift.PatrolId)).CanMaintainSchedule()
@@ -141,7 +142,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CancelScheduledShiftAssignment(int scheduledShiftAssignmentId)
         {
-            var now = _clock.UtcNow.DateTime;
+            var now = _clock.UtcNow.UtcDateTime;
 
             var assignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             //ensure the shift exists and that the user is allowed to modify it
@@ -164,7 +165,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> ReleaseScheduledShiftAssignment(int scheduledShiftAssignmentId)
         {
-            var now = _clock.UtcNow.DateTime;
+            var now = _clock.UtcNow.UtcDateTime;
 
             var assignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             var shift = await _shiftRepository.GetScheduledShift(assignment.ScheduledShiftId);
@@ -189,7 +190,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CancelReleaseScheduledShiftAssignment(int scheduledShiftAssignmentId)
         {
-            var now = _clock.UtcNow.DateTime;
+            var now = _clock.UtcNow.UtcDateTime;
 
             var assignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             var shift = await _shiftRepository.GetScheduledShift(assignment.ScheduledShiftId);
@@ -214,7 +215,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> ClaimScheduledShiftAssignment(int scheduledShiftAssignmentId)
         {
-            var now = _clock.UtcNow.DateTime;
+            var now = _clock.UtcNow.UtcDateTime;
 
             var assignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             var shift = await _shiftRepository.GetScheduledShift(assignment.ScheduledShiftId);
@@ -239,7 +240,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> ApproveScheduledShiftAssignment(int scheduledShiftAssignmentId)
         {
-            var now = _clock.UtcNow.DateTime;
+            var now = _clock.UtcNow.UtcDateTime;
 
             var assignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             //ensure the shift exists and that the user is allowed to modify it
@@ -262,7 +263,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> RejectScheduledShiftAssignment(int scheduledShiftAssignmentId)
         {
-            var now = _clock.UtcNow.DateTime;
+            var now = _clock.UtcNow.UtcDateTime;
 
             var assignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             //ensure the shift exists and that the user is allowed to modify it
@@ -285,7 +286,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CancelScheduledShift(int scheduledShiftId)
         {
-            var now = _clock.UtcNow.DateTime;
+            var now = _clock.UtcNow.UtcDateTime;
 
             var shift = await _shiftRepository.GetScheduledShift(scheduledShiftId);
             if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), shift.PatrolId)).CanMaintainSchedule()
@@ -306,7 +307,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CreateScheduledShift(ScheduledShiftUpdateDto dto)
         {
-            var now = _clock.UtcNow.DateTime;
+            var now = _clock.UtcNow.UtcDateTime;
 
             if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainSchedule()
                 &&(
@@ -340,7 +341,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> ReplicatePeriod (ReplicatePeriodDto dto)
         {
-            var now = _clock.UtcNow.DateTime;
+            var now = _clock.UtcNow.UtcDateTime;
 
             if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainSchedule()
                 && dto.TargetPeriodStart > now)

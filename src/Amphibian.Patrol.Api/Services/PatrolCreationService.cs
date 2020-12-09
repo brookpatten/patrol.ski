@@ -29,12 +29,14 @@ namespace Amphibian.Patrol.Api.Services
         private IEventRepository _eventRepository;
         private IShiftRepository _shiftRepository;
         private IScheduleService _scheduleService;
+        private ITimeClockService _timeClockService;
 
         public enum BuiltInPlan { AlpineSki, AlpineSnowboard };
 
         public PatrolCreationService(ILogger<PatrolCreationService> logger, IPatrolRepository patrolRepository, IPlanRepository planRepository, 
             IGroupRepository groupRepository, IUserRepository userRepository, IAssignmentRepository assignmentRepository, IPlanService planService, 
-            IAnnouncementService announcementService, IEventRepository eventRepository, IShiftRepository shiftRepository, IScheduleService scheduleService)
+            IAnnouncementService announcementService, IEventRepository eventRepository, IShiftRepository shiftRepository, IScheduleService scheduleService,
+            ITimeClockService timeClockService)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
@@ -47,6 +49,7 @@ namespace Amphibian.Patrol.Api.Services
             _eventRepository = eventRepository;
             _shiftRepository = shiftRepository;
             _scheduleService = scheduleService;
+            _timeClockService = timeClockService;
         }
 
         public async Task CreateBuiltInPlan(BuiltInPlan plan, int patrolId)
@@ -341,6 +344,8 @@ namespace Amphibian.Patrol.Api.Services
                 beginningOfWeek = beginningOfWeek - new TimeSpan(1, 0, 0, 0);
             }
 
+            var twoWeeksAgo = beginningOfWeek - new TimeSpan(7, 0, 0, 0);
+
             if (patrol.EnableAnnouncements)
             {
                 //announcements
@@ -395,16 +400,16 @@ namespace Amphibian.Patrol.Api.Services
                 await _eventRepository.InsertEvent(patrolEvent2);
             }
 
+            //make a list of all the people
+            var allPatrollers = new List<User>();
+            allPatrollers.AddRange(trainees);
+            allPatrollers.Add(skiTrainer);
+            allPatrollers.Add(snowboardTrainer);
+            allPatrollers.Add(tobogganTrainer);
+            allPatrollers.Add(admin);
+
             if (patrol.EnableScheduling)
             {
-                //make a list of all the people
-                var allPatrollers = new List<User>();
-                allPatrollers.AddRange(trainees);
-                allPatrollers.Add(skiTrainer);
-                allPatrollers.Add(snowboardTrainer);
-                allPatrollers.Add(tobogganTrainer);
-                allPatrollers.Add(admin);
-
                 var morning = new Shift()
                 {
                     StartHour = 9,
@@ -459,7 +464,7 @@ namespace Amphibian.Patrol.Api.Services
                 //fill the week with shifts semi-randomly
                 for(int i=0;i<7;i++)
                 {
-                    var shiftDate = beginningOfWeek + new TimeSpan(i, 0, 0, 0, 0);
+                    var shiftDate = twoWeeksAgo + new TimeSpan(i, 0, 0, 0, 0);
 
                     allShifts.Add(await _scheduleService.ScheduleShift(new ScheduledShiftUpdateDto()
                     {
@@ -479,7 +484,7 @@ namespace Amphibian.Patrol.Api.Services
                 }
 
                 //replicate that week for 90 more days
-                var replicatedShifts = await _scheduleService.ReplicatePeriod(patrol.Id, false,false, beginningOfWeek, beginningOfWeek + new TimeSpan(6, 23, 59, 59, 999), beginningOfWeek + new TimeSpan(7, 0, 0, 0, 0), beginningOfWeek + new TimeSpan(90, 23, 59, 59));
+                var replicatedShifts = await _scheduleService.ReplicatePeriod(patrol.Id, false,false, twoWeeksAgo, twoWeeksAgo + new TimeSpan(6, 23, 59, 59, 999), twoWeeksAgo + new TimeSpan(7, 0, 0, 0, 0), twoWeeksAgo + new TimeSpan(90, 23, 59, 59));
 
                 allShifts.AddRange(replicatedShifts);
 
@@ -517,6 +522,51 @@ namespace Amphibian.Patrol.Api.Services
                                 Status = ShiftStatus.Released
                             });
                         }
+                    }
+
+                    //timeclock entries with schedule
+                    if(patrol.EnableTimeClock && shift.StartsAt < now)
+                    {
+                        var assignees = (await _shiftRepository.GetScheduledShiftAssignmentsForScheduledShift(shift.Id)).ToList();
+
+                        for(var a=0;a<assignees.Count;a++)
+                        {
+                            if (assignees[a].AssignedUserId.HasValue)
+                            {
+                                //miss a shift 1/20 time
+                                if (random.Next(20) != 5)
+                                {
+                                    //randomly create time punches for the shift
+                                    var entry = await _timeClockService.ClockIn(patrol.Id, assignees[a].AssignedUserId.Value, shift.StartsAt - new TimeSpan(0, 30, 0) + new TimeSpan(0, random.Next(45), random.Next(59)));
+                                    if (shift.EndsAt < now)
+                                    {
+                                        await _timeClockService.ClockOut(entry.Id, shift.EndsAt - new TimeSpan(0, 10, 0) + new TimeSpan(0, random.Next(45), random.Next(59)));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else if(patrol.EnableTimeClock)
+            {
+                //timeclock entries without schedule
+                for (int i = 0; i < 14; i++)
+                {
+                    var shiftDate = twoWeeksAgo + new TimeSpan(i, 0, 0, 0, 0);
+
+                    var randomUsers = new List<User>();
+                    for(var x=0;x<8;x++)
+                    {
+                        var index = random.Next(allPatrollers.Count());
+                        var user = allPatrollers[index];
+                        if(!randomUsers.Any(y=>y.Id==user.Id))
+                        {
+                            randomUsers.Add(user);
+                        }
+
+                        var entry = await _timeClockService.ClockIn(patrol.Id, user.Id, shiftDate + new TimeSpan(8, 50, 0) + new TimeSpan(0, random.Next(30), random.Next(59)));
+                        await _timeClockService.ClockOut(entry.Id, shiftDate + new TimeSpan(16, 50, 0) + new TimeSpan(0, random.Next(30), random.Next(59)));
                     }
                 }
             }
@@ -707,7 +757,8 @@ namespace Amphibian.Patrol.Api.Services
                 EnableEvents = true,
                 EnableScheduling = true,
                 EnableShiftSwaps = true,
-                EnableTraining = true
+                EnableTraining = true,
+                EnableTimeClock = true
             });
 
             await CreateDemoInitialSetup(patrol,user);

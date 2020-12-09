@@ -102,7 +102,7 @@ export default {
     },
     selectedPatrol: function (){
         return this.$store.getters.selectedPatrol;
-    }
+    },
   },
   watch: {
     selectedPatrolId(){

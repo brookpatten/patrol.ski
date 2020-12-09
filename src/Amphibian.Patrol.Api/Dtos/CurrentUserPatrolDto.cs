@@ -18,6 +18,7 @@ namespace Amphibian.Patrol.Api.Dtos
         public bool EnableEvents { get; set; }
         public bool EnableScheduling { get; set; }
         public bool EnableShiftSwaps { get; set; }
+        public bool EnableTimeClock { get; set; }
         public string TimeZone { get; set; }
         public Role? Role { get; set; }
         public IList<Permission> Permissions

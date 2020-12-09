@@ -1,4 +1,4 @@
-﻿CREATE TABLE dbo.TimeEntries
+﻿CREATE TABLE dbo.TimeEntrys
 	(
 	Id int NOT NULL IDENTITY (1, 1),
 	PatrolId int NOT NULL,
@@ -9,15 +9,15 @@
 	MostRecentReminderSentAt datetime NULL
 	)  ON [PRIMARY]
 GO
-ALTER TABLE dbo.TimeEntries ADD CONSTRAINT
-	PK_TimeEntries PRIMARY KEY CLUSTERED 
+ALTER TABLE dbo.TimeEntrys ADD CONSTRAINT
+	PK_TimeEntrys PRIMARY KEY CLUSTERED 
 	(
 	Id
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 
 GO
-ALTER TABLE dbo.TimeEntries ADD CONSTRAINT
-	FK_TimeEntries_Patrols FOREIGN KEY
+ALTER TABLE dbo.TimeEntrys ADD CONSTRAINT
+	FK_TimeEntrys_Patrols FOREIGN KEY
 	(
 	PatrolId
 	) REFERENCES dbo.Patrols
@@ -27,8 +27,8 @@ ALTER TABLE dbo.TimeEntries ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
-ALTER TABLE dbo.TimeEntries ADD CONSTRAINT
-	FK_TimeEntries_Users FOREIGN KEY
+ALTER TABLE dbo.TimeEntrys ADD CONSTRAINT
+	FK_TimeEntrys_Users FOREIGN KEY
 	(
 	UserId
 	) REFERENCES dbo.Users
@@ -38,15 +38,10 @@ ALTER TABLE dbo.TimeEntries ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
-ALTER TABLE dbo.TimeEntries SET (LOCK_ESCALATION = TABLE)
+ALTER TABLE dbo.TimeEntrys SET (LOCK_ESCALATION = TABLE)
 GO
-COMMIT
-BEGIN TRANSACTION
 GO
 ALTER TABLE dbo.ScheduledShiftAssignments SET (LOCK_ESCALATION = TABLE)
-GO
-COMMIT
-BEGIN TRANSACTION
 GO
 CREATE TABLE dbo.TimeEntryScheduledShiftAssignments
 	(
@@ -64,10 +59,10 @@ ALTER TABLE dbo.TimeEntryScheduledShiftAssignments ADD CONSTRAINT
 
 GO
 ALTER TABLE dbo.TimeEntryScheduledShiftAssignments ADD CONSTRAINT
-	FK_TimeEntryScheduledShiftAssignments_TimeEntries FOREIGN KEY
+	FK_TimeEntryScheduledShiftAssignments_TimeEntrys FOREIGN KEY
 	(
 	TimeEntryId
-	) REFERENCES dbo.TimeEntries
+	) REFERENCES dbo.TimeEntrys
 	(
 	Id
 	) ON UPDATE  NO ACTION 

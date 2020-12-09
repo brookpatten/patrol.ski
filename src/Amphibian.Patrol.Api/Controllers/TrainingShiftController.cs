@@ -43,7 +43,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetTraining(int patrolId)
         {
-            var upcomingShifts = await _shiftRepository.GetScheduledShiftAssignments(patrolId, this.User.GetUserId(), _clock.UtcNow.DateTime);
+            var upcomingShifts = await _shiftRepository.GetScheduledShiftAssignments(patrolId, this.User.GetUserId(), _clock.UtcNow.UtcDateTime);
 
             upcomingShifts = upcomingShifts.Where(x => x.TraineeCount > 0);
 
@@ -55,7 +55,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetAvailable(int patrolId)
         {
-            var availableShifts = await _shiftRepository.GetAvailableTrainerShiftsForTrainee(patrolId, this.User.GetUserId(), _clock.UtcNow.DateTime);
+            var availableShifts = await _shiftRepository.GetAvailableTrainerShiftsForTrainee(patrolId, this.User.GetUserId(), _clock.UtcNow.UtcDateTime);
             return Ok(availableShifts);
         }
 
@@ -64,7 +64,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetCommitted(int patrolId)
         {
-            var shifts = await _shiftRepository.GetCommittedTrainerShiftsForTrainee(patrolId, this.User.GetUserId(), _clock.UtcNow.DateTime);
+            var shifts = await _shiftRepository.GetCommittedTrainerShiftsForTrainee(patrolId, this.User.GetUserId(), _clock.UtcNow.UtcDateTime);
             return Ok(shifts);
         }
 

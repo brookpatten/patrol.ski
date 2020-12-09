@@ -68,7 +68,7 @@ namespace Amphibian.Patrol.Api.Controllers
 
             if (patrols.Any(x => x.Id == patrolId))
             {
-                var patrolEvents = await _eventRepository.GetUpcomingEvents(patrolId, _clock.UtcNow.DateTime);
+                var patrolEvents = await _eventRepository.GetUpcomingEvents(patrolId, _clock.UtcNow.UtcDateTime);
                 return Ok(patrolEvents);
             }
             else
@@ -106,7 +106,7 @@ namespace Amphibian.Patrol.Api.Controllers
                 if(patrolEvent.Id == default(int))
                 {
                     patrolEvent.CreatedByUserId = User.GetUserId();
-                    patrolEvent.CreatedAt = _clock.UtcNow.DateTime;
+                    patrolEvent.CreatedAt = _clock.UtcNow.UtcDateTime;
                     await _eventRepository.InsertEvent(patrolEvent);
                 }
                 else

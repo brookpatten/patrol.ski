@@ -27,15 +27,19 @@ namespace Amphibian.Patrol.Api.Services
             _systemClock = systemClock;
         }
 
-        public async Task<TimeEntry> ClockIn(int patrolId, int userId)
+        public async Task<TimeEntry> ClockIn(int patrolId, int userId, DateTime? now=null)
         {
+            if(!now.HasValue)
+            {
+                now = _systemClock.UtcNow.UtcDateTime;
+            }
             var existingEntries = await _timeEntryRepository.GetActiveTimeEntries(patrolId, userId);
             //if there are existing entries we don't need to do anything
             if(!existingEntries.Any())
             {
                 var entry = new TimeEntry()
                 {
-                    ClockIn = _systemClock.UtcNow.DateTime,
+                    ClockIn = now.Value,
                     PatrolId = patrolId,
                     UserId = userId
                 };
@@ -66,18 +70,24 @@ namespace Amphibian.Patrol.Api.Services
             }
             else
             {
-                return existingEntries.OrderBy(x => x.ClockIn).First();
+                var entry = existingEntries.Where(x => x.ClockIn < now).OrderBy(x => x.ClockIn).FirstOrDefault();
+                return entry;
             }
         }
 
-        public async Task<TimeEntry> ClockOut(int timeEntryId)
+        public async Task<TimeEntry> ClockOut(int timeEntryId, DateTime? now=null)
         {
+            if (!now.HasValue)
+            {
+                now = _systemClock.UtcNow.UtcDateTime;
+            }
+
             var entry = await _timeEntryRepository.GetTimeEntry(timeEntryId);
 
             //make sure it's not already been clocked out
             if(!entry.ClockOut.HasValue)
             {
-                entry.ClockOut = _systemClock.UtcNow.DateTime;
+                entry.ClockOut = now.Value;
                 entry.DurationSeconds = (int)(entry.ClockOut.Value - entry.ClockIn).TotalSeconds;
                 await _timeEntryRepository.UpdateTimeEntry(entry);
 
@@ -87,13 +97,19 @@ namespace Amphibian.Patrol.Api.Services
                 {
                     //track all seconds that need to be allocated from the current time entry
                     int unallocatedSeconds = entry.DurationSeconds.Value;
+                    //track what has been allocated thus far
                     int allocatedSeconds = 0;
 
-                    var shifts = (await _shiftRepository.GetScheduledShiftAssignments(entry.PatrolId, entry.UserId, entry.ClockIn, entry.ClockOut, ShiftStatus.Assigned)).ToList();
+                    var shifts = (await _shiftRepository.GetScheduledShiftAssignments(entry.PatrolId, entry.UserId, entry.ClockIn, entry.ClockOut)).ToList();
                     shifts = shifts.OrderBy(x => x.StartsAt).ToList();
 
                     var timeEntryScheduledShiftAssignments = new List<TimeEntryScheduledShiftAssignment>();
                     timeEntryScheduledShiftAssignments.AddRange(await _timeEntryRepository.GetScheduledShiftAssignmentsForTimeEntry(entry.Id));
+                    //reset all existing allocations to 0
+                    foreach(var existing in timeEntryScheduledShiftAssignments)
+                    {
+                        existing.DurationSeconds = 0;
+                    }
 
                     for(int i=0;i<shifts.Count && unallocatedSeconds > 0;i++)
                     {
@@ -101,24 +117,29 @@ namespace Amphibian.Patrol.Api.Services
 
                         //time entries related to this shift
                         var otherEntryAllocatedScheduledShiftAssignments = (await _timeEntryRepository.GetScheduledShiftAssignmentsForScheduledShiftAssignment(shift.Id)).ToList();
-                        otherEntryAllocatedScheduledShiftAssignments = otherEntryAllocatedScheduledShiftAssignments.Where(x => x.ScheduledShiftAssignmentId != shift.Id).ToList();
+                        otherEntryAllocatedScheduledShiftAssignments = otherEntryAllocatedScheduledShiftAssignments.Where(x => x.TimeEntryId != entry.Id).ToList();
                         
                         //get the schedule entry so we can see how much can be allocated
                         var scheduledShift = await _shiftRepository.GetScheduledShift(shift.ScheduledShiftId);
 
                         //see if this schedule entry is already covered by previous time entries
-                        if(otherEntryAllocatedScheduledShiftAssignments.Sum(x=>x.DurationSeconds) < scheduledShift.DurationSeconds)
+                        int previouslyAllocatedShiftSeconds = otherEntryAllocatedScheduledShiftAssignments.Sum(x => x.DurationSeconds);
+                        if (previouslyAllocatedShiftSeconds < scheduledShift.DurationSeconds)
                         {
                             //if not, allocate what we can to this shift
-                            //offsetting by allocatedSeconds prevents overlapping shifts from both being allocated to the same time
-                            var allocateStart = entry.ClockIn + new TimeSpan(0,0,allocatedSeconds) > scheduledShift.StartsAt ? entry.ClockIn + new TimeSpan(0, 0, allocatedSeconds) : scheduledShift.StartsAt;
+                            //offsetting by allocatedSeconds and previouslyAllocatedShiftSeconds prevents overlapping shifts from both being allocated to the same time
+                            var allocateStart = entry.ClockIn + new TimeSpan(0,0,allocatedSeconds) > scheduledShift.StartsAt + new TimeSpan(0,0, previouslyAllocatedShiftSeconds) ? entry.ClockIn + new TimeSpan(0, 0, allocatedSeconds) : scheduledShift.StartsAt + new TimeSpan(0, 0, previouslyAllocatedShiftSeconds);
                             var allocateEnd = entry.ClockOut.Value > scheduledShift.EndsAt ? scheduledShift.EndsAt : entry.ClockOut.Value;
 
-                            var maximumOverlappedAvailableAllocationSeconds = (int)(allocateEnd - allocateStart).TotalSeconds;
-                            var neededSeconds = scheduledShift.DurationSeconds - otherEntryAllocatedScheduledShiftAssignments.Sum(x => x.DurationSeconds);
+                            //TODO: we could check for existing time entries that overlap between allocateStart/End, but that really shouldn't happen
+                            //since a user can't have multiple ongoing time entries
 
-                            //figure out how much to allocate based on overlap and what's remaining
+                            var maximumOverlappedAvailableAllocationSeconds = (int)(allocateEnd - allocateStart).TotalSeconds;
+                            var neededSeconds = scheduledShift.DurationSeconds - previouslyAllocatedShiftSeconds;
+
+                            //figure out how much to allocate based on overlap and what's remaining in the shift
                             var secondsToAllocate = maximumOverlappedAvailableAllocationSeconds > neededSeconds ? neededSeconds : maximumOverlappedAvailableAllocationSeconds;
+                            //figure out how much to allocate based on what's remaining in the time entry
                             secondsToAllocate = secondsToAllocate > unallocatedSeconds ? unallocatedSeconds : secondsToAllocate;
 
                             //do the allocation
@@ -145,8 +166,12 @@ namespace Amphibian.Patrol.Api.Services
                             unallocatedSeconds = unallocatedSeconds - secondsToAllocate;
                             allocatedSeconds = allocatedSeconds + secondsToAllocate;
                         }
+                        else
+                        {
+                            _logger.LogDebug("Previously allocated > current duration");
+                        }
                     }
-
+                    
                     //there's no scenario where this should happen, the only way it could occur is if a schedule change
                     //occurred mid-shift, which we do not allow.  But just in case, clean it up anyway
                     foreach(var timeEntryScheduledShiftAssignment in timeEntryScheduledShiftAssignments)

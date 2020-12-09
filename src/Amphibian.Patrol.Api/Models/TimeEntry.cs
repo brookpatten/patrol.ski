@@ -5,6 +5,10 @@ using System.Threading.Tasks;
 
 namespace Amphibian.Patrol.Api.Models
 {
+    /// <summary>
+    /// the table name for timeentry is "timeentrys" due to dommel defaults not understanding ies
+    /// and i'm too lazy to implement a custom table name resolver, I suppose I'll deal with until I can't.
+    /// </summary>
     public class TimeEntry
     {
         public int Id { get; set; }

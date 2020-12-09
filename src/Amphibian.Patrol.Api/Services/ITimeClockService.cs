@@ -8,7 +8,7 @@ namespace Amphibian.Patrol.Api.Services
 {
     public interface ITimeClockService
     {
-        Task<TimeEntry> ClockIn(int patrolId, int userId);
-        Task<TimeEntry> ClockOut(int timeEntryId);
+        Task<TimeEntry> ClockIn(int patrolId, int userId, DateTime? now = null);
+        Task<TimeEntry> ClockOut(int timeEntryId, DateTime? now = null);
     }
 }

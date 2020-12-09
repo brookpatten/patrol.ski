@@ -5,7 +5,8 @@ module.exports = {
     //Necessary to run npm link https://webpack.js.org/configuration/resolve/#resolve-symlinks
     resolve: {
        symlinks: false
-    }
+    },
+    //devtool: 'eval-source-map'
   },
   transpileDependencies: [
     '@coreui/utils'

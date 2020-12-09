@@ -28,7 +28,7 @@ namespace Amphibian.Patrol.Api.Infrastructure
         {
             if (_transaction == null)
             {
-                _transaction = new TransactionScope(TransactionScopeAsyncFlowOption.Enabled);
+                _transaction = new TransactionScope(TransactionScopeOption.Required, new TimeSpan(0, 10, 0),TransactionScopeAsyncFlowOption.Enabled);
 
                 if(_connection.State!=ConnectionState.Open)
                 {
