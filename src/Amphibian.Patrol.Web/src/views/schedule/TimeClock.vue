@@ -1,33 +1,36 @@
 <template>
     <div>
-        <CCard :border-color="timeEntry.id ? (timeEntry.clockOut ? 'danger' : 'primary') : 'info'">
+        <CCard :border-color="timeEntry && timeEntry.id ? (timeEntry.clockOut ? 'danger' : 'primary') : 'info'">
             <CCardHeader>
               <CIcon name="cil-bell"/>Time Clock
               <CButtonGroup class="float-right">
-                <CButton color="success" size="sm" v-if="!timeEntry.id || timeEntry.clockOut" @click="clockIn">Clock In</CButton>
-                <CButton color="danger" size="sm" v-if="timeEntry.id && !timeEntry.clockOut" @click="clockOut">Clock Out</CButton>
+                <CButton color="success" size="sm" v-if="!timeEntry || !timeEntry.id || timeEntry.clockOut" @click="clockIn">Clock In</CButton>
+                <CButton color="danger" size="sm" v-if="timeEntry && timeEntry.id && !timeEntry.clockOut" @click="clockOut">Clock Out</CButton>
               </CButtonGroup>
             </CCardHeader>
-            <CCardBody v-if="timeEntry.id">
+            <CCardBody v-if="(timeEntry && timeEntry.id) || (scheduledShift && scheduledShift.id)">
                 <CRow>
                   <CCol md="6">
-                    <CRow v-if="timeEntry.id && timeEntry.clockIn && !timeEntry.clockOut">
+                    <CRow v-if="timeEntry && timeEntry.id && timeEntry.clockIn && !timeEntry.clockOut">
                       <CCol><span class="display-3">{{duration(timeEntry.clockIn,now)}}</span></CCol>
                     </CRow>
-                    <CRow v-if="timeEntry.id && timeEntry.clockIn && timeEntry.clockOut">
+                    <CRow v-if="timeEntry && timeEntry.id && timeEntry.clockIn && timeEntry.clockOut">
                       <CCol><span class="display-3">{{duration(timeEntry.clockIn,timeEntry.clockOut)}}</span></CCol>
+                    </CRow>
+                    <CRow v-if="!timeEntry">
+                      <CCol><span class="display-3">Out</span></CCol>
                     </CRow>
                   </CCol>
                   <CCol md="6">
-                    <CRow v-if="timeEntry.id && timeEntry.clockIn">
+                    <CRow v-if="timeEntry && timeEntry.id && timeEntry.clockIn">
                       <CCol><label>Clocked In:</label></CCol>
                       <CCol>{{new Date(timeEntry.clockIn).toLocaleTimeString() }}</CCol>
                     </CRow>
-                    <CRow v-if="timeEntry.id && timeEntry.clockOut">
+                    <CRow v-if="timeEntry && timeEntry.id && timeEntry.clockOut">
                       <CCol><label>Clocked Out:</label> </CCol>
                       <CCol>{{new Date(timeEntry.clockOut).toLocaleTimeString() }}</CCol>
                     </CRow>
-                    <CRow v-if="scheduledShift.id && (shift.id || group.id)">
+                    <CRow v-if="timeEntry && scheduledShift && scheduledShift.id && ((shift && shift.id) || (group && group.id))">
                       <CCol>
                         <label>Shift:</label>
                       </CCol>
@@ -35,12 +38,28 @@
                         <template v-if="shift"><strong>{{shift.name}}</strong></template>  <template v-if="group"><em>{{group.name}}</em></template>
                       </CCol>
                     </CRow>
-                    <CRow v-if="scheduledShift.id">
+                    <CRow v-if="timeEntry && scheduledShift && scheduledShift.id">
                       <CCol>
                         <label>Scheduled:</label>
                       </CCol>
                       <CCol>
                         {{(new Date(scheduledShift.startsAt)).toLocaleTimeString()}} - {{(new Date(scheduledShift.endsAt)).toLocaleTimeString()}}
+                      </CCol>
+                    </CRow>
+
+                    <CRow v-if="!timeEntry && scheduledShift && scheduledShift.id">
+                      <CCol>
+                        <label>Next Shift:</label>
+                      </CCol>
+                      <CCol>
+                        <template v-if="shift"><strong>{{shift.name}}</strong></template>  <template v-if="group"><em>{{group.name}}</em></template>
+                      </CCol>
+                    </CRow>
+                    <CRow v-if="!timeEntry && scheduledShift && scheduledShift.id">
+                      <CCol>
+                      </CCol>
+                      <CCol>
+                        {{(new Date(scheduledShift.startsAt)).toLocaleDateString()}} {{(new Date(scheduledShift.startsAt)).toLocaleTimeString()}} - {{(new Date(scheduledShift.endsAt)).toLocaleTimeString()}}
                       </CCol>
                     </CRow>
                   </CCol>

@@ -136,6 +136,24 @@ namespace Amphibian.Patrol.Api.Services
                     }
                 }
             }
+            else
+            {
+                //find the first shift in the next week
+                var scheduledShifts = await _shiftRepository.GetScheduledShiftAssignments(patrolId, userId, _systemClock.UtcNow.UtcDateTime, _systemClock.UtcNow.UtcDateTime + new TimeSpan(7,0, 0, 0));
+                var scheduledShiftDto = scheduledShifts.OrderBy(x => x.StartsAt).FirstOrDefault();
+                if(scheduledShiftDto != null)
+                {
+                    result.ScheduledShift = await _shiftRepository.GetScheduledShift(scheduledShiftDto.ScheduledShiftId);
+                    if (result.ScheduledShift.ShiftId.HasValue)
+                    {
+                        result.Shift = await _shiftRepository.GetShift(result.ScheduledShift.ShiftId.Value);
+                    }
+                    if (result.ScheduledShift.GroupId.HasValue)
+                    {
+                        result.Group = await _groupRepository.GetGroup(result.ScheduledShift.GroupId.Value);
+                    }
+                }
+            }
             return result;
         }
 
