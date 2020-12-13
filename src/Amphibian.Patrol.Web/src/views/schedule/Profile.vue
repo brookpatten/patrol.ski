@@ -40,6 +40,11 @@
         </CCardBody>
         <CCardFooter>
             <CButtonGroup>
+              <CButton v-if="!showDelete" @click="showDelete=true" color="warning">Forget Me</CButton>
+              <CButton v-if="showDelete" @click="showDelete=false" color="success">Oops, Nevermind</CButton>
+              <CButton v-if="showDelete" @click="deleteMe" color="danger">Yes, I am Sure, Forget me.</CButton>
+            </CButtonGroup>
+            <CButtonGroup class="float-right">
               <CButton type="submit" color="primary">Save</CButton>
             </CButtonGroup>
         </CCardFooter>
@@ -59,7 +64,8 @@ export default {
       user:{},
       validationMessage:'',
       validationErrors:{},
-      validated:false
+      validated:false,
+      showDelete:false
     }
   },
   methods: {
@@ -78,6 +84,19 @@ export default {
         this.$http.put('user',this.user)
           .then(response=>{
             this.$router.push({name:'Home'});
+          }).catch(response=>{
+            this.validated=true;
+            this.validationMessage = response.response.data.title;
+            this.validationErrors = response.response.data.errors;
+          }).finally(response=>this.$store.dispatch('loadingComplete'));
+    },
+    deleteMe(){
+      this.$store.dispatch('loading','Deleting...');
+        this.$http.delete('user')
+          .then(response=>{
+            this.$store.dispatch('logout')
+              .then(()=>this.$router.push({name:"Login"}))
+              .catch(err => console.log(err));
           }).catch(response=>{
             this.validated=true;
             this.validationMessage = response.response.data.title;
