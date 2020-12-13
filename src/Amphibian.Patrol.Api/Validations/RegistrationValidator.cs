@@ -20,6 +20,7 @@ namespace Amphibian.Patrol.Api.Validations
             RuleFor(x => x.firstname).NotEmpty().MaximumLength(256);
             RuleFor(x => x.lastname).NotEmpty().MaximumLength(256);
             RuleFor(x => x.password).NotEmpty();
+            RuleFor(x => x.nspNumber).MaximumLength(12);
             RuleFor(x => x.email)
                 .EmailAddress().WithMessage("Not a valid Email Address").MaximumLength(512)
                 .MustAsync(async (field, token) =>

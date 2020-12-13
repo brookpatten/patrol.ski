@@ -7,7 +7,7 @@
               <CForm v-on:submit.prevent="register">
                 <h1>Register</h1>
                 <p>Create your account</p>
-                <p class="text-muted">Your information will not be shared.  Ever.</p>
+                <p class="text-muted">Your information will not be shared outside of your patrol.  Ever.</p>
                 <CInput
                   placeholder="First Name"
                   autocomplete="first"
@@ -31,6 +31,13 @@
                   v-model="email"
                   :isValid="validation.validated ? validation.email == null : null"
                   :invalidFeedback="validation.email"
+                />
+                <CInput
+                  placeholder="NSP #"
+                  prepend="#"
+                  v-model="nspNumber"
+                  :isValid="validation.validated ? validation.nspNumber == null : null"
+                  :invalidFeedback="validation.nspNumber"
                 />
                 <CInput
                   placeholder="Password"
@@ -67,11 +74,12 @@ export default {
   name: 'Register',
   data(){
     return {
-      fistname: "",
+      firstname: "",
       lastname: "",
       email: "",
       password: "",
       password_confirmation: "",
+      nspNumber:"",
       validation: {
         validated: false
       }
@@ -84,7 +92,8 @@ export default {
         firstname: this.firstname,
         lastname: this.lastname,
         email: this.email,
-        password: this.password
+        password: this.password,
+        nspNumber: this.nspNumber
       };
       console.log("register",data);
       this.$store.dispatch('register', data)

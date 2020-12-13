@@ -14,6 +14,7 @@ namespace Amphibian.Patrol.Configuration
         public TestConfiguration Test { get; set; }
         public EmailConfiguration Email { get; set; }
         public AppConfiguration App { get; set; }
+        public AuthenticationConfiguration Authentication { get; set; }
         public string Version { get; set; }
 
         public PatrolTrainingApiConfiguration()
@@ -132,4 +133,28 @@ namespace Amphibian.Patrol.Configuration
         public string ProfileRoute { get; set; }
     }
 
+    public class AuthenticationConfiguration
+    {
+        public GoogleAuthenticationConfiguration Google { get; set; }
+        public FacebookAuthenticationConfiguration Facebook { get; set; }
+        public MicrosoftAuthenticationConfiguration Microsoft { get; set; }
+    }
+
+    public class GoogleAuthenticationConfiguration
+    {
+        public string ClientId { get; set; }
+        public string Secret { get; set; }
+    }
+
+    public class FacebookAuthenticationConfiguration
+    {
+        public string AppId { get; set; }
+    }
+
+    public class MicrosoftAuthenticationConfiguration
+    {
+        public string TenantId { get; set; }
+        public string ClientId { get; set; }
+        public string GraphBaseEndpoint { get; set; }
+    }
 }

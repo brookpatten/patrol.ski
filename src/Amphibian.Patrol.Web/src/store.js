@@ -116,6 +116,24 @@ export default new Vuex.Store({
         resolve();
       });
     },
+    authenticate({commit},resp){
+      console.log('authenticate',resp);
+      return new Promise((resolve, reject) => {
+        commit('auth_success', resp.data);
+        localStorage.setItem('user', JSON.stringify(state.user));
+        localStorage.setItem('token', state.token);
+        axios.defaults.headers.common['Authorization'] = 'Bearer ' + state.token;
+        localStorage.setItem('patrols', JSON.stringify({patrols:state.patrols}));
+        if(state.patrols && state.patrols.length>0){
+          state.selectedPatrolId = state.patrols[0].id;
+          localStorage.setItem('selectedPatrolId', state.selectedPatrolId);
+        }
+        else {
+          //redirect the user to create a patrol
+        }
+        resolve(resp);
+      });
+    },
     login({commit}, user){
       return new Promise((resolve, reject) => {
         commit('auth_request');

@@ -92,13 +92,14 @@ namespace Amphibian.Patrol.Api.Services
             }
         }
 
-        public async Task<User> RegisterUser(string email, string first, string last, string password)
+        public async Task<User> RegisterUser(string email, string first, string last, string password, string nspNumber)
         {
             var user = new User()
             {
                 Email = email,
                 FirstName = first,
-                LastName = last
+                LastName = last,
+                NspNumber = nspNumber
             };
             _passwordService.SetPassword(user, password);
             await _userRepository.InsertUser(user);

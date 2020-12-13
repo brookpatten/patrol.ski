@@ -6,7 +6,7 @@ module.exports = {
     resolve: {
        symlinks: false
     },
-    //devtool: 'eval-source-map'
+    devtool: 'eval-source-map'
   },
   transpileDependencies: [
     '@coreui/utils'
@@ -14,7 +14,8 @@ module.exports = {
   publicPath: '.',
   devServer: {
     proxy: 'https://localhost:44348',
-    publicPath: '/'
+    publicPath: '/',
+    public: 'fdc9cc9eee2d.ngrok.io'
   }
   // use this option for production linking
   // publicPath: process.env.NODE_ENV === 'production' ? '/vue/demo/3.1.0' : '/'

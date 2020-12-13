@@ -12,6 +12,7 @@ namespace Amphibian.Patrol.Api.Models
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public bool AllowEmailNotifications { get; set; }
+        public string NspNumber { get; set; }
 
         public string GetFullName()
         {
@@ -23,5 +24,8 @@ namespace Amphibian.Patrol.Api.Models
         public byte[] PasswordSalt { get; set; }
         public byte[] PasswordHash { get; set; }
         public int? PasswordHashIterations { get; set; }
+        public bool UsesFacebookAuth { get; set; }
+        public bool UsesGoogleAuth { get; set; }
+        public bool UsesMicrosoftAuth { get; set; }
     }
 }

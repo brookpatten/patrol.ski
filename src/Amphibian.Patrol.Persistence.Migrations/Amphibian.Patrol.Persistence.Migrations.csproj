@@ -24,6 +24,7 @@
     <None Remove="Scripts\0016-EmailAnnouncementsAndEvents.sql" />
     <None Remove="Scripts\0017-AllowAvailableScheduledShiftAssignments.sql" />
     <None Remove="Scripts\0018-Timeclock.sql" />
+    <None Remove="Scripts\0019-AuthProviders.sql" />
     <None Remove="Scripts\0999-Indexes.sql" />
     <None Remove="Scripts\1001-TestData.sql" />
   </ItemGroup>
@@ -47,6 +48,7 @@
     <EmbeddedResource Include="Scripts\0016-EmailAnnouncementsAndEvents.sql" />
     <EmbeddedResource Include="Scripts\0017-AllowAvailableScheduledShiftAssignments.sql" />
     <EmbeddedResource Include="Scripts\0018-Timeclock.sql" />
+    <EmbeddedResource Include="Scripts\0019-AuthProviders.sql" />
     <EmbeddedResource Include="Scripts\0999-Indexes.sql" />
     <EmbeddedResource Include="Scripts\1001-TestData.sql" />
   </ItemGroup>

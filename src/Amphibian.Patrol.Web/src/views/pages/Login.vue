@@ -6,7 +6,7 @@
           <CCard class="p-4">
             <CCardBody>
               <CForm @submit.prevent="login">
-                <h1>Patrol.Ski</h1>
+                <h1 class="display-4">Patrol<span style="color:#8C0C00">.Ski</span></h1>
                 <p class="text-muted">Sign In to your account</p>
                 <CInput
                   placeholder="Email"
@@ -43,18 +43,34 @@
                     <CButton color="link" class="d-md-none" v-on:click="throwaway">Test Drive</CButton>
                   </CCol>
                 </CRow>
+                <CRow>
+                  <CCol>
+                    <hr/>
+                  </CCol>
+                  <CCol>
+                    or
+                  </CCol>
+                  <CCol>
+                    <hr/>
+                  </CCol>
+                </CRow>
+                <CRow>
+                  <CCol><login-button-google v-on:authenticated="completeLogin"></login-button-google></CCol>
+                  <CCol><login-button-facebook v-on:authenticated="completeLogin"></login-button-facebook></CCol>
+                  <CCol><login-button-microsoft v-on:authenticated="completeLogin"></login-button-microsoft></CCol>
+                </CRow>
               </CForm>
             </CCardBody>
           </CCard>
           <CCard
-            color="primary"
+            color="dark"
             text-color="white"
             class="text-center py-5 d-sm-down-none"
             body-wrapper
           >
             <h2>Sign up</h2>
-            <p>Create, Manage, and Track your Patrol's OET Training Progress</p>
-            <p>A free service for NSP Ski Patrols</p>
+            <p>An app for ski patrol.</p>
+            <p>Free for NSP Patrols</p>
             <CButtonGroup class="active mt-3">
             <CButton
               color="success"
@@ -71,8 +87,14 @@
 </template>
 
 <script>
+import { brandSet as brands } from '@coreui/icons'
+import LoginButtonGoogle from './LoginButtonGoogle'
+import LoginButtonFacebook from './LoginButtonFacebook'
+import LoginButtonMicrosoft from './LoginButtonMicrosoft'
 export default {
   name: 'Login',
+  brands,
+  components:{LoginButtonGoogle,LoginButtonFacebook,LoginButtonMicrosoft},
   data(){
       return {
         email : "",
@@ -82,18 +104,10 @@ export default {
       }
     },
   methods: {
-    login: function(){
-      let email = this.email;
-      let password = this.password;
-      this.dispatchLogin({email,password},'Logging in');
-    },
-    throwaway: function(){
-      this.dispatchLogin({throwaway:true},'Creating fictional patrol...');
-    },
-    dispatchLogin:function(obj,message){
-      this.$store.dispatch('loading',message);
-      this.$store.dispatch('login',obj)
-        .then(()=>{
+    completeLogin: function(resp){
+      this.$store.dispatch('loading','Logging In');
+      this.$store.dispatch('authenticate',resp)
+      .then(()=>{
           //if they have any patrols go there, otherwise create a new patrol
           if(this.$store.getters.patrols.length>0){
             this.$router.push({name:'Home'})
@@ -107,6 +121,47 @@ export default {
           this.error = "Username or password is incorrect";
         }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
+    login: function(){
+      let email = this.email;
+      let password = this.password;
+      this.$store.dispatch('loading',message);
+      //this.dispatchLogin({email,password},'Logging in');
+      this.$http.post('user/authenticate')
+        .then(resp => {
+          this.completeLogin(resp);
+        })
+        .catch(err => {
+          this.error = "Email or password is incorrect";
+        }).finally(response=>this.$store.dispatch('loadingComplete'));
+    },
+    throwaway: function(){
+      this.$store.dispatch('loading','Creating Test Drive Patrol');
+      //this.dispatchLogin({throwaway:true},'Creating fictional patrol...');
+      this.$http.post('user/authenticate-throwaway')
+        .then(resp => {
+          this.completeLogin(resp);
+        })
+        .catch(err => {
+          this.error="An error occurred creating the test drive patrol"
+        }).finally(response=>this.$store.dispatch('loadingComplete'));
+    },
+    // dispatchLogin:function(obj,message){
+    //   this.$store.dispatch('loading',message);
+    //   this.$store.dispatch('login',obj)
+    //     .then(()=>{
+    //       //if they have any patrols go there, otherwise create a new patrol
+    //       if(this.$store.getters.patrols.length>0){
+    //         this.$router.push({name:'Home'})
+    //       }
+    //       else{
+    //         this.$router.push({name:'NewPatrol'});
+    //       }
+    //     })
+    //     .catch(err => {
+    //       console.log(err);
+    //       this.error = "Username or password is incorrect";
+    //     }).finally(response=>this.$store.dispatch('loadingComplete'));
+    // },
     isValidEmail: function(email){
       if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))
       {
