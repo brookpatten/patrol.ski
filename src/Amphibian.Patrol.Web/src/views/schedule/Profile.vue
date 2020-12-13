@@ -28,6 +28,12 @@
             :invalidFeedback="validationErrors.Email ? validationErrors.Email.join() : 'Invalid'"
             :isValid="validated ? validationErrors.Email==null : null"
             />
+            <CInput
+            label="NSP #"
+            v-model="user.nspNumber"
+            :invalidFeedback="validationErrors.NspNumber ? validationErrors.NspNumber.join() : 'Invalid'"
+            :isValid="validated ? validationErrors.NspNumber==null : null"
+            />
             
             <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="user.allowEmailNotifications"/><label>Email notifications</label>
 

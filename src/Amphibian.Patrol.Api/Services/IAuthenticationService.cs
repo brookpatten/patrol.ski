@@ -9,7 +9,7 @@ namespace Amphibian.Patrol.Api.Services
         Task<User> AuthenticateUserWithPassword(string email, string password);
         Task<User> AuthenticateUserWithToken(Guid guid);
         Task<Token> CreateNewTokenForUser(User user);
-        Task<User> RegisterUser(string email, string first, string last, string password);
+        Task<User> RegisterUser(string email, string first, string last, string password, string nspNumber);
         Task ChangePassword(string userEmail, string password);
     }
 }
