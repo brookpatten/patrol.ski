@@ -69,7 +69,7 @@
             body-wrapper
           >
             <h2>Sign up</h2>
-            <p>An app for ski patrol.</p>
+            <p>Schedule, timeclock, training, announcements, calendar and notifications for ski patrol</p>
             <p>Free for NSP Patrols</p>
             <CButtonGroup class="active mt-3">
             <CButton
