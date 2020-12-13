@@ -15,5 +15,6 @@ namespace Amphibian.Patrol.Api.Services
         Task<IEnumerable<PatrolUserDto>> GetPatrolUsers(int patrolId);
         Task<PatrolUserDto> GetPatrolUser(int patrolId, int userId);
         Task UpdatePatrolUser(PatrolUserDto dto);
+        Task RemovePersonalInformation(int userId);
     }
 }

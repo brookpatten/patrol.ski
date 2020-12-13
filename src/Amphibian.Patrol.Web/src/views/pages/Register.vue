@@ -7,7 +7,8 @@
               <CForm v-on:submit.prevent="register">
                 <h1>Register</h1>
                 <p>Create your account</p>
-                <p class="text-muted">Your information will not be shared outside of your patrol.  Ever.</p>
+                <p class="text-muted">Your information will not be shared outside of your patrol.</p>
+                <p class="text-muted">Personal details are used to identify you to your patrol and to send you notifications (which you may disable)</p>
                 <CInput
                   placeholder="First Name"
                   autocomplete="first"

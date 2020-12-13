@@ -191,6 +191,20 @@ namespace Amphibian.Patrol.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// delete yourself and all your personal information
+        /// </summary>
+        /// <returns></returns>
+        [HttpDelete]
+        [Route("user")]
+        [Authorize]
+        [UnitOfWork]
+        public async Task<IActionResult> Delete()
+        {
+            await _userService.RemovePersonalInformation(User.GetUserId());
+            return Ok();
+        }
+
         [HttpPut]
         [Route("user")]
         [Authorize]

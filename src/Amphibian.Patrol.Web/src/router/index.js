@@ -19,6 +19,8 @@ const Register = () => import('@/views/pages/Register')
 const Landing = () => import('@/views/pages/Landing')
 const Help = () => import('@/views/pages/Help')
 const TestDrive = () => import('@/views/pages/TestDrive')
+const Privacy = () => import('@/views/pages/Privacy')
+const Delete = () => import('@/views/pages/Delete')
 
 // App
 const Plan = () => import('@/views/schedule/Plan')
@@ -394,6 +396,16 @@ function configRoutes () {
           name: 'TestDrive',
           component: TestDrive
         },
+        {
+          path: 'privacy',
+          name: 'Privacy',
+          component: Privacy
+        },
+        {
+          path: 'delete',
+          name: 'Delete',
+          component: Delete
+        }
       ]
     }
   ]

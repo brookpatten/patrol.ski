@@ -77,7 +77,7 @@
               :to="{name:'Register'}"
             > Register Now!
             </CButton>
-            <CButton color="info" v-on:click="throwaway">Test Drive</CButton>
+            <CButton color="info" :to="{name:'TestDrive'}">Test Drive</CButton>
             </CButtonGroup>
           </CCard>
         </CCardGroup>
@@ -134,34 +134,6 @@ export default {
           this.error = "Email or password is incorrect";
         }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
-    throwaway: function(){
-      this.$store.dispatch('loading','Creating Test Drive Patrol');
-      //this.dispatchLogin({throwaway:true},'Creating fictional patrol...');
-      this.$http.post('user/authenticate-throwaway')
-        .then(resp => {
-          this.completeLogin(resp);
-        })
-        .catch(err => {
-          this.error="An error occurred creating the test drive patrol"
-        }).finally(response=>this.$store.dispatch('loadingComplete'));
-    },
-    // dispatchLogin:function(obj,message){
-    //   this.$store.dispatch('loading',message);
-    //   this.$store.dispatch('login',obj)
-    //     .then(()=>{
-    //       //if they have any patrols go there, otherwise create a new patrol
-    //       if(this.$store.getters.patrols.length>0){
-    //         this.$router.push({name:'Home'})
-    //       }
-    //       else{
-    //         this.$router.push({name:'NewPatrol'});
-    //       }
-    //     })
-    //     .catch(err => {
-    //       console.log(err);
-    //       this.error = "Username or password is incorrect";
-    //     }).finally(response=>this.$store.dispatch('loadingComplete'));
-    // },
     isValidEmail: function(email){
       if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email))
       {

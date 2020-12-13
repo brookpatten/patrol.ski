@@ -153,5 +153,20 @@ namespace Amphibian.Patrol.Api.Services
                 throw new InvalidOperationException("Email in use");
             }
         }
+
+        public async Task RemovePersonalInformation(int userId)
+        {
+            var user = await _userRepository.GetUser(userId);
+
+            user.FirstName = "Removed";
+            user.LastName = "Removed";
+            user.NspNumber = null;
+            user.PasswordHash = null;
+            user.PasswordHashIterations = null;
+            user.PasswordSalt = null;
+            user.Email = "Removed-" + Guid.NewGuid() + "@patrol.ski";
+            user.AllowEmailNotifications = false;
+            await _userRepository.UpdateUser(user);
+        }
     }
 }
