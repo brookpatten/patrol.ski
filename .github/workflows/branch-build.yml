@@ -1,4 +1,4 @@
-name: Test, Build Docker Images, Update Dev
+name: Test Branch
 
 on:
   push:
