@@ -327,11 +327,11 @@ namespace Amphibian.Patrol.Api.Controllers
         public class ReplicatePeriodDto
         {
             public int PatrolId { get; set; }
-            public bool ClearTargetPeriodFirst { get; set; }
-            public DateTime ReplicatedPeriodStart { get; set; }
-            public DateTime ReplicatedPeriodEnd { get; set; }
-            public DateTime TargetPeriodStart { get; set; }
-            public DateTime TargetPeriodEnd { get; set; }
+            public bool ClearTarget { get; set; }
+            public DateTime SourceStart { get; set; }
+            public DateTime SourceEnd { get; set; }
+            public DateTime TargetStart { get; set; }
+            public DateTime TargetEnd { get; set; }
             public bool TestOnly { get; set; }
         }
 
@@ -344,9 +344,9 @@ namespace Amphibian.Patrol.Api.Controllers
             var now = _clock.UtcNow.UtcDateTime;
 
             if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainSchedule()
-                && dto.TargetPeriodStart > now)
+                && dto.TargetStart > now)
             {
-                var results = await _scheduleService.ReplicatePeriod(dto.PatrolId, dto.ClearTargetPeriodFirst,dto.TestOnly, dto.ReplicatedPeriodStart, dto.ReplicatedPeriodEnd, dto.TargetPeriodStart, dto.TargetPeriodEnd);
+                var results = await _scheduleService.ReplicatePeriod(dto.PatrolId, dto.ClearTarget,dto.TestOnly, dto.SourceStart, dto.SourceEnd, dto.TargetStart, dto.TargetEnd);
                 return Ok(results);
             }
             else

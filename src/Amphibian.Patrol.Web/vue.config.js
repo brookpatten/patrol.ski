@@ -15,7 +15,7 @@ module.exports = {
   devServer: {
     proxy: 'https://localhost:44348',
     publicPath: '/',
-    public: 'fdc9cc9eee2d.ngrok.io'
+    //public: 'fdc9cc9eee2d.ngrok.io'
   }
   // use this option for production linking
   // publicPath: process.env.NODE_ENV === 'production' ? '/vue/demo/3.1.0' : '/'

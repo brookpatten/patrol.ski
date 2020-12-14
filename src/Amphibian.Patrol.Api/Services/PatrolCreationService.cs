@@ -483,14 +483,41 @@ namespace Amphibian.Patrol.Api.Services
                     }));
                 }
 
+                //randomly release/claim some shifts
+                foreach (var shift in allShifts)
+                {
+                    //timeclock entries with schedule
+                    if (patrol.EnableTimeClock && shift.StartsAt < now)
+                    {
+                        var assignees = (await _shiftRepository.GetScheduledShiftAssignmentsForScheduledShift(shift.Id)).ToList();
+
+                        for (var a = 0; a < assignees.Count; a++)
+                        {
+                            if (assignees[a].AssignedUserId.HasValue)
+                            {
+                                //miss a shift 1/20 time
+                                if (random.Next(20) != 5)
+                                {
+                                    //randomly create time punches for the shift
+                                    var entry = await _timeClockService.ClockIn(patrol.Id, assignees[a].AssignedUserId.Value, shift.StartsAt - new TimeSpan(0, 30, 0) + new TimeSpan(0, random.Next(45), random.Next(59)));
+                                    if (shift.EndsAt < now)
+                                    {
+                                        await _timeClockService.ClockOut(entry.TimeEntry.Id, shift.EndsAt - new TimeSpan(0, 10, 0) + new TimeSpan(0, random.Next(45), random.Next(59)));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 //replicate that week for 90 more days
                 var replicatedShifts = await _scheduleService.ReplicatePeriod(patrol.Id, false,false, twoWeeksAgo, twoWeeksAgo + new TimeSpan(6, 23, 59, 59, 999), twoWeeksAgo + new TimeSpan(7, 0, 0, 0, 0), twoWeeksAgo + new TimeSpan(90, 23, 59, 59));
 
-                allShifts.AddRange(replicatedShifts);
+                //allShifts.AddRange(replicatedShifts);
 
 
                 //randomly release/claim some shifts
-                foreach(var shift in allShifts)
+                foreach(var shift in replicatedShifts)
                 {
                     //one in 10 get released
                     if (random.Next(8) == 1)

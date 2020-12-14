@@ -59,6 +59,12 @@
                   <CCol><login-button-facebook v-on:authenticated="completeLogin"></login-button-facebook></CCol>
                   <CCol><login-button-microsoft v-on:authenticated="completeLogin"></login-button-microsoft></CCol>
                 </CRow>
+                <CRow><CCol><hr/></CCol></CRow>
+                <CRow>
+                  <CCol>
+                    By registering for Patrol.ski you agree to the <a href='/#/terms'>Terms of use</a><br/>View the <a href='/#/privacy'>Privacy Policy</a>
+                  </CCol>
+                </CRow>
               </CForm>
             </CCardBody>
           </CCard>

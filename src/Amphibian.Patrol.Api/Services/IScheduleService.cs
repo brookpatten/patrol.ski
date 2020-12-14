@@ -23,6 +23,6 @@ namespace Amphibian.Patrol.Api.Services
         Task CancelShiftRelease(int scheduledShiftAssignmentId);
 
         //utilities
-        Task<IEnumerable<ScheduledShift>> ReplicatePeriod(int patrolId ,bool clearTargetPeriodFirst ,bool testOnly ,DateTime replicatedPeriodStart, DateTime replicatedPeriodEnd, DateTime targetPeriodStart, DateTime targetPeriodEnd);
+        Task<IEnumerable<ScheduledShiftAssignmentDto>> ReplicatePeriod(int patrolId ,bool clearTargetPeriodFirst ,bool testOnly ,DateTime replicatedPeriodStart, DateTime replicatedPeriodEnd, DateTime targetPeriodStart, DateTime targetPeriodEnd);
     }
 }
