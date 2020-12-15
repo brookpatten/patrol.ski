@@ -255,7 +255,7 @@ namespace Amphibian.Patrol.Api.Services
                         }
                         else
                         {
-                            _logger.LogDebug("Previously allocated > current duration");
+                            //_logger.LogDebug("Previously allocated > current duration");
                         }
 
                         if (result.ScheduledShift.ShiftId.HasValue)
