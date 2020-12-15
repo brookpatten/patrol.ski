@@ -513,16 +513,18 @@ namespace Amphibian.Patrol.Api.Services
                 //replicate that week for 90 more days
                 var replicatedShifts = await _scheduleService.ReplicatePeriod(patrol.Id, false,false, twoWeeksAgo, twoWeeksAgo + new TimeSpan(6, 23, 59, 59, 999), twoWeeksAgo + new TimeSpan(7, 0, 0, 0, 0), twoWeeksAgo + new TimeSpan(90, 23, 59, 59));
 
+
+                var distinctReplicatedShifts = replicatedShifts.GroupBy(x => x.ScheduledShiftId).Select(x => x.First()).OrderBy(x => x.StartsAt).ToList();
                 //allShifts.AddRange(replicatedShifts);
 
 
                 //randomly release/claim some shifts
-                foreach(var shift in replicatedShifts)
+                foreach(var shift in distinctReplicatedShifts)
                 {
                     //one in 10 get released
                     if (random.Next(8) == 1)
                     {
-                        var assignees = await _shiftRepository.GetScheduledShiftAssignmentsForScheduledShift(shift.Id);
+                        var assignees = await _shiftRepository.GetScheduledShiftAssignmentsForScheduledShift(shift.ScheduledShiftId);
                         if(assignees.Count()>0)
                         {
                             var assignee = assignees.ToList()[random.Next(assignees.Count())];
@@ -545,7 +547,7 @@ namespace Amphibian.Patrol.Api.Services
                         {
                             await _shiftRepository.InsertScheduledShiftAssignment(new ScheduledShiftAssignment()
                             {
-                                ScheduledShiftId = shift.Id,
+                                ScheduledShiftId = shift.ScheduledShiftId,
                                 Status = ShiftStatus.Released
                             });
                         }
@@ -554,7 +556,7 @@ namespace Amphibian.Patrol.Api.Services
                     //timeclock entries with schedule
                     if(patrol.EnableTimeClock && shift.StartsAt < now)
                     {
-                        var assignees = (await _shiftRepository.GetScheduledShiftAssignmentsForScheduledShift(shift.Id)).ToList();
+                        var assignees = (await _shiftRepository.GetScheduledShiftAssignmentsForScheduledShift(shift.ScheduledShiftId)).ToList();
 
                         for(var a=0;a<assignees.Count;a++)
                         {
