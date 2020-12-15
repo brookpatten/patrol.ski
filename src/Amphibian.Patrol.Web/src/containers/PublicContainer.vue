@@ -5,9 +5,9 @@
           <source src="/snowmaking.mp4" type="video/mp4">
       </video>
     </div>
-    <!--<TheSidebar/>-->
+    <TheSidebar v-if="user"/>
     <CWrapper>
-      <TheHeader/>
+      <TheHeader v-if="user"/>
       <div class="c-body">
         <main class="c-main">
           <CContainer fluid>
@@ -75,7 +75,7 @@ export default {
   },
   computed: {
     user: function (){
-        return this.$store.getters.user.id ? this.$store.getters.user : null;
+        return this.$store.getters.user && this.$store.getters.user.id ? this.$store.getters.user : null;
     }
   },
   methods: {

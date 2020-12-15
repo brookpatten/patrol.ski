@@ -4,6 +4,7 @@
         <CCol>
           <CCard class="p-4">
             <CCardBody>
+              <CRow><CCol>
               <CForm v-on:submit.prevent="register">
                 <h1>Register</h1>
                 <p>Create your account</p>
@@ -63,10 +64,18 @@
                 </CInput>
                 <CButton color="success" block type="submit">Create Account</CButton>
               </CForm>
+              </CCol></CRow>
+              <CRow><CCol><hr/></CCol></CRow>
+              <CRow>
+                  <CCol>
+                    By registering for Patrol.ski you agree to the <a href='/#/terms'>Terms of use</a><br/>View the <a href='/#/privacy'>Privacy Policy</a>
+                  </CCol>
+              </CRow>
             </CCardBody>
           </CCard>
         </CCol>
       </CRow>
+      <CRow><CCol><hr/></CCol></CRow>
     </CContainer>
 </template>
 

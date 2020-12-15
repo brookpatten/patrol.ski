@@ -47,6 +47,10 @@
                         add-wrapper-classes="ml-2"
                         />
                     </CCol>
+                    <CCol md="3" lg="3" sm="12">
+                        <label></label><br/>
+                        <CButton color="success" :to="{name:'RepeatSchedule'}" v-if="hasPermission('MaintainSchedule')">Copy Date Range</CButton>
+                    </CCol>
                 </CRow>
             </CCardBody>
             <CCardFooter>

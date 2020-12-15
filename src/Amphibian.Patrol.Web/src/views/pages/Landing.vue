@@ -1,7 +1,7 @@
 <template>
   <div>
-    <CRow>
-      <CCol md="12" lg="12">
+    <CRow class="justify-content-center">
+      <CCol md="8" lg="8">
         <CCard>
           <CCardBody>
             <CRow>
@@ -19,6 +19,7 @@
                   > Register
                   </CButton>
                   <CButton color="info" :to="{name:'TestDrive'}">Test Drive</CButton>
+                  <CButton color="primary" :to="{name:'Login'}">Sign in</CButton>
                 </CButtonGroup>
               </CCol>
             </CRow>
@@ -55,6 +56,9 @@
                     I intend for this to be a <strong>free app for volunteer patrols</strong>, and for the source code to be freely available as well.
                     If you have questions, comments, problems, or feature requests feel free to shoot me an email <strong>help@patrol.ski</strong> or visit the
                     <a href='https://github.com/brookpatten/patrol.ski'> GitHub project</a>
+                  </p>
+                  <p>
+                    By registering for Patrol.ski you agree to the <a href='/#/terms'>Terms of use</a><br/>View the <a href='/#/privacy'>Privacy Policy</a>
                   </p>
               </CCol>
             </CRow>

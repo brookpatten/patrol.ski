@@ -414,11 +414,11 @@ namespace Amphibian.Patrol.Api.Services
             return scheduledShiftAssignment;
         }
 
-        public async Task<IEnumerable<ScheduledShift>> ReplicatePeriod(int patrolId, bool clearTargetPeriodFirst, bool testOnly, DateTime replicatedPeriodStart, DateTime replicatedPeriodEnd, DateTime targetPeriodStart, DateTime targetPeriodEnd)
+        public async Task<IEnumerable<ScheduledShiftAssignmentDto>> ReplicatePeriod(int patrolId, bool clearTargetPeriodFirst, bool testOnly, DateTime replicatedPeriodStart, DateTime replicatedPeriodEnd, DateTime targetPeriodStart, DateTime targetPeriodEnd)
         {
             var patrol = await _patrolRepository.GetPatrol(patrolId);
 
-            var createdShifts = new List<ScheduledShift>();
+            var createdShifts = new List<ScheduledShiftAssignmentDto>();
 
             if(replicatedPeriodEnd<replicatedPeriodStart)
             {
@@ -429,15 +429,50 @@ namespace Amphibian.Patrol.Api.Services
                 throw new InvalidOperationException("target period cannot intersect replicated period");
             }
 
-            var replicatedStartLocal = new DateTime(replicatedPeriodStart.Year, replicatedPeriodStart.Month, replicatedPeriodEnd.Day, 0, 0, 0, DateTimeKind.Unspecified);
-            var replicatedStartUtc = replicatedStartLocal.UtcFromPatrolLocal(patrol); // TimeZoneInfo.ConvertTimeToUtc(replicatedStartLocal, timeZone);
-            var replicatedEndLocal = new DateTime(replicatedPeriodEnd.Year, replicatedPeriodEnd.Month, replicatedPeriodEnd.Day, 23, 59, 59,999, DateTimeKind.Unspecified);
-            var replicatedEndutc = replicatedEndLocal.UtcFromPatrolLocal(patrol); //TimeZoneInfo.ConvertTimeToUtc(replicatedEndLocal, timeZone);
+            DateTime replicatedStartUtc;
+            DateTime replicatedEndUtc;
+            DateTime targetStartUtc;
+            DateTime targetEndUtc;
 
-            var targetStartLocal = new DateTime(targetPeriodStart.Year, targetPeriodStart.Month, targetPeriodStart.Day, 0, 0, 0, DateTimeKind.Unspecified);
-            var targetStartUtc = targetStartLocal.UtcFromPatrolLocal(patrol);// TimeZoneInfo.ConvertTimeToUtc(targetStartLocal, timeZone);
-            var targetEndLocal = new DateTime(targetPeriodEnd.Year, targetPeriodEnd.Month, targetPeriodEnd.Day, 23, 59, 59, 999, DateTimeKind.Unspecified);
-            var targetEndUtc = targetEndLocal.UtcFromPatrolLocal(patrol);//TimeZoneInfo.ConvertTimeToUtc(targetEndLocal, timeZone);
+            if (replicatedPeriodStart.Kind != DateTimeKind.Utc)
+            {
+                var replicatedStartLocal = new DateTime(replicatedPeriodStart.Year, replicatedPeriodStart.Month, replicatedPeriodEnd.Day, 0, 0, 0, DateTimeKind.Unspecified);
+                replicatedStartUtc = replicatedStartLocal.UtcFromPatrolLocal(patrol); // TimeZoneInfo.ConvertTimeToUtc(replicatedStartLocal, timeZone);
+            }
+            else
+            {
+                replicatedStartUtc = replicatedPeriodStart;
+            }
+
+            if (replicatedPeriodEnd.Kind != DateTimeKind.Utc)
+            {
+                var replicatedEndLocal = new DateTime(replicatedPeriodEnd.Year, replicatedPeriodEnd.Month, replicatedPeriodEnd.Day, 23, 59, 59, 999, DateTimeKind.Unspecified);
+                replicatedEndUtc = replicatedEndLocal.UtcFromPatrolLocal(patrol); //TimeZoneInfo.ConvertTimeToUtc(replicatedEndLocal, timeZone);
+            }
+            else
+            {
+                replicatedEndUtc = replicatedPeriodEnd;
+            }
+
+            if (targetPeriodStart.Kind != DateTimeKind.Utc)
+            {
+                var targetStartLocal = new DateTime(targetPeriodStart.Year, targetPeriodStart.Month, targetPeriodStart.Day, 0, 0, 0, DateTimeKind.Unspecified);
+                targetStartUtc = targetStartLocal.UtcFromPatrolLocal(patrol);// TimeZoneInfo.ConvertTimeToUtc(targetStartLocal, timeZone);
+            }
+            else
+            {
+                targetStartUtc = targetPeriodStart;
+            }
+
+            if (targetPeriodEnd.Kind != DateTimeKind.Utc)
+            {
+                var targetEndLocal = new DateTime(targetPeriodEnd.Year, targetPeriodEnd.Month, targetPeriodEnd.Day, 23, 59, 59, 999, DateTimeKind.Unspecified);
+                targetEndUtc = targetEndLocal.UtcFromPatrolLocal(patrol);//TimeZoneInfo.ConvertTimeToUtc(targetEndLocal, timeZone);
+            }
+            else
+            {
+                targetEndUtc = targetPeriodEnd;
+            }
 
             if (clearTargetPeriodFirst && !testOnly)
             {
@@ -449,12 +484,12 @@ namespace Amphibian.Patrol.Api.Services
                 }
             }
 
-            var shiftsToCopy = await _shiftRepository.GetScheduledShiftAssignments(patrolId, null, replicatedStartUtc, replicatedEndutc, null);
-            foreach (var shift in shiftsToCopy)
-            {
-                shift.StartsAt = shift.StartsAt.UtcToPatrolLocal(patrol);
-                shift.EndsAt = shift.EndsAt.UtcToPatrolLocal(patrol);
-            }
+            var shiftsToCopy = await _shiftRepository.GetScheduledShiftAssignments(patrolId, null, replicatedStartUtc, replicatedEndUtc, null);
+            //foreach (var shift in shiftsToCopy)
+            //{
+            //    shift.StartsAt = shift.StartsAt.UtcToPatrolLocal(patrol);
+            //    shift.EndsAt = shift.EndsAt.UtcToPatrolLocal(patrol);
+            //}
 
             //group and index by day
             var grouped = shiftsToCopy.GroupBy(x => new { x.StartsAt.Year, x.StartsAt.Month, x.StartsAt.Day })
@@ -464,7 +499,7 @@ namespace Amphibian.Patrol.Api.Services
             //step a day at a time through the target range
             for(int i=0;targetStartUtc + new TimeSpan(i,0,0,0) < targetEndUtc;i++)
             {
-                var day = targetStartLocal + new TimeSpan(i, 0, 0, 0);
+                var day = targetStartUtc + new TimeSpan(i, 0, 0, 0);
                 var group = grouped[i % grouped.Count].GroupBy(x=>x.ScheduledShiftId);
                 
                 foreach(var scheduledShift in group)
@@ -477,21 +512,36 @@ namespace Amphibian.Patrol.Api.Services
                             ShiftId = scheduledShift.First().Shift?.Id,
                             PatrolId = patrolId,
                             Day = scheduledShift.First().Shift != null ? day : (DateTime?)null,
-                            StartsAt = scheduledShift.First().Shift == null ? (new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().StartsAt.Hour, scheduledShift.First().StartsAt.Minute, 0, DateTimeKind.Unspecified)).UtcFromPatrolLocal(patrol) : (DateTime?)null,
-                            EndsAt = scheduledShift.First().Shift == null ? (new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().EndsAt.Hour, scheduledShift.First().EndsAt.Minute, 0, DateTimeKind.Unspecified)).UtcFromPatrolLocal(patrol) : (DateTime?)null,
+                            StartsAt = scheduledShift.First().Shift == null ? (new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().StartsAt.Hour, scheduledShift.First().StartsAt.Minute, 0, DateTimeKind.Utc)) : (DateTime?)null,
+                            EndsAt = scheduledShift.First().Shift == null ? (new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().EndsAt.Hour, scheduledShift.First().EndsAt.Minute, 0, DateTimeKind.Utc)) : (DateTime?)null,
                             AssignUserIds = scheduledShift.Select(x => x.AssignedUser != null ? x.AssignedUser.Id : (int?)null).Distinct().ToList()
                         });
-                        createdShifts.Add(createdShift);
+                        createdShifts.Add(new ScheduledShiftAssignmentDto()
+                        {
+                            ScheduledShiftId = createdShift.Id,
+                            StartsAt = createdShift.StartsAt,
+                            EndsAt = createdShift.EndsAt,
+                            Group = scheduledShift.First().Group,
+                            Shift = scheduledShift.First().Shift
+                        });
                     }
                     else
                     {
-                        createdShifts.Add(new ScheduledShift()
+                        var resultStart = new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().StartsAt.Hour, scheduledShift.First().StartsAt.Minute, 0, DateTimeKind.Utc);
+                        var resultEnd = new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().EndsAt.Hour, scheduledShift.First().EndsAt.Minute, 0, DateTimeKind.Utc);
+
+                        //if(scheduledShift.First().Shift!=null)
+                        //{
+                            //resultStart = new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().Shift.StartHour, scheduledShift.First().Shift.StartMinute, 0, DateTimeKind.Unspecified).UtcFromPatrolLocal(patrol);
+                            //resultEnd = new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().Shift.EndHour, scheduledShift.First().Shift.EndMinute, 0, DateTimeKind.Unspecified).UtcFromPatrolLocal(patrol);
+                        //}
+
+                        createdShifts.Add(new ScheduledShiftAssignmentDto()
                         {
-                            GroupId = scheduledShift.First().Group?.Id,
-                            ShiftId = scheduledShift.First().Shift?.Id,
-                            PatrolId = patrolId,
-                            StartsAt = (new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().StartsAt.Hour, scheduledShift.First().StartsAt.Minute, 0, DateTimeKind.Unspecified)).UtcFromPatrolLocal(patrol),
-                            EndsAt = (new DateTime(day.Year, day.Month, day.Day, scheduledShift.First().EndsAt.Hour, scheduledShift.First().EndsAt.Minute, 0, DateTimeKind.Unspecified)).UtcFromPatrolLocal(patrol),
+                            Group = scheduledShift.First().Group,
+                            Shift = scheduledShift.First().Shift,
+                            StartsAt = resultStart,
+                            EndsAt = resultEnd,
                         });
                     }
                 }

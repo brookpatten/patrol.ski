@@ -21,6 +21,7 @@ const Help = () => import('@/views/pages/Help')
 const TestDrive = () => import('@/views/pages/TestDrive')
 const Privacy = () => import('@/views/pages/Privacy')
 const Delete = () => import('@/views/pages/Delete')
+const Terms = () => import('@/views/pages/Terms')
 
 // App
 const Plan = () => import('@/views/schedule/Plan')
@@ -53,6 +54,7 @@ const SwapApproval = () => import('@/views/administration/SwapApproval')
 const TimeEntries = () => import('@/views/administration/TimeEntries')
 const TimeDays = () => import('@/views/administration/TimeDays')
 const TimeMissing = () => import('@/views/administration/TimeMissing')
+const RepeatSchedule = () => import('@/views/administration/RepeatSchedule')
 
 Vue.use(Router)
 
@@ -339,6 +341,14 @@ function configRoutes () {
               },
               props:true
             },
+            {
+              path: 'repeat-schedule',
+              name: 'RepeatSchedule',
+              component: RepeatSchedule,
+              meta: {
+                requiresAuth: true
+              }
+            }
           ]
         }
       ]
@@ -405,6 +415,11 @@ function configRoutes () {
           path: 'delete',
           name: 'Delete',
           component: Delete
+        },
+        {
+          path: 'terms',
+          name: 'Terms',
+          component: Terms
         }
       ]
     }
