@@ -176,6 +176,7 @@ namespace Amphibian.Patrol.Api.Services
                 await _timeEntryRepository.UpdateTimeEntry(entry);
 
                 //if scheduling is enabled, complete entry=>schedule relating/calculating
+                //TODO: all of this work can be done async from the clock out action, ideally in some fire-and-forget event system.
                 var patrol = await _patrolRepository.GetPatrol(entry.PatrolId);
                 if(patrol.EnableScheduling)
                 {
