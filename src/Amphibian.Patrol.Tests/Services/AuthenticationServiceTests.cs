@@ -11,6 +11,9 @@ using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Services;
 using Amphibian.Patrol.Api.Repositories;
 using AuthenticationService = Amphibian.Patrol.Api.Services.AuthenticationService;
+using Amphibian.Patrol.Api.Dtos;
+using System.Linq;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Amphibian.Patrol.Tests.Services
 {
@@ -32,7 +35,7 @@ namespace Amphibian.Patrol.Tests.Services
             _passwordServiceMock = new Mock<IPasswordService>();
             _loggerMock = new Mock<ILogger<AuthenticationService>>();
             _systemClockMock = new Mock<ISystemClock>();
-            _authenticationService = new AuthenticationService(_loggerMock.Object, _userRepositoryMock.Object, _passwordServiceMock.Object, _tokenRepositoryMock.Object, _systemClockMock.Object);
+            _authenticationService = new AuthenticationService(_loggerMock.Object, _userRepositoryMock.Object, _passwordServiceMock.Object, _tokenRepositoryMock.Object, _systemClockMock.Object, new Configuration.AppConfiguration() { JwtKey = "jwtKeyjwtKeyjwtKeyjwtKeyjwtKey", RootUrl = "jwtIssuer" });
         }
 
         [Test]
@@ -217,6 +220,141 @@ namespace Amphibian.Patrol.Tests.Services
             _userRepositoryMock.Verify();
             _passwordServiceMock.Verify();
             Assert.AreEqual(user, resultUser);
+        }
+
+        [Test]
+        public void CanCreateSignedJwtToken()
+        {
+            var user = new User()
+            {
+                Id = 1,
+            };
+            var token = new Token()
+            {
+                Id = 1,
+                CreatedAt = new DateTime(2001, 1, 1),
+                TokenGuid = Guid.NewGuid(),
+                UserId = user.Id
+            };
+            var patrols = new List<CurrentUserPatrolDto>();
+            patrols.Add(new CurrentUserPatrolDto()
+            {
+                Id = 1,
+                Name = "Test Patrol",
+                EnableScheduling = true,
+                Role = Role.Administrator
+            });
+
+            var jwt = _authenticationService.CreateSignedJwtToken(token, user, patrols);
+
+            Assert.NotNull(jwt);
+        }
+
+        [Test]
+        public void CanVerifySignedJwtToken()
+        {
+            var user = new User()
+            {
+                Id = 1,
+            };
+            var token = new Token()
+            {
+                CreatedAt = new DateTime(2001, 1, 1),
+                TokenGuid = Guid.NewGuid(),
+                UserId = user.Id
+            };
+            var patrols = new List<CurrentUserPatrolDto>();
+            patrols.Add(new CurrentUserPatrolDto()
+            {
+                Id = 1,
+                Name = "Test Patrol",
+                EnableScheduling = true,
+                Role = Role.Administrator
+            });
+
+            var jwt = _authenticationService.CreateSignedJwtToken(token, user, patrols);
+
+            var claimsPrincipal = _authenticationService.ValidateSignedJwtToken(jwt);
+
+            var claims = claimsPrincipal.ParseAllClaims();
+
+            Assert.AreEqual(user.Id, claims.User.Id);
+            Assert.AreEqual(token.TokenGuid, claims.Token.TokenGuid);
+            Assert.AreEqual(token.CreatedAt, claims.Token.CreatedAt);
+            Assert.AreEqual(patrols.Count, claims.Patrols.Count);
+            Assert.AreEqual(patrols.First().Id, claims.Patrols.First().Id);
+            Assert.AreEqual(patrols.First().Name, claims.Patrols.First().Name);
+            Assert.AreEqual(patrols.First().EnableScheduling, claims.Patrols.First().EnableScheduling);
+            Assert.AreEqual(patrols.First().Role, claims.Patrols.First().Role);
+        }
+
+        [Test]
+        public void CannotVerifyWithIncorrectKey()
+        {
+            var user = new User()
+            {
+                Id = 1,
+            };
+            var token = new Token()
+            {
+                CreatedAt = new DateTime(2001, 1, 1),
+                TokenGuid = Guid.NewGuid(),
+                UserId = user.Id
+            };
+            var patrols = new List<CurrentUserPatrolDto>();
+            patrols.Add(new CurrentUserPatrolDto()
+            {
+                Id = 1,
+                Name = "Test Patrol",
+                EnableScheduling = true,
+                Role = Role.Administrator
+            });
+
+            var jwt = _authenticationService.CreateSignedJwtToken(token, user, patrols);
+
+            var incorrectAuthenticationService = new AuthenticationService(_loggerMock.Object, _userRepositoryMock.Object, _passwordServiceMock.Object, _tokenRepositoryMock.Object, _systemClockMock.Object, new Configuration.AppConfiguration() { JwtKey = "incorrectJwtKeyincorrectJwtKeyincorrectJwtKey", RootUrl = "jwtIssuer" });
+
+            Assert.Throws<SecurityTokenInvalidSignatureException>(() =>
+            {
+                var validatedJwt = incorrectAuthenticationService.ValidateSignedJwtToken(jwt);
+            });
+        }
+
+        [Test]
+        public void CannotVerifyWithIncorrectSignature()
+        {
+            var user = new User()
+            {
+                Id = 1,
+            };
+            var token = new Token()
+            {
+                CreatedAt = new DateTime(2001, 1, 1),
+                TokenGuid = Guid.NewGuid(),
+                UserId = user.Id
+            };
+            var patrols = new List<CurrentUserPatrolDto>();
+            patrols.Add(new CurrentUserPatrolDto()
+            {
+                Id = 1,
+                Name = "Test Patrol",
+                EnableScheduling = true,
+                Role = Role.Administrator
+            });
+
+            var jwt = _authenticationService.CreateSignedJwtToken(token, user, patrols);
+
+            string incorrect = "XXXXXXXXXXhzfsEP2rak1meCXJbAsiH0-8dyA4xmDWY";
+
+            var sigIndex = jwt.LastIndexOf(".")+1;
+
+            var wrongJwt = jwt.Substring(0, sigIndex) + incorrect;
+
+
+            Assert.Throws<SecurityTokenInvalidSignatureException>(() =>
+            {
+                var validatedJwt = _authenticationService.ValidateSignedJwtToken(wrongJwt);
+            });
         }
     }
 }

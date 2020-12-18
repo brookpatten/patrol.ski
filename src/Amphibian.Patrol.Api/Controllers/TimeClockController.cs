@@ -49,14 +49,15 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> ClockIn(int patrolId, int? userId)
         {
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
-            if (patrols.Any(x => x.Id == patrolId) 
-                || (await _patrolService.GetUserRoleInPatrol(User.GetUserId(),patrolId)).CanMaintainTimeClock()) //or user is an admin
+            if (User.PatrolIds().Any(x => x == patrolId))
             {
-                if(!userId.HasValue)
+                if(userId.HasValue && !User.RoleInPatrol(patrolId).CanMaintainTimeClock())
                 {
-                    userId = User.GetUserId();
+                    return Forbid();
+                }
+                else if(!userId.HasValue)
+                {
+                    userId = User.UserId();
                 }
 
                 var result = await _timeClockService.ClockIn(patrolId, userId.Value);
@@ -80,12 +81,11 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> ClockOut(int timeEntryid)
         {
             var entry = await _timeEntryRepository.GetTimeEntry(timeEntryid);
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
+            
             //ensure the entry belongs to the current user and that the current user is still in the specified patrol
-            if (patrols.Any(x => x.Id == entry.PatrolId) && 
-                (entry.UserId==User.GetUserId() 
-                || (await _patrolService.GetUserRoleInPatrol(User.GetUserId(),entry.PatrolId)).CanMaintainTimeClock())) //or the user is an admin
+            if (User.PatrolIds().Any(x => x == entry.PatrolId) && 
+                (entry.UserId==User.UserId() 
+                || User.RoleInPatrol(entry.PatrolId).CanMaintainTimeClock())) //or the user is an admin
             {
                 var result = await _timeClockService.ClockOut(timeEntryid);
                 return Ok(result);
@@ -113,12 +113,11 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetEntries(TimeclockEntryQueryDto dto)
         {
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
+            
             //ensure the entry belongs to the current user and that the current user is still in the specified patrol
-            if (patrols.Any(x => x.Id == dto.PatrolId) &&
-                (dto.UserId == User.GetUserId()
-                || (await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainTimeClock())) //or the user is an admin
+            if (User.PatrolIds().Any(x => x == dto.PatrolId) &&
+                (dto.UserId == User.UserId()
+                || User.RoleInPatrol( dto.PatrolId).CanMaintainTimeClock())) //or the user is an admin
             {
                 var entries = await _timeEntryRepository.GetTimeEntries(dto.PatrolId, dto.UserId, dto.From, dto.To);
                 return Ok(entries);
@@ -134,12 +133,10 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetDays(TimeclockEntryQueryDto dto)
         {
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
             //ensure the entry belongs to the current user and that the current user is still in the specified patrol
-            if (patrols.Any(x => x.Id == dto.PatrolId) &&
-                (dto.UserId == User.GetUserId()
-                || (await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainTimeClock())) //or the user is an admin
+            if (User.PatrolIds().Any(x => x == dto.PatrolId) &&
+                (dto.UserId == User.UserId()
+                || User.RoleInPatrol( dto.PatrolId).CanMaintainTimeClock())) //or the user is an admin
             {
                 var entries = await _timeEntryRepository.GetTimeEntries(dto.PatrolId, dto.UserId, dto.From, dto.To);
 
@@ -180,12 +177,10 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetMissing(TimeclockEntryQueryDto dto)
         {
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
             //ensure the entry belongs to the current user and that the current user is still in the specified patrol
-            if (patrols.Any(x => x.Id == dto.PatrolId) &&
-                (dto.UserId == User.GetUserId()
-                || (await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainTimeClock())) //or the user is an admin
+            if (User.PatrolIds().Any(x => x == dto.PatrolId) &&
+                (dto.UserId == User.UserId()
+                || User.RoleInPatrol(dto.PatrolId).CanMaintainTimeClock())) //or the user is an admin
             {
                 var entries = await _timeEntryRepository.GetMissingShiftTime(dto.PatrolId, dto.UserId, dto.From, dto.To);
 
@@ -207,10 +202,8 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetActive(int patrolId)
         {
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
             //ensure the entry belongs to the current user and that the current user is still in the specified patrol
-            if (patrols.Any(x => x.Id == patrolId)) //or the user is an admin
+            if (User.PatrolIds().Any(x => x == patrolId)) //or the user is an admin
             {
                 var activeEntries = await _timeEntryRepository.GetActiveTimeEntries(patrolId, _clock.UtcNow.UtcDateTime);
                 return Ok(activeEntries);
@@ -231,10 +224,8 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetLate(int patrolId)
         {
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
             //ensure the entry belongs to the current user and that the current user is still in the specified patrol
-            if (patrols.Any(x => x.Id == patrolId)) //or the user is an admin
+            if (User.PatrolIds().Any(x => x == patrolId)) //or the user is an admin
             {
                 var activeEntries = await _timeEntryRepository.GetMissingTimeEntries(patrolId, _clock.UtcNow.UtcDateTime);
                 return Ok(activeEntries);
@@ -255,12 +246,10 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetCurrent(int patrolId)
         {
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
             //ensure the entry belongs to the current user and that the current user is still in the specified patrol
-            if (patrols.Any(x => x.Id == patrolId)) //or the user is an admin
+            if (User.PatrolIds().Any(x => x == patrolId)) //or the user is an admin
             {
-                var result = await _timeClockService.GetCurrent(patrolId, User.GetUserId());
+                var result = await _timeClockService.GetCurrent(patrolId, User.UserId());
                 return Ok(result);
             }
             else

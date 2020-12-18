@@ -42,9 +42,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetAnnouncements(int patrolId)
         {
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
-            if (patrols.Any(x=>x.Id==patrolId))
+            if (User.PatrolIds().Any(x=>x==patrolId))
             {
                 var announcements = await _announcementService.GetAnnouncementsForPatrol(patrolId,false);
                 return Ok(announcements);
@@ -60,9 +58,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetCurrentAnnouncements(int patrolId)
         {
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
-            if (patrols.Any(x => x.Id == patrolId))
+            if (User.PatrolIds().Any(x => x == patrolId))
             {
                 var announcements = await _announcementService.GetAnnouncementsForPatrol(patrolId,true);
                 return Ok(announcements);
@@ -79,9 +75,8 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> GetAnnouncement(int id)
         {
             var announcement = await _announcementRepository.GetById(id);
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
-            if (patrols.Any(x => x.Id == announcement.PatrolId))
+            
+            if (User.PatrolIds().Any(x => x == announcement.PatrolId))
             {
                 return Ok(announcement);
             }
@@ -97,9 +92,9 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> PostAnnouncement(Announcement announcement)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), announcement.PatrolId)).CanMaintainAnnouncements())
+            if (User.RoleInPatrol(announcement.PatrolId).CanMaintainAnnouncements())
             {
-                announcement.CreatedByUserId = User.GetUserId();
+                announcement.CreatedByUserId = User.UserId();
 
                 if(announcement.Id!=default(int))
                 {
@@ -126,7 +121,7 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> ExpireAnnouncement(int id)
         {
             var announcement = await _announcementRepository.GetById(id);
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), announcement.PatrolId)).CanMaintainAnnouncements())
+            if (User.RoleInPatrol(announcement.PatrolId).CanMaintainAnnouncements())
             {
                 announcement.ExpireAt = _clock.UtcNow.DateTime;
                 await _announcementService.PostAnnouncement(announcement);
@@ -143,7 +138,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> PreviewAnnouncement(Announcement announcement)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), announcement.PatrolId)).CanMaintainAnnouncements())
+            if (User.RoleInPatrol(announcement.PatrolId).CanMaintainAnnouncements())
             {
                 await _announcementService.PreviewAnnouncement(announcement);
                 return Ok(announcement);

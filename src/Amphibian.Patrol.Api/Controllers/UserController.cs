@@ -45,7 +45,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> List(int patrolId)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainUsers())
+            if (User.RoleInPatrol( patrolId).CanMaintainUsers())
             {
                 var users = await _userService.GetPatrolUsers(patrolId);
                 return Ok(users);
@@ -61,7 +61,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> Get(int patrolId, int userId)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainUsers())
+            if (User.RoleInPatrol( patrolId).CanMaintainUsers())
             {
                 var user = await _userService.GetPatrolUser(patrolId,userId);
                 return Ok(user);
@@ -77,7 +77,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetSelf()
         {
-            var user = await _userRepository.GetUser(User.GetUserId());
+            var user = await _userRepository.GetUser(User.UserId());
             return Ok(user);
         }
 
@@ -86,7 +86,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetGroups(int patrolId)
         {
-            var role = await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId);
+            var role = User.RoleInPatrol( patrolId);
             if (role.CanMaintainUsers()
                 || role.CanMaintainSchedule())
             {
@@ -105,7 +105,7 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> GetGroup(int groupId)
         {
             var group = await _groupRepository.GetGroup(groupId);
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), group.PatrolId)).CanMaintainGroups())
+            if (User.RoleInPatrol( group.PatrolId).CanMaintainGroups())
             {
                 var memebers = await _groupRepository.GetUsersInGroup(groupId);
                 var plans = await _planRepository.GetPlansWithSectionsAllowedByGroup(groupId);
@@ -147,7 +147,7 @@ namespace Amphibian.Patrol.Api.Controllers
                 existing.Name = newGroup.Name;
             }
 
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), newGroup.PatrolId)).CanMaintainGroups())
+            if (User.RoleInPatrol( newGroup.PatrolId).CanMaintainGroups())
             {
                 if (existing.Id == default(int))
                 {
@@ -172,7 +172,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> RemoveGroup(int patrolId,int groupId)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainGroups())
+            if (User.RoleInPatrol( patrolId).CanMaintainGroups())
             {
                 var groups = await _groupRepository.GetGroupsForPatrol(patrolId);
                 if(groups.Any(y=>y.Id==groupId))
@@ -201,7 +201,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> Delete()
         {
-            await _userService.RemovePersonalInformation(User.GetUserId());
+            await _userService.RemovePersonalInformation(User.UserId());
             return Ok();
         }
 
@@ -212,7 +212,7 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> Save(PatrolUserDto dto)
         {
             //users can update some things themselves
-            if(dto.Id == User.GetUserId() && !dto.Role.HasValue && dto.Groups==null && dto.PatrolUserId==default(int))
+            if(dto.Id == User.UserId() && !dto.Role.HasValue && dto.Groups==null && dto.PatrolUserId==default(int))
             {
                 var newEmailUser = await _userRepository.GetUser(dto.Email);
 
@@ -234,7 +234,7 @@ namespace Amphibian.Patrol.Api.Controllers
                 return Ok();
             }
             //admins can update some things for people in their patrol
-            else if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainUsers())
+            else if (User.RoleInPatrol( dto.PatrolId).CanMaintainUsers())
             {
                 //ensure the groups specified match the specified patrol
                 var validGroups = await _groupRepository.GetGroupsForPatrol(dto.PatrolId);
@@ -271,7 +271,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> RemoveFromPatrol(RemoveUserDto dto)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainUsers())
+            if (User.RoleInPatrol( dto.PatrolId).CanMaintainUsers())
             {
                 await _patrolRepository.DeletePatrolUser(dto.PatrolId,dto.UserId);
                 return Ok();

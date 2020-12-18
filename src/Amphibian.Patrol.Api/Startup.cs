@@ -118,6 +118,7 @@ namespace Amphibian.Patrol.Api
             SqlMapper.AddTypeHandler(new DapperShiftStatusHandler());
 
             services.AddSingleton<AuthenticationConfiguration>(serviceConfiguration.Authentication);
+            services.AddSingleton<AppConfiguration>(serviceConfiguration.App);
 
             //persistence
             services.AddScoped<IUserRepository, UserRepository>();

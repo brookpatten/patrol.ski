@@ -53,9 +53,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetSchedule(ScheduleQuery query)
         {
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
-            if (patrols.Any(x => x.Id == query.PatrolId))
+            if (User.PatrolIds().Any(x=>x==query.PatrolId))
             {
                 var shiftAssignments = await _shiftRepository.GetScheduledShiftAssignments(query.PatrolId, query.UserId, query.From, query.To, query.Status, null ,query.NoOverlapWithUserId);
                 return MapScheduledShiftAssessments(shiftAssignments);
@@ -109,7 +107,7 @@ namespace Amphibian.Patrol.Api.Controllers
             var now = _clock.UtcNow.UtcDateTime;
             //ensure the shift exists and that the user is allowed to modify it
             var shift = await _shiftRepository.GetScheduledShift(scheduledShiftId);
-            if((await _patrolService.GetUserRoleInPatrol(User.GetUserId(),shift.PatrolId)).CanMaintainSchedule()
+            if(User.RoleInPatrol(shift.PatrolId).CanMaintainSchedule()
                 && now < shift.StartsAt)
             {
                 //ensure if the user is specified they are in the patrol
@@ -147,7 +145,7 @@ namespace Amphibian.Patrol.Api.Controllers
             var assignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             //ensure the shift exists and that the user is allowed to modify it
             var shift = await _shiftRepository.GetScheduledShift(assignment.ScheduledShiftId);
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), shift.PatrolId)).CanMaintainSchedule()
+            if (User.RoleInPatrol(shift.PatrolId).CanMaintainSchedule()
                 && now < shift.StartsAt)
             {
                 await _scheduleService.CancelScheduledShiftAssignment(scheduledShiftAssignmentId);
@@ -170,9 +168,9 @@ namespace Amphibian.Patrol.Api.Controllers
             var assignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             var shift = await _shiftRepository.GetScheduledShift(assignment.ScheduledShiftId);
             if ((//is an admin
-                (await _patrolService.GetUserRoleInPatrol(User.GetUserId(), shift.PatrolId)).CanMaintainSchedule()
+                User.RoleInPatrol(shift.PatrolId).CanMaintainSchedule()
                 //shift belongs to current user
-                || assignment.AssignedUserId == User.GetUserId())
+                || assignment.AssignedUserId == User.UserId())
                 && now < shift.StartsAt)
             {
                 await _scheduleService.ReleaseShift(scheduledShiftAssignmentId);
@@ -195,9 +193,9 @@ namespace Amphibian.Patrol.Api.Controllers
             var assignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             var shift = await _shiftRepository.GetScheduledShift(assignment.ScheduledShiftId);
             if ((//is an admin
-                (await _patrolService.GetUserRoleInPatrol(User.GetUserId(), shift.PatrolId)).CanMaintainSchedule()
+                User.RoleInPatrol(shift.PatrolId).CanMaintainSchedule()
                 //shift belongs to current user
-                || assignment.AssignedUserId == User.GetUserId())
+                || assignment.AssignedUserId == User.UserId())
                 && now < shift.StartsAt)
             {
                 await _scheduleService.CancelShiftRelease(scheduledShiftAssignmentId);
@@ -219,13 +217,12 @@ namespace Amphibian.Patrol.Api.Controllers
 
             var assignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             var shift = await _shiftRepository.GetScheduledShift(assignment.ScheduledShiftId);
-            var patrolUser = await _patrolRepository.GetPatrolUser(User.GetUserId(), shift.PatrolId);
-
+            
             //if the user is in the patrol and the shift is in the future
-            if (patrolUser!=null
+            if (User.PatrolIds().Any(x=>x==shift.PatrolId)
                 && now < shift.StartsAt)
             {
-                await _scheduleService.ClaimShift(scheduledShiftAssignmentId,User.GetUserId());
+                await _scheduleService.ClaimShift(scheduledShiftAssignmentId,User.UserId());
                 return Ok();
             }
             else
@@ -245,10 +242,10 @@ namespace Amphibian.Patrol.Api.Controllers
             var assignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             //ensure the shift exists and that the user is allowed to modify it
             var shift = await _shiftRepository.GetScheduledShift(assignment.ScheduledShiftId);
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), shift.PatrolId)).CanMaintainSchedule()
+            if (User.RoleInPatrol(shift.PatrolId).CanMaintainSchedule()
                 && now < shift.StartsAt)
             {
-                await _scheduleService.ApproveShiftSwap(scheduledShiftAssignmentId,User.GetUserId());
+                await _scheduleService.ApproveShiftSwap(scheduledShiftAssignmentId,User.UserId());
                 return Ok();
             }
             else
@@ -268,10 +265,10 @@ namespace Amphibian.Patrol.Api.Controllers
             var assignment = await _shiftRepository.GetScheduledShiftAssignment(scheduledShiftAssignmentId);
             //ensure the shift exists and that the user is allowed to modify it
             var shift = await _shiftRepository.GetScheduledShift(assignment.ScheduledShiftId);
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), shift.PatrolId)).CanMaintainSchedule()
+            if (User.RoleInPatrol(shift.PatrolId).CanMaintainSchedule()
                 && now < shift.StartsAt)
             {
-                await _scheduleService.RejectShiftSwap(scheduledShiftAssignmentId, User.GetUserId());
+                await _scheduleService.RejectShiftSwap(scheduledShiftAssignmentId, User.UserId());
                 return Ok();
             }
             else
@@ -289,7 +286,7 @@ namespace Amphibian.Patrol.Api.Controllers
             var now = _clock.UtcNow.UtcDateTime;
 
             var shift = await _shiftRepository.GetScheduledShift(scheduledShiftId);
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), shift.PatrolId)).CanMaintainSchedule()
+            if (User.RoleInPatrol(shift.PatrolId).CanMaintainSchedule()
                 && now < shift.StartsAt)
             {
                 await _scheduleService.CancelShift(scheduledShiftId);
@@ -309,7 +306,7 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             var now = _clock.UtcNow.UtcDateTime;
 
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainSchedule()
+            if (User.RoleInPatrol(dto.PatrolId).CanMaintainSchedule()
                 &&(
                     (dto.Day.HasValue && dto.Day.Value > now)
                     || (dto.StartsAt.HasValue && dto.StartsAt.Value > now)
@@ -343,7 +340,7 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             var now = _clock.UtcNow.UtcDateTime;
 
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainSchedule()
+            if (User.RoleInPatrol( dto.PatrolId).CanMaintainSchedule()
                 && dto.TargetStart > now)
             {
                 var results = await _scheduleService.ReplicatePeriod(dto.PatrolId, dto.ClearTarget,dto.TestOnly, dto.SourceStart, dto.SourceEnd, dto.TargetStart, dto.TargetEnd);
@@ -360,7 +357,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetShifts(int patrolid)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolid)).CanMaintainSchedule())
+            if (User.RoleInPatrol(patrolid).CanMaintainSchedule())
             {
                 var results = await _shiftRepository.GetShifts(patrolid);
                 return Ok(results);
@@ -377,7 +374,7 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> GetShift(int shiftId)
         {
             var shift = await _shiftRepository.GetShift(shiftId);
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), shift.PatrolId)).CanMaintainSchedule())
+            if (User.RoleInPatrol( shift.PatrolId).CanMaintainSchedule())
             {
                 return Ok(shift);
             }
@@ -397,7 +394,7 @@ namespace Amphibian.Patrol.Api.Controllers
             if(shift.Id!=default(int))
             {
                 existing = await _shiftRepository.GetShift(shift.Id);
-                if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), existing.PatrolId)).CanMaintainSchedule()
+                if (User.RoleInPatrol( existing.PatrolId).CanMaintainSchedule()
                     && existing.PatrolId == shift.PatrolId)
                 {
                     await _shiftRepository.UpdateShift(shift);
@@ -410,7 +407,7 @@ namespace Amphibian.Patrol.Api.Controllers
             }
             else
             {
-                if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), shift.PatrolId)).CanMaintainSchedule())
+                if (User.RoleInPatrol( shift.PatrolId).CanMaintainSchedule())
                 {
                     await _shiftRepository.InsertShift(shift);
                     return Ok(shift);

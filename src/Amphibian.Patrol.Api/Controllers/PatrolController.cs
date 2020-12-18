@@ -40,8 +40,9 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CreateEmptyPatrol(Models.Patrol patrolSetup)
         {
-            var patrol = await _patrolCreationService.CreateNewPatrol(User.GetUserId(), patrolSetup);
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
+            //TODO: update to also update jwt
+            var patrol = await _patrolCreationService.CreateNewPatrol(User.UserId(), patrolSetup);
+            var patrols = await _patrolRepository.GetPatrolsForUser(User.UserId());
             return Ok(patrols);
         }
 
@@ -51,9 +52,10 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CreateDefaultPatrol(Models.Patrol patrolSetup)
         {
-            var patrol = await _patrolCreationService.CreateNewPatrol(User.GetUserId(), patrolSetup);
+            //TODO: update to also update jwt
+            var patrol = await _patrolCreationService.CreateNewPatrol(User.UserId(), patrolSetup);
             await _patrolCreationService.CreateDefaultInitialSetup(patrol.Id);
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
+            var patrols = await _patrolRepository.GetPatrolsForUser(User.UserId());
             return Ok(patrols);
         }
 
@@ -63,12 +65,13 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CreateDemoPatrol(Models.Patrol patrolSetup)
         {
-            var patrol = await _patrolCreationService.CreateNewPatrol(User.GetUserId(), patrolSetup);
+            //TODO: update to also update jwt
+            var patrol = await _patrolCreationService.CreateNewPatrol(User.UserId(), patrolSetup);
 
-            var user = await _userRepository.GetUser(User.GetUserId());
+            var user = await _userRepository.GetUser(User.UserId());
             
             await _patrolCreationService.CreateDemoInitialSetup(patrol, user);
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
+            var patrols = await _patrolRepository.GetPatrolsForUser(User.UserId());
             return Ok(patrols);
         }
 
@@ -78,10 +81,10 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> Update(Amphibian.Patrol.Api.Models.Patrol patrol)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrol.Id)).CanmaintainPatrol())
+            if (User.RoleInPatrol( patrol.Id).CanmaintainPatrol())
             {
                 await _patrolRepository.UpdatePatrol(patrol);
-                var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
+                var patrols = await _patrolRepository.GetPatrolsForUser(User.UserId());
                 return Ok(patrols);
             }
             else
