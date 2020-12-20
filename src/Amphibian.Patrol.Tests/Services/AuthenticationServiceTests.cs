@@ -26,6 +26,7 @@ namespace Amphibian.Patrol.Tests.Services
         private Mock<IPasswordService> _passwordServiceMock;
         private Mock<ILogger<AuthenticationService>> _loggerMock;
         private Mock<ISystemClock> _systemClockMock;
+        private Mock<IPatrolRepository> _patrolRepository;
 
         [SetUp]
         public void Setup()
@@ -35,7 +36,8 @@ namespace Amphibian.Patrol.Tests.Services
             _passwordServiceMock = new Mock<IPasswordService>();
             _loggerMock = new Mock<ILogger<AuthenticationService>>();
             _systemClockMock = new Mock<ISystemClock>();
-            _authenticationService = new AuthenticationService(_loggerMock.Object, _userRepositoryMock.Object, _passwordServiceMock.Object, _tokenRepositoryMock.Object, _systemClockMock.Object, new Configuration.AppConfiguration() { JwtKey = "jwtKeyjwtKeyjwtKeyjwtKeyjwtKey", RootUrl = "jwtIssuer" });
+            _patrolRepository = new Mock<IPatrolRepository>();
+            _authenticationService = new AuthenticationService(_loggerMock.Object, _userRepositoryMock.Object, _passwordServiceMock.Object, _tokenRepositoryMock.Object, _systemClockMock.Object,_patrolRepository.Object, new Configuration.AppConfiguration() { JwtKey = "jwtKeyjwtKeyjwtKeyjwtKeyjwtKey", RootUrl = "jwtIssuer" });
         }
 
         [Test]
@@ -312,7 +314,7 @@ namespace Amphibian.Patrol.Tests.Services
 
             var jwt = _authenticationService.CreateSignedJwtToken(token, user, patrols);
 
-            var incorrectAuthenticationService = new AuthenticationService(_loggerMock.Object, _userRepositoryMock.Object, _passwordServiceMock.Object, _tokenRepositoryMock.Object, _systemClockMock.Object, new Configuration.AppConfiguration() { JwtKey = "incorrectJwtKeyincorrectJwtKeyincorrectJwtKey", RootUrl = "jwtIssuer" });
+            var incorrectAuthenticationService = new AuthenticationService(_loggerMock.Object, _userRepositoryMock.Object, _passwordServiceMock.Object, _tokenRepositoryMock.Object, _systemClockMock.Object,_patrolRepository.Object, new Configuration.AppConfiguration() { JwtKey = "incorrectJwtKeyincorrectJwtKeyincorrectJwtKey", RootUrl = "jwtIssuer" });
 
             Assert.Throws<SecurityTokenInvalidSignatureException>(() =>
             {
