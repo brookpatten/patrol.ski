@@ -5,9 +5,9 @@
           <source src="/snowmaking.mp4" type="video/mp4">
       </video>
     </div>
-    <TheSidebar v-if="user"/>
+    <TheSidebar v-if="userId"/>
     <CWrapper>
-      <TheHeader v-if="user"/>
+      <TheHeader v-if="userId"/>
       <div class="c-body">
         <main class="c-main">
           <CContainer fluid>
@@ -74,8 +74,8 @@ export default {
     TheHeader,TheFooter,LoadingBlock,TheSidebar
   },
   computed: {
-    user: function (){
-        return this.$store.getters.user && this.$store.getters.user.id ? this.$store.getters.user : null;
+    userId: function (){
+        return this.$store.getters.userId;
     }
   },
   methods: {

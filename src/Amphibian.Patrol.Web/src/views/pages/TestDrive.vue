@@ -12,20 +12,16 @@ export default {
     },
   methods: {
     throwaway: function(){
-      this.dispatchLogin({throwaway:true});
-    },
-    dispatchLogin:function(obj){
-      this.$store.dispatch('loading','Creating Fictional Patrol...');
-      this.$store.dispatch('login',obj)
-        .then(()=>{
-          //if they have any patrols go there, otherwise create a new patrol
-          this.$router.push({name:'Home'});
+      this.$store.dispatch('loading','Logging In');
+      this.$http.post('user/authenticate-throwaway')
+        .then(resp => {
+          //the http interceptor automatically picks up the new jwt on the response
+          this.$router.push({name:'Home'}) 
         })
         .catch(err => {
-          console.log(err);
-          this.error = "Something didn't work";
+          this.error = err;
         }).finally(response=>this.$store.dispatch('loadingComplete'));
-    }
+    },
   },
   mounted(){
       this.throwaway();

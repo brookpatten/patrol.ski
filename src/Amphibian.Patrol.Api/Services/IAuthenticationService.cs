@@ -16,5 +16,6 @@ namespace Amphibian.Patrol.Api.Services
         Task ChangePassword(string userEmail, string password);
         ClaimsPrincipal ValidateSignedJwtToken(string jwt);
         string CreateSignedJwtToken(Token token, UserIdentifier user, List<CurrentUserPatrolDto> patrols);
+        Task<string> IssueJwtToUser(int userId, Guid? existingToken = null);
     }
 }

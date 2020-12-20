@@ -32,24 +32,24 @@
             <br/>
             <label>Enabled Functionality</label> <em>(You can change this later)</em>
             <br/>
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="enableAnnouncements"/>
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="enableAnnouncements"/>
             <label for="enableAnnouncements">Announcements</label>
             <br/>
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="enableEvents"/>
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="enableEvents"/>
             <label for="enableEvents">Events</label>
             <br/>
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="enableTraining"/>
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="enableTraining"/>
             <label for="enableTraining">Training</label>
             <br/>
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="enableScheduling"/>
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="enableScheduling"/>
             <label for="enableScheduling">Scheduling</label>
             <br/>
             <template v-if="enableScheduling">
-              <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="enableShiftSwaps"/>
+              <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="enableShiftSwaps"/>
               <label for="enableShiftSwaps">Shift Exchange</label>
               <br/>
             </template>
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="enableTimeClock"/>
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="enableTimeClock"/>
             <label for="enableTimeClock">Time Clock</label>
             <br/>
 
@@ -111,14 +111,8 @@ export default {
                 .then(response=>{
                     var patrols = response.data;
                     var newPatrol = _.find(patrols,{'name':this.patrolName});
-                    //update the local list of patrols
-                    this.$store.dispatch('update_patrols',{patrols,id:newPatrol.id})
-                    .then(()=>{
-                        //change the currently selected patrol to the one we just created
-                        this.$router.push({name:"Home"});
-                    })
-                    .catch(err => {
-                        console.log(err);
+                    this.$store.dispatch('change_patrol',newPatrol.id).then(()=>{
+                      this.$router.push({name:"Home"});
                     });
                 }).catch(response=>{
                     this.validated=true;

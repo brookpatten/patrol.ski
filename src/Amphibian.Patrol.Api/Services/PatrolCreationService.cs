@@ -303,6 +303,7 @@ namespace Amphibian.Patrol.Api.Services
                 skiTrainee.Email = skiTrainee.FirstName + "." + skiTrainee.LastName + ".demo." + Guid.NewGuid().ToString() + "@patrol.ski";
                 skiTrainee.PasswordHashIterations = null;
                 skiTrainee.AllowEmailNotifications = false;
+                skiTrainee.NspNumber = "123456";
                 await _userRepository.InsertUser(skiTrainee);
 
                 var patrolUser = new PatrolUser()
@@ -773,6 +774,7 @@ namespace Amphibian.Patrol.Api.Services
             user.Email = user.FirstName + "." + user.LastName + ".demo." + Guid.NewGuid() + "@patrol.ski";
             user.PasswordHashIterations = null;
             user.AllowEmailNotifications = false;
+            user.NspNumber = "123456";
 
             await _userRepository.InsertUser(user);
 

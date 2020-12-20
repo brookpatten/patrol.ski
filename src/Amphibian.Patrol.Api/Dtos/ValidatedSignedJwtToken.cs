@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Amphibian.Patrol.Api.Dtos
@@ -28,7 +29,9 @@ namespace Amphibian.Patrol.Api.Dtos
             token.TokenGuid = Guid.Parse(principal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value);
             token.CreatedAt = long.Parse(principal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Iat).Value).FromUnixTime();
 
-            List<CurrentUserPatrolDto> patrols = JsonSerializer.Deserialize<List<CurrentUserPatrolDto>>(principal.Claims.Single(x => x.Type == "patrols").Value);
+            var options = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            options.Converters.Add(new JsonStringEnumConverter());
+            List<CurrentUserPatrolDto> patrols = JsonSerializer.Deserialize<List<CurrentUserPatrolDto>>(principal.Claims.Single(x => x.Type == "patrols").Value,options);
 
             return new ValidatedSignedJwtToken()
             {
@@ -65,6 +68,12 @@ namespace Amphibian.Patrol.Api.Dtos
         public static int UserId(this ClaimsPrincipal principal)
         {
             var id = principal.ParseAllClaims().User.Id;
+            return id;
+        }
+
+        public static Guid TokenGuid(this ClaimsPrincipal principal)
+        {
+            var id = principal.ParseAllClaims().Token.TokenGuid;
             return id;
         }
     }

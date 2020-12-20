@@ -11,7 +11,7 @@
 
     <!--<CRenderFunction flat :content-to-render="$options.nav"/>-->
     <CSidebarNav>
-      <CSidebarNavItem name='Dashboard' :to='{name:"Home"}' icon='cil-speedometer'/>
+      <CSidebarNavItem v-if="selectedPatrol.id" name='Dashboard' :to='{name:"Home"}' icon='cil-speedometer'/>
       <CSidebarNavItem v-if="selectedPatrol.enableScheduling && !hasPermission('MaintainSchedule')"
         name='Calendar' :to='{name:"Calendar"}' icon='cil-calendar' />
       <CSidebarNavItem v-if="selectedPatrol.enableShiftSwaps && !hasPermission('MaintainSchedule')"

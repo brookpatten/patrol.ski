@@ -24,22 +24,25 @@ namespace Amphibian.Patrol.Api.Infrastructure
     public class AuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         private readonly IAuthenticationService _authenticationService;
-        private readonly IPatrolRepository _patrolRepository;
+        private readonly ITokenRepository _tokenRepository;
+        private readonly ISystemClock _systemClock;
 
         public AuthenticationHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
             ISystemClock clock,
-            IAuthenticationService authenticationService, IPatrolRepository patrolRepository)
+            IAuthenticationService authenticationService, ITokenRepository tokenRepositry)
             : base(options, logger, encoder, clock)
         {
             _authenticationService = authenticationService;
-            _patrolRepository = patrolRepository;
+            _tokenRepository = tokenRepositry;
+            _systemClock = clock;
         }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+            var now = _systemClock.UtcNow.UtcDateTime;
             if (!Request.Headers.ContainsKey("Authorization"))
             {
                 Logger.LogError("Missing Authorization Header");
@@ -75,11 +78,9 @@ namespace Amphibian.Patrol.Api.Infrastructure
                             {
                                 //make a token and put it in the response header?
                                 
-                                var token = await _authenticationService.CreateNewTokenForUser(user);
-                                Logger.LogInformation("Authenticated User {@email} via email/password, created token {@token}", user.Email, token );
+                                Logger.LogInformation("Authenticated User {@email} via email/password", user.Email );
 
-                                var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
-                                var jwt = _authenticationService.CreateSignedJwtToken(token, user, patrols.ToList());
+                                var jwt = await _authenticationService.IssueJwtToUser(user.Id);
                                 principal = _authenticationService.ValidateSignedJwtToken(jwt);
 
                                 Response.Headers.Add("Authorization", "Token " + jwt);
@@ -90,8 +91,29 @@ namespace Amphibian.Patrol.Api.Infrastructure
                     {
                         if ((new JwtSecurityTokenHandler()).CanReadToken(authenticationHeader.Parameter))
                         {
-                            principal = _authenticationService.ValidateSignedJwtToken(authenticationHeader.Parameter);
-                            var parsed = principal.ParseAllClaims();
+                            var jwtPrincipal = _authenticationService.ValidateSignedJwtToken(authenticationHeader.Parameter);
+                            var parsed = jwtPrincipal.ParseAllClaims();
+
+                            //TODO: update this so that only superseded/expired token are in the db, "good" tokens will not be
+                            var token = await _tokenRepository.GetToken(parsed.Token.TokenGuid);
+                            if(token.ExpiredAt.HasValue && token.ExpiredAt < now)
+                            {
+                                //note we do NOT set the principle, it's expired so we let it fail as invalid
+                            }
+                            else if (token.SupersededAt.HasValue && token.SupersededAt < now)
+                            {
+                                //token is valid, but needs to be updated due to some change that was made to data contained therein
+                                var refreshedJwt = await _authenticationService.IssueJwtToUser(parsed.User.Id,token.TokenGuid);
+                                //send the updated token back to client
+                                Response.Headers.Add("Authorization", "Token " + refreshedJwt);
+
+                                principal = _authenticationService.ValidateSignedJwtToken(refreshedJwt);
+                            }
+                            else
+                            {
+                                principal = jwtPrincipal;
+                            }
+
                             Logger.LogInformation("Authenticated User {@id} via bearer token {@tokenGuid}", parsed.User.Id, parsed.Token.TokenGuid );
                         }
                     }

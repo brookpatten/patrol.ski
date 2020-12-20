@@ -16,6 +16,7 @@ using System.Text.Json;
 using Amphibian.Patrol.Api.Dtos;
 using Amphibian.Patrol.Api.Extensions;
 using Amphibian.Patrol.Configuration;
+using System.Text.Json.Serialization;
 
 namespace Amphibian.Patrol.Api.Services
 {
@@ -25,12 +26,13 @@ namespace Amphibian.Patrol.Api.Services
         private readonly IUserRepository _userRepository;
         private readonly IPasswordService _passwordService;
         private readonly ITokenRepository _tokenRepository;
+        private readonly IPatrolRepository _patrolRepository;
         private readonly ISystemClock _systemClock;
         private readonly string _jwtKey;
         private readonly string _jwtIssuer;
 
         public AuthenticationService(ILogger<AuthenticationService> logger, IUserRepository userRepository, IPasswordService passwordService, 
-            ITokenRepository tokenRepository, ISystemClock systemClock, AppConfiguration configuration)
+            ITokenRepository tokenRepository, ISystemClock systemClock,IPatrolRepository patrolRepository, AppConfiguration configuration)
         {
             _logger = logger;
             _userRepository = userRepository;
@@ -39,6 +41,7 @@ namespace Amphibian.Patrol.Api.Services
             _systemClock = systemClock;
             _jwtKey = configuration.JwtKey;
             _jwtIssuer = configuration.RootUrl;
+            _patrolRepository = patrolRepository;
         }
 
         public async Task<Token> CreateNewTokenForUser(User user)
@@ -66,7 +69,12 @@ namespace Amphibian.Patrol.Api.Services
             permClaims.Add(new Claim(JwtRegisteredClaimNames.Iss, _jwtIssuer));
             permClaims.Add(new Claim(JwtRegisteredClaimNames.Iat, token.CreatedAt.ToUnixTime().ToString()));
             permClaims.Add(new Claim("uid", user.Id.ToString()));
-            permClaims.Add(new Claim("patrols", JsonSerializer.Serialize(patrols)));
+
+            var options = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+            options.Converters.Add(new JsonStringEnumConverter());
+            var json = JsonSerializer.Serialize(patrols, options);
+
+            permClaims.Add(new Claim("patrols", json ));
 
             //Create Security Token object by giving required parameters    
             var jwtSecurityToken = new JwtSecurityToken(_jwtIssuer, //Issuer    
@@ -166,6 +174,29 @@ namespace Amphibian.Patrol.Api.Services
             var user = await _userRepository.GetUser(userEmail);
             _passwordService.SetPassword(user, password);
             await _userRepository.UpdateUser(user);
+        }
+
+        public async Task<string> IssueJwtToUser(int userId,Guid? existingToken=null)
+        {
+            if (existingToken.HasValue)
+            {
+                var existing = await _tokenRepository.GetToken(existingToken.Value);
+                if (!existing.SupersededAt.HasValue)
+                {
+                    existing.SupersededAt = _systemClock.UtcNow.UtcDateTime;
+                    await _tokenRepository.UpdateToken(existing);
+                }
+            }
+
+            var user = await _userRepository.GetUser(userId);
+
+            var newToken = await this.CreateNewTokenForUser(user);
+
+            var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
+
+            var jwt = this.CreateSignedJwtToken(newToken, (UserIdentifier)user, patrols.ToList());
+
+            return jwt;
         }
     }
 }

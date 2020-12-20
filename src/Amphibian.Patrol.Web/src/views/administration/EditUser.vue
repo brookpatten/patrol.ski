@@ -31,13 +31,13 @@
             <CSelect
             label="Patrol Role"
             :value.sync="user.role"
-            :options="[{value:'Administrator'},{value:'Coordinator'}]"
+            :options="[{label:'(None)',value:null},{value:'Administrator'},{value:'Coordinator'}]"
             placeholder="None"
             />
 
             <label>Group(s)</label>
             <div v-for="group in groups" :key="group.id">
-                <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="group.selected" v-bind="labelIcon"/><label>{{group.name}}</label>
+                <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="group.selected" /><label>{{group.name}}</label>
             </div>
 
             

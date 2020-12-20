@@ -223,7 +223,12 @@ namespace Amphibian.Patrol.Api.Controllers
                 && now < shift.StartsAt)
             {
                 await _scheduleService.ClaimShift(scheduledShiftAssignmentId,User.UserId());
-                return Ok();
+
+                //HACK: get the dto but no repo method exists to get a ssadto by id...
+                var assignmentDtos = await _shiftRepository.GetScheduledShiftAssignments(shift.PatrolId, scheduledShiftId: shift.Id);
+                var assignmentDto = assignmentDtos.Single(x => x.Id == assignment.Id);
+
+                return Ok(assignmentDto);
             }
             else
             {

@@ -85,7 +85,7 @@ export default {
         this.$store.dispatch('loading','Saving...');
         this.$http.post('patrol',this.editedPatrol)
           .then(response=>{
-            this.$store.dispatch('update_patrols',{patrols:response.data,id:this.editedPatrol.id});
+            //this.$store.dispatch('update_patrols',{patrols:response.data,id:this.editedPatrol.id});
             this.$router.push({name:'Home'});
           }).catch(response=>{
             this.validated=true;

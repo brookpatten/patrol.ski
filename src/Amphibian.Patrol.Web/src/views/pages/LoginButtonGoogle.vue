@@ -24,7 +24,6 @@ export default {
 
       this.$http.post('user/authenticate/google',{id_token:idToken})
                 .then(response => {
-                    var result = response.data;
                     console.log(response);
 
                     this.$emit("authenticated", response);

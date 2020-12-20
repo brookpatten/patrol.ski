@@ -15,7 +15,7 @@
         </div>
       </CHeaderNavLink>
     </template>
-    <CDropdownHeader tag="div" class="text-center" color="light">
+    <CDropdownHeader tag="div" class="text-center" color="light" v-if="user">
       <strong>{{user.firstName}} {{user.lastName}}</strong>
     </CDropdownHeader>
     <CDropdownItem :to="{name:'Profile'}">
@@ -54,7 +54,7 @@ export default {
   name: 'TheHeaderDropdownAccnt',
   data () {
     return { 
-      itemsCount: 42
+      user:{}
     }
   },
   computed: {
@@ -64,8 +64,8 @@ export default {
     selectedPatrolId: function () {
       return this.$store.state.selectedPatrolId;
     },
-    user: function (){
-        return this.$store.getters.user;
+    userId: function (){
+        return this.$store.getters.userId;
     }
   },
   methods: {
@@ -78,7 +78,22 @@ export default {
       this.$store.dispatch('logout')
         .then(()=>this.$router.push({name:"Login"}))
         .catch(err => console.log(err));
+    },
+    getUser:function(){
+      this.$http.get('user').then(resp=>{
+        this.user = resp.data;
+      });
     }
+  },
+  watch: {
+    userId(){
+        if(this.userId!=0){
+          this.getUser();
+        }
+    }
+  },
+  mounted: function(){
+    this.getUser();
   }
 }
 </script>

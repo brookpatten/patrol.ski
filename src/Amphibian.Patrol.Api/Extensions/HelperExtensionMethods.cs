@@ -72,6 +72,21 @@ namespace Amphibian.Patrol.Api.Extensions
             }
         }
 
+        public static void SendNewToken(this HttpResponse response,string jwt)
+        {
+            string key = "Authorization";
+            string value = "Token " + jwt;
+
+            if (response.Headers.ContainsKey(key))
+            {
+                response.Headers[key] = value;
+            }
+            else
+            {
+                response.Headers.Add(key, value);
+            }
+        }
+
         public static EmailAddress ToEmailAddress(this User user)
         {
             return new EmailAddress(user.Email, user.GetFullName());

@@ -13,6 +13,7 @@ using Amphibian.Patrol.Api.Extensions;
 using Amphibian.Patrol.Api.Dtos;
 using Microsoft.Extensions.Logging;
 using Amphibian.Patrol.Api.Infrastructure;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Amphibian.Patrol.Api.Controllers
 {
@@ -26,10 +27,14 @@ namespace Amphibian.Patrol.Api.Controllers
         private IGroupRepository _groupRepository;
         private IPlanRepository _planRepository;
         private IUserRepository _userRepository;
+        private Services.IAuthenticationService _authenticationService;
+        private ITokenRepository _tokenRepository;
+        private ISystemClock _systemClock;
         
 
         public UserController(ILogger<UserController> logger, IPatrolService patrolService,IUserRepository userRepository,IEmailService emailService
-            , IPatrolRepository patrolRepository, IGroupRepository groupRepository, IUserService userService, IPlanRepository planRepository)
+            , IPatrolRepository patrolRepository, IGroupRepository groupRepository, IUserService userService, IPlanRepository planRepository
+            , Services.IAuthenticationService authenticationService, ITokenRepository tokenRepository, ISystemClock systemClock)
         {
             _logger = logger;
             _patrolService = patrolService;
@@ -38,6 +43,9 @@ namespace Amphibian.Patrol.Api.Controllers
             _userService = userService;
             _planRepository = planRepository;
             _userRepository = userRepository;
+            _authenticationService = authenticationService;
+            _tokenRepository = tokenRepository;
+            _systemClock = systemClock;
         }
 
         [HttpGet]
@@ -78,7 +86,7 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> GetSelf()
         {
             var user = await _userRepository.GetUser(User.UserId());
-            return Ok(user);
+            return Ok((UserIdentifier)user);
         }
 
         [HttpGet]
@@ -202,6 +210,9 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> Delete()
         {
             await _userService.RemovePersonalInformation(User.UserId());
+
+            Response.SendNewToken("Deleted");
+
             return Ok();
         }
 
@@ -247,6 +258,17 @@ namespace Amphibian.Patrol.Api.Controllers
                     }
 
                     await _userService.UpdatePatrolUser(dto);
+
+                    //if it's the current user, send them a refreshed token
+                    if (dto.Id == User.UserId())
+                    {
+                        Response.SendNewToken(await _authenticationService.IssueJwtToUser(User.UserId(), User.TokenGuid()));
+                    }
+                    else
+                    {
+                        await _tokenRepository.SupersedeActiveTokensForUsers(new List<int>() { dto.Id }, _systemClock.UtcNow.UtcDateTime);
+                    }
+
                     return Ok();
                 }
                 else
@@ -274,6 +296,21 @@ namespace Amphibian.Patrol.Api.Controllers
             if (User.RoleInPatrol( dto.PatrolId).CanMaintainUsers())
             {
                 await _patrolRepository.DeletePatrolUser(dto.PatrolId,dto.UserId);
+
+                //TODO, if the user asn't current user, mark their tokens to supersede
+                //refresh the users jwt to match the above change
+                if (dto.UserId == User.UserId())
+                {
+                    Response.SendNewToken(await _authenticationService.IssueJwtToUser(User.UserId(), User.TokenGuid()));
+                }
+                else
+                {
+                    //supersede any tokens for the user
+                    var patrolUsers = (await _patrolRepository.GetUsersForPatrol(dto.PatrolId)).ToList();
+                    patrolUsers = patrolUsers.Where(x => x.Id != User.UserId()).ToList();
+                    await _tokenRepository.SupersedeActiveTokensForUsers(patrolUsers.Select(x => x.Id).ToList(), _systemClock.UtcNow.UtcDateTime);
+                }
+
                 return Ok();
             }
             else

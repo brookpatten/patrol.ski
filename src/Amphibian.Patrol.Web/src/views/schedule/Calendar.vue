@@ -122,9 +122,9 @@
                     <td>
                         <CButtonGroup class="float-right" v-if="isFuture(selectedShift.startsAt)">
                             
-                            <CButton size="sm" color="primary" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Assigned' && data.item.assignedUser && data.item.assignedUser.id == user.id" @click="releaseScheduledShiftAssignment(data.item)">Release</CButton>
-                            <CButton size="sm" color="success" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Released' && (!data.item.assignedUser || data.item.assignedUser.id != user.id)" @click="claimScheduledShiftAssignment(data.item)">Claim</CButton>
-                            <CButton size="sm" color="info" v-if="selectedPatrol.enableShiftSwaps && (data.item.status=='Claimed' || data.item.status=='Released') && data.item.assignedUser && data.item.assignedUser.id == user.id" @click="cancelReleaseScheduledShiftAssignment(data.item)">Cancel Release</CButton>
+                            <CButton size="sm" color="primary" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Assigned' && data.item.assignedUser && data.item.assignedUser.id == userId" @click="releaseScheduledShiftAssignment(data.item)">Release</CButton>
+                            <CButton size="sm" color="success" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Released' && (!data.item.assignedUser || data.item.assignedUser.id != userId)" @click="claimScheduledShiftAssignment(data.item)">Claim</CButton>
+                            <CButton size="sm" color="info" v-if="selectedPatrol.enableShiftSwaps && (data.item.status=='Claimed' || data.item.status=='Released') && data.item.assignedUser && data.item.assignedUser.id == userId" @click="cancelReleaseScheduledShiftAssignment(data.item)">Cancel Release</CButton>
                             <CButton size="sm" color="success" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Claimed' && hasPermission('MaintainSchedule')" @click="approveScheduledShiftAssignment(data.item)">Approve</CButton>
                             <CButton size="sm" color="warning" v-if="selectedPatrol.enableShiftSwaps && data.item.status=='Claimed' && hasPermission('MaintainSchedule')" @click="rejectScheduledShiftAssignment(data.item)">Reject</CButton>
                             <CButton size="sm" color="danger" v-if="hasPermission('MaintainSchedule')" @click="removeScheduledShiftAssignment(selectedShift,data.item)">Remove</CButton>
@@ -309,7 +309,7 @@ export default {
         }
     }
   },
-  props: ['userId'],
+  props: ['uid'],
   methods: {
         getGroupById(id){
             return _.find(this.groups,{id:this.newShift.groupId});
@@ -360,19 +360,17 @@ export default {
                 }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         claimScheduledShiftAssignment(assignment){
-            let user = this.user;
             this.$store.dispatch('loading','Loading...');
             this.$http.post('schedule/scheduled-shift-assignment/claim?scheduledShiftAssignmentId='+assignment.id)
                 .then(response => {
                     console.log(response);
                     assignment.status='Claimed';
-                    assignment.claimedByUser = user;
+                    assignment.claimedByUser = response.data.claimedByUser;
                 }).catch(response => {
                     console.log(response);
                 }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         approveScheduledShiftAssignment(assignment){
-            let user = this.user;
             this.$store.dispatch('loading','Loading...');
             this.$http.post('schedule/scheduled-shift-assignment/approve?scheduledShiftAssignmentId='+assignment.id)
                 .then(response => {
@@ -385,7 +383,6 @@ export default {
                 }).finally(response=>this.$store.dispatch('loadingComplete'));
         },
         rejectScheduledShiftAssignment(assignment){
-            let user = this.user;
             this.$store.dispatch('loading','Loading...');
             this.$http.post('schedule/scheduled-shift-assignment/reject?scheduledShiftAssignmentId='+assignment.id)
                 .then(response => {
@@ -625,8 +622,8 @@ export default {
         }
   },
   mounted: function(){
-      if(this.userId!=null){
-          this.viewUserId = this.userId;
+      if(this.uid!=null){
+          this.viewUserId = this.uid;
       }
       this.getEvents();
       this.getScheduledShifts();
@@ -657,8 +654,8 @@ export default {
     selectedPatrol: function (){
         return this.$store.getters.selectedPatrol;
     },
-    user: function (){
-        return this.$store.getters.user;
+    userId: function (){
+        return this.$store.getters.userId;
     },
     shiftItems: function(){
         var items = _.map(this.shifts,function(s){
@@ -691,7 +688,7 @@ export default {
         return items;
     },
     calendarEvents: function(){
-        let user = this.user;
+        let userId = this.userId;
         let isFuture = this.isFuture;
 
         var cEvents = _.map(this.events,function(e){
@@ -709,7 +706,7 @@ export default {
             var eventClass='';
 
             var currentUserInShift = _.find(e.assignments,function(a){ 
-                return (a.assignedUser && a.assignedUser.id == user.id) || (a.claimedByUser && a.claimedByUser.id == user.id)
+                return (a.assignedUser && a.assignedUser.id == userId) || (a.claimedByUser && a.claimedByUser.id == userId)
             })!=null;
             
             if(isFuture(e.startsAt)){

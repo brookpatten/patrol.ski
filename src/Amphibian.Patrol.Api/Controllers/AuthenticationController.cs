@@ -77,18 +77,8 @@ namespace Amphibian.Patrol.Api.Controllers
 
             if (user!=null)
             {
-                var token = await _authenticationService.CreateNewTokenForUser(user);
-                _logger.LogInformation("Authenticated {@email} via email/password OK, Created Token {@token}", user.Email, token);
-                var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
-
-                var jwt = _authenticationService.CreateSignedJwtToken(token, user, patrols.ToList());
-
-                return Ok(new
-                {
-                    User = (UserIdentifier)user,
-                    Token = jwt,
-                    Patrols = patrols
-                });
+                Response.SendNewToken(await _authenticationService.IssueJwtToUser(user.Id));
+                return Ok();
             }
             else
             {
@@ -118,6 +108,9 @@ namespace Amphibian.Patrol.Api.Controllers
             var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
 
             var jwt = _authenticationService.CreateSignedJwtToken(token, user, patrols.ToList());
+
+
+            Response.SendNewToken(jwt);
 
             return Ok(new
             {
@@ -182,17 +175,8 @@ namespace Amphibian.Patrol.Api.Controllers
             {
                 var throwaway = await _patrolCreationService.CreateDemoUserAndPatrol();
 
-                var token = await _authenticationService.CreateNewTokenForUser(throwaway.Item1);
-                var patrols = await _patrolRepository.GetPatrolsForUser(throwaway.Item1.Id);
-
-                var jwt = _authenticationService.CreateSignedJwtToken(token, throwaway.Item1, patrols.ToList());
-
-                return Ok(new
-                {
-                    User = (UserIdentifier)throwaway.Item1,
-                    Token = jwt,
-                    Patrols = patrols
-                });
+                Response.SendNewToken(await _authenticationService.IssueJwtToUser(throwaway.Item1.Id));
+                return Ok();
             }
             catch(Exception ex)
             {
@@ -243,17 +227,8 @@ namespace Amphibian.Patrol.Api.Controllers
                         await _userRepository.UpdateUser(user);
                     }
 
-                    var token = await _authenticationService.CreateNewTokenForUser(user);
-                    var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
-
-                    var jwt = _authenticationService.CreateSignedJwtToken(token, user, patrols.ToList());
-
-                    return Ok(new
-                    {
-                        User = (UserIdentifier)user,
-                        Token = jwt,
-                        Patrols = patrols
-                    });
+                    Response.SendNewToken(await _authenticationService.IssueJwtToUser(user.Id));
+                    return Ok();
                 }
                 else
                 {
@@ -311,17 +286,8 @@ namespace Amphibian.Patrol.Api.Controllers
                         await _userRepository.UpdateUser(user);
                     }
 
-                    var token = await _authenticationService.CreateNewTokenForUser(user);
-                    var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
-
-                    var jwt = _authenticationService.CreateSignedJwtToken(token, user, patrols.ToList());
-
-                    return Ok(new
-                    {
-                        User = (UserIdentifier)user,
-                        Token = jwt,
-                        Patrols = patrols
-                    });
+                    Response.SendNewToken(await _authenticationService.IssueJwtToUser(user.Id));
+                    return Ok();
                 }
                 //else
                 {
@@ -389,17 +355,8 @@ namespace Amphibian.Patrol.Api.Controllers
                     await _userRepository.UpdateUser(user);
                 }
 
-                var token = await _authenticationService.CreateNewTokenForUser(user);
-                var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
-
-                var jwt = _authenticationService.CreateSignedJwtToken(token, user, patrols.ToList());
-
-                return Ok(new
-                {
-                    User = (UserIdentifier)user,
-                    Token = jwt,
-                    Patrols = patrols
-                });
+                Response.SendNewToken(await _authenticationService.IssueJwtToUser(user.Id));
+                return Ok();
             }
             else
             {

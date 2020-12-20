@@ -40,7 +40,7 @@
                   <CCol col="6" class="text-right">
                     <CButton color="link" class="px-0" v-on:click="reset">Forgot password?</CButton>
                     <CButton color="link" class="d-md-none" :to="{name:'Register'}">Register now!</CButton>
-                    <CButton color="link" class="d-md-none" v-on:click="throwaway">Test Drive</CButton>
+                    <CButton color="link" class="d-md-none" :to="{name:'TestDrive'}">Test Drive</CButton>
                   </CCol>
                 </CRow>
                 <CRow>
@@ -55,9 +55,9 @@
                   </CCol>
                 </CRow>
                 <CRow>
-                  <CCol><login-button-google v-on:authenticated="completeLogin"></login-button-google></CCol>
-                  <CCol><login-button-facebook v-on:authenticated="completeLogin"></login-button-facebook></CCol>
-                  <CCol><login-button-microsoft v-on:authenticated="completeLogin"></login-button-microsoft></CCol>
+                  <CCol><login-button-google v-on:authenticated="afterLogin"></login-button-google></CCol>
+                  <CCol><login-button-facebook v-on:authenticated="afterLogin"></login-button-facebook></CCol>
+                  <CCol><login-button-microsoft v-on:authenticated="afterLogin"></login-button-microsoft></CCol>
                 </CRow>
                 <CRow><CCol><hr/></CCol></CRow>
                 <CRow>
@@ -110,31 +110,22 @@ export default {
       }
     },
   methods: {
-    completeLogin: function(resp){
-      this.$store.dispatch('loading','Logging In');
-      this.$store.dispatch('authenticate',resp)
-      .then(()=>{
-          //if they have any patrols go there, otherwise create a new patrol
-          if(this.$store.getters.patrols.length>0){
-            this.$router.push({name:'Home'})
-          }
-          else{
-            this.$router.push({name:'NewPatrol'});
-          }
-        })
-        .catch(err => {
-          console.log(err);
-          this.error = "Username or password is incorrect";
-        }).finally(response=>this.$store.dispatch('loadingComplete'));
+    afterLogin: function(){
+      //the http interceptor automatically picks up the new jwt on the response 
+      if(this.$store.getters.patrols.length>0){
+        this.$router.push({name:'Home'})
+      }
+      else{
+        this.$router.push({name:'NewPatrol'});
+      }
     },
     login: function(){
       let email = this.email;
       let password = this.password;
-      this.$store.dispatch('loading',message);
-      //this.dispatchLogin({email,password},'Logging in');
-      this.$http.post('user/authenticate')
+      this.$store.dispatch('loading','Signing in');
+      this.$http.post('user/authenticate',{email,password})
         .then(resp => {
-          this.completeLogin(resp);
+          this.afterLogin();
         })
         .catch(err => {
           this.error = "Email or password is incorrect";
