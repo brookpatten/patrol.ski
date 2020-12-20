@@ -50,8 +50,7 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> GetAssignmentsByPlan(int planId)
         {
             var plan = await _planRepository.GetPlan(planId);
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-            if (patrols.Any(x => x.Id == plan.PatrolId))
+            if (User.PatrolIds().Any(x => x == plan.PatrolId))
             {
                 var assignments = await _assignmentRepository.GetAssignmentsForPlan(plan.Id);
                 return Ok(assignments);
@@ -67,7 +66,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetAssignmentsForUser()
         {
-            var assignments = await _assignmentRepository.GetAssignmentsForUser(User.GetUserId());
+            var assignments = await _assignmentRepository.GetAssignmentsForUser(User.UserId());
             return Ok(assignments);
         }
 
@@ -77,10 +76,10 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> GetAssignment(int assignmentId)
         {
             var assignment = await _assignmentService.GetAssignment(assignmentId);
-            var plan = await _planService.GetPlan(assignment.PlanId,User.GetUserId());
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
+            var plan = await _planService.GetPlan(assignment.PlanId,User.UserId());
+            var patrols = await _patrolRepository.GetPatrolsForUser(User.UserId());
             var user = (UserIdentifier)await _userRepository.GetUser(assignment.UserId);
-            if (patrols.Any(x => x.Id == plan.PatrolId))
+            if (User.PatrolIds().Any(x => x == plan.PatrolId))
             {
                 return Ok(
                     new
@@ -108,7 +107,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> SearchAssignments(AssignmentSearch search)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), search.PatrolId)).CanMaintainAssignments())
+            if (User.RoleInPatrol(search.PatrolId).CanMaintainAssignments())
             {
                 var assignments = await _assignmentRepository.GetAssignments(search.PatrolId, search.PlanId, search.UserId, search.Completed);
                 return Ok(assignments);
@@ -136,9 +135,9 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CreateSignatures(CreateSignaturesDto dto)
         {
-            if(await _assignmentService.AllowCreateSignatures(dto.AssignmentId,User.GetUserId(),dto.Signatures))
+            if(await _assignmentService.AllowCreateSignatures(dto.AssignmentId,User.UserId(),dto.Signatures))
             {
-                await _assignmentService.CreateSignatures(dto.AssignmentId, User.GetUserId(), dto.Signatures);
+                await _assignmentService.CreateSignatures(dto.AssignmentId, User.UserId(), dto.Signatures);
                 var allSignatures = await _assignmentRepository.GetSignaturesWithUsersForAssignment(dto.AssignmentId);
                 return Ok(allSignatures);
             }
@@ -153,11 +152,9 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetIncompleteAssignmentForTrainer(int patrolId)
         {
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-            //TODO: also make sure the user has the right to create these signatures
-            if (patrols.Any(x => x.Id == patrolId))
+            if (User.PatrolIds().Any(x => x == patrolId))
             {
-                var assignments = await _assignmentRepository.GetIncompleteAssignments(patrolId, User.GetUserId());
+                var assignments = await _assignmentRepository.GetIncompleteAssignments(patrolId, User.UserId());
                 return Ok(assignments);
             }
             else
@@ -182,7 +179,7 @@ namespace Amphibian.Patrol.Api.Controllers
             var validPatrolUsers = await _patrolRepository.GetUsersForPatrol(plan.PatrolId);
 
             //TODO: also make sure the user has the right to create these signatures
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), plan.PatrolId)).CanMaintainAssignments())
+            if (User.RoleInPatrol(plan.PatrolId).CanMaintainAssignments())
             {
                 if(dto.ToUserIds.All(x=>validPatrolUsers.Any(y=>x==y.Id)))
                 {
@@ -212,7 +209,7 @@ namespace Amphibian.Patrol.Api.Controllers
             var plan = await _planRepository.GetPlan(existing.PlanId);
             
             //TODO: also make sure the user has the right to create these signatures
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), plan.PatrolId)).CanMaintainAssignments())
+            if (User.RoleInPatrol(plan.PatrolId).CanMaintainAssignments())
             {
                 existing.DueAt = dto.DueAt;
                 //existing.AssignedAt = dto.AssignedAt;
@@ -235,7 +232,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> CountsByDay(int patrolId,DateTime? start, DateTime? end)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainAssignments())
+            if (User.RoleInPatrol(patrolId).CanMaintainAssignments())
             {
                 if (!start.HasValue)
                 {
@@ -259,7 +256,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetAssignmentProgressByDay(int patrolId, DateTime? start, DateTime? end, int? planId, int? userId)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainAssignments())
+            if (User.RoleInPatrol(patrolId).CanMaintainAssignments())
             {
                 if (!start.HasValue)
                 {

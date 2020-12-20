@@ -14,10 +14,14 @@ namespace Amphibian.Patrol.Api.Extensions
 {
     public static class HelperExtensionMethods
     {
-        public static int GetUserId(this ClaimsPrincipal principal)
+        public static long ToUnixTime(this DateTime dt)
         {
-            var id = principal.FindFirst(ClaimTypes.NameIdentifier).Value;
-            return int.Parse(id);
+            return (long)(dt - new DateTime(1970, 1, 1, 0, 0, 0, 0)).TotalSeconds;
+        }
+
+        public static DateTime FromUnixTime(this long dt)
+        {
+            return new DateTime(1970, 1, 1, 0, 0, 0, 0) + new TimeSpan(dt * 10000000);
         }
 
         public static TimeZoneInfo LocalTimeZone(this Models.Patrol patrol)
@@ -65,6 +69,21 @@ namespace Amphibian.Patrol.Api.Extensions
             else
             {
                 return null;
+            }
+        }
+
+        public static void SendNewToken(this HttpResponse response,string jwt)
+        {
+            string key = "Authorization";
+            string value = "Token " + jwt;
+
+            if (response.Headers.ContainsKey(key))
+            {
+                response.Headers[key] = value;
+            }
+            else
+            {
+                response.Headers.Add(key, value);
             }
         }
 

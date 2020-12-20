@@ -102,6 +102,7 @@ namespace Amphibian.Patrol.Configuration
     public class AppConfiguration
     {
         public string RootUrl { get; set; }
+        public string JwtKey { get; set; }
     }
 
     public class DatabaseConfiguration

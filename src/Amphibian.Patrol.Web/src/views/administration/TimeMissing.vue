@@ -114,18 +114,18 @@ export default {
       selectedUserId: 0
     }
   },
-  props: ['userId'],
+  props: ['uid'],
   methods: {
     duration(seconds){
       var diffDate = new Date(seconds * 1000);
       return diffDate.getUTCHours()+":"+(diffDate.getUTCMinutes()+"").padStart(2,"0")+":"+(diffDate.getUTCSeconds()+"").padStart(2,"0");
     },
     getTimeEntrys() {
-      if(this.selectedUserId==0 && this.userId){
-        this.selectedUserId = this.userId;
+      if(this.selectedUserId==0 && this.uid){
+        this.selectedUserId = this.uid;
       }
       else if(this.selectedUserId==0){
-        this.selectedUserId = this.user.id;
+        this.selectedUserId = this.userId;
       }
 
       this.$store.dispatch('loading','Loading...');
@@ -164,8 +164,8 @@ export default {
     selectedPatrol: function (){
         return this.$store.getters.selectedPatrol;
     },
-    user: function (){
-        return this.$store.getters.user;
+    userId: function (){
+        return this.$store.getters.userId;
     },
     userItems: function(){
         var items = _.map(this.users,function(s){

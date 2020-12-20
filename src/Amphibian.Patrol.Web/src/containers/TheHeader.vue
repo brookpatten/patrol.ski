@@ -3,13 +3,13 @@
     <CToggler
       in-header
       class="ml-3 d-lg-none"
-      v-if="user"
+      v-if="userId"
       @click="$store.commit('toggleSidebarMobile')"
     />
     <CToggler
       in-header
       class="ml-3 d-md-down-none"
-      v-if="user"
+      v-if="userId"
       @click="$store.commit('toggleSidebarDesktop')"
     />
     <CHeaderBrand class="mr-auto" to="/">
@@ -20,7 +20,7 @@
 
     <CHeaderNav class="d-md-down-none mr-auto">
       <CHeaderNavItem class="px-3">
-        <CHeaderNavLink v-if="user && selectedPatrol" :to="{name:'Home'}">
+        <CHeaderNavLink v-if="userId && selectedPatrol" :to="{name:'Home'}">
           {{selectedPatrol.name}}
         </CHeaderNavLink>
       </CHeaderNavItem>
@@ -33,12 +33,12 @@
           <CIcon name="cil-bell"/>
         </CHeaderNavLink>
       </CHeaderNavItem>-->
-      <TheHeaderDropdownAccnt v-if="user"/>
-      <CButtonGroup v-if="!user">
+      <TheHeaderDropdownAccnt v-if="userId"/>
+      <CButtonGroup v-if="!userId">
       <CButton color="primary" :to="{name:'Login'}">Log In</CButton>
       </CButtonGroup>
     </CHeaderNav>
-    <CSubheader class="px-3" v-if="user">
+    <CSubheader class="px-3" v-if="userId">
       <CBreadcrumbRouter class="border-0 mb-0"/>
     </CSubheader>
   </CHeader>
@@ -53,13 +53,8 @@ export default {
     TheHeaderDropdownAccnt
   },
   computed:{
-    user: function (){
-      if(this.$store.getters.user && this.$store.getters.user.id){
-        return this.$store.getters.user;
-      }
-      else{
-        return null;
-      }
+    userId: function (){
+      return this.$store.getters.userId;
     },
     selectedPatrol: function (){
         return this.$store.getters.selectedPatrol;

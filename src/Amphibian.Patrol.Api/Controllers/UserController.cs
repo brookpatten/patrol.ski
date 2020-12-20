@@ -13,6 +13,7 @@ using Amphibian.Patrol.Api.Extensions;
 using Amphibian.Patrol.Api.Dtos;
 using Microsoft.Extensions.Logging;
 using Amphibian.Patrol.Api.Infrastructure;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Amphibian.Patrol.Api.Controllers
 {
@@ -26,10 +27,14 @@ namespace Amphibian.Patrol.Api.Controllers
         private IGroupRepository _groupRepository;
         private IPlanRepository _planRepository;
         private IUserRepository _userRepository;
+        private Services.IAuthenticationService _authenticationService;
+        private ITokenRepository _tokenRepository;
+        private ISystemClock _systemClock;
         
 
         public UserController(ILogger<UserController> logger, IPatrolService patrolService,IUserRepository userRepository,IEmailService emailService
-            , IPatrolRepository patrolRepository, IGroupRepository groupRepository, IUserService userService, IPlanRepository planRepository)
+            , IPatrolRepository patrolRepository, IGroupRepository groupRepository, IUserService userService, IPlanRepository planRepository
+            , Services.IAuthenticationService authenticationService, ITokenRepository tokenRepository, ISystemClock systemClock)
         {
             _logger = logger;
             _patrolService = patrolService;
@@ -38,6 +43,9 @@ namespace Amphibian.Patrol.Api.Controllers
             _userService = userService;
             _planRepository = planRepository;
             _userRepository = userRepository;
+            _authenticationService = authenticationService;
+            _tokenRepository = tokenRepository;
+            _systemClock = systemClock;
         }
 
         [HttpGet]
@@ -45,7 +53,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> List(int patrolId)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainUsers())
+            if (User.RoleInPatrol( patrolId).CanMaintainUsers())
             {
                 var users = await _userService.GetPatrolUsers(patrolId);
                 return Ok(users);
@@ -61,7 +69,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> Get(int patrolId, int userId)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainUsers())
+            if (User.RoleInPatrol( patrolId).CanMaintainUsers())
             {
                 var user = await _userService.GetPatrolUser(patrolId,userId);
                 return Ok(user);
@@ -77,8 +85,8 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetSelf()
         {
-            var user = await _userRepository.GetUser(User.GetUserId());
-            return Ok(user);
+            var user = await _userRepository.GetUser(User.UserId());
+            return Ok((UserIdentifier)user);
         }
 
         [HttpGet]
@@ -86,7 +94,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetGroups(int patrolId)
         {
-            var role = await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId);
+            var role = User.RoleInPatrol( patrolId);
             if (role.CanMaintainUsers()
                 || role.CanMaintainSchedule())
             {
@@ -105,7 +113,7 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> GetGroup(int groupId)
         {
             var group = await _groupRepository.GetGroup(groupId);
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), group.PatrolId)).CanMaintainGroups())
+            if (User.RoleInPatrol( group.PatrolId).CanMaintainGroups())
             {
                 var memebers = await _groupRepository.GetUsersInGroup(groupId);
                 var plans = await _planRepository.GetPlansWithSectionsAllowedByGroup(groupId);
@@ -147,7 +155,7 @@ namespace Amphibian.Patrol.Api.Controllers
                 existing.Name = newGroup.Name;
             }
 
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), newGroup.PatrolId)).CanMaintainGroups())
+            if (User.RoleInPatrol( newGroup.PatrolId).CanMaintainGroups())
             {
                 if (existing.Id == default(int))
                 {
@@ -172,7 +180,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> RemoveGroup(int patrolId,int groupId)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainGroups())
+            if (User.RoleInPatrol( patrolId).CanMaintainGroups())
             {
                 var groups = await _groupRepository.GetGroupsForPatrol(patrolId);
                 if(groups.Any(y=>y.Id==groupId))
@@ -201,7 +209,10 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> Delete()
         {
-            await _userService.RemovePersonalInformation(User.GetUserId());
+            await _userService.RemovePersonalInformation(User.UserId());
+
+            Response.SendNewToken("Deleted");
+
             return Ok();
         }
 
@@ -212,7 +223,7 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> Save(PatrolUserDto dto)
         {
             //users can update some things themselves
-            if(dto.Id == User.GetUserId() && !dto.Role.HasValue && dto.Groups==null && dto.PatrolUserId==default(int))
+            if(dto.Id == User.UserId() && !dto.Role.HasValue && dto.Groups==null && dto.PatrolUserId==default(int))
             {
                 var newEmailUser = await _userRepository.GetUser(dto.Email);
 
@@ -234,7 +245,7 @@ namespace Amphibian.Patrol.Api.Controllers
                 return Ok();
             }
             //admins can update some things for people in their patrol
-            else if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainUsers())
+            else if (User.RoleInPatrol( dto.PatrolId).CanMaintainUsers())
             {
                 //ensure the groups specified match the specified patrol
                 var validGroups = await _groupRepository.GetGroupsForPatrol(dto.PatrolId);
@@ -247,6 +258,17 @@ namespace Amphibian.Patrol.Api.Controllers
                     }
 
                     await _userService.UpdatePatrolUser(dto);
+
+                    //if it's the current user, send them a refreshed token
+                    if (dto.Id == User.UserId())
+                    {
+                        Response.SendNewToken(await _authenticationService.IssueJwtToUser(User.UserId(), User.TokenGuid()));
+                    }
+                    else
+                    {
+                        await _tokenRepository.SupersedeActiveTokensForUsers(new List<int>() { dto.Id }, _systemClock.UtcNow.UtcDateTime);
+                    }
+
                     return Ok();
                 }
                 else
@@ -271,9 +293,24 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> RemoveFromPatrol(RemoveUserDto dto)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainUsers())
+            if (User.RoleInPatrol( dto.PatrolId).CanMaintainUsers())
             {
                 await _patrolRepository.DeletePatrolUser(dto.PatrolId,dto.UserId);
+
+                //TODO, if the user asn't current user, mark their tokens to supersede
+                //refresh the users jwt to match the above change
+                if (dto.UserId == User.UserId())
+                {
+                    Response.SendNewToken(await _authenticationService.IssueJwtToUser(User.UserId(), User.TokenGuid()));
+                }
+                else
+                {
+                    //supersede any tokens for the user
+                    var patrolUsers = (await _patrolRepository.GetUsersForPatrol(dto.PatrolId)).ToList();
+                    patrolUsers = patrolUsers.Where(x => x.Id != User.UserId()).ToList();
+                    await _tokenRepository.SupersedeActiveTokensForUsers(patrolUsers.Select(x => x.Id).ToList(), _systemClock.UtcNow.UtcDateTime);
+                }
+
                 return Ok();
             }
             else

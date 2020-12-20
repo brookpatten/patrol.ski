@@ -3,6 +3,7 @@ import Vuex from 'vuex'
 import axios from 'axios'
 import lodash from 'lodash'
 import VueLodash from 'vue-lodash'
+import jwt_decode from 'jwt-decode'
 
 Vue.use(Vuex)
 Vue.use(VueLodash, lodash)
@@ -14,38 +15,26 @@ var loadState = function(){
       sidebarMinimize: false,
       status: '',
       token: '',
-      user: null,
+      userId:0,
       patrols: [],
       selectedPatrolId: 0,
       loadingMessage: 'Loading',
       loadingCount: 0
     };
 
-    var tryParseJson = function(json,defaultValue){
-      if(!json)
-      {
-        console.log('json is null');
-        return defaultValue;
-      }
-      else
-      {
-        try
-        {
-          return JSON.parse(json);
-        }
-        catch(err)
-        {
-          console.log(err.message);
-          return defaultValue;
-        }
-      }
-    };
-
     newState.token = localStorage.getItem('token') !=null ? localStorage.getItem('token') : '';
-
-    newState.user= tryParseJson(localStorage.getItem('user'),null);
-    newState.patrols=  tryParseJson(localStorage.getItem('patrols'),{patrols:[]}).patrols;
+    if(newState.token){
+      var decoded = jwt_decode(newState.token);
+      newState.patrols = JSON.parse(decoded.patrols);
+      newState.userId = parseInt(decoded.uid);
+    }
     newState.selectedPatrolId= localStorage.getItem('selectedPatrolId')!=null ? parseInt(localStorage.getItem('selectedPatrolId')) : 0;
+
+    if((!newState.selectedPatrolId || _.find(newState.patrols,{id:newState.selectedPatrolId}) == null )
+      && newState.patrols && newState.patrols.length>0){
+        newState.selectedPatrolId = newState.patrols[0].id;
+    }
+
     console.log(JSON.stringify(newState));
     return newState;
   };
@@ -53,9 +42,6 @@ var loadState = function(){
 const state = loadState();
 
 const mutations = {
-  initializeState(state){
-    //loadState();
-  },
   toggleSidebarDesktop (state) {
     const sidebarOpened = [true, 'responsive'].includes(state.sidebarShow)
     state.sidebarShow = sidebarOpened ? false : 'responsive'
@@ -70,11 +56,31 @@ const mutations = {
   auth_request(state){
     state.status = 'loading';
   },
-  auth_success(state, data){
+  auth_success(state, jwt){
     state.status = 'success';
-    state.token = data.token;
-    state.user = data.user;
-    state.patrols = data.patrols;
+    state.token = jwt;
+    var decoded = jwt_decode(jwt);
+    state.patrols = JSON.parse(decoded.patrols);
+    state.userId = parseInt(decoded.uid);
+
+    //if no patrol is selected, or the selected patrol is no longer allowed, just pick the first one that IS allowed
+    if(!state.selectedPatrolId
+      && state.patrols 
+      && state.patrols.length>0){
+      state.selectedPatrolId = state.patrols[0].id;
+    }
+    else if(state.selectedPatrolId 
+      && _.find(state.patrols,function(s){ return s.id==state.selectedPatrolId;}) == null 
+      && state.patrols 
+      && state.patrols.length>0){
+      state.selectedPatrolId = state.patrols[0].id;
+    }
+    else if(!state.patrols 
+      || state.patrols.length ==0 
+      || _.find(state.patrols,function(s){ return s.id==state.selectedPatrolId;}) == null){
+      //user has no access
+      state.selectedPatrolId = 0;
+    }
   },
   auth_error(state){
     state.status = 'error';
@@ -85,10 +91,6 @@ const mutations = {
   },
   change_patrol(state,data){
     state.selectedPatrolId = data;
-  },
-  update_patrols(state,data){
-    state.patrols = data.patrols;
-    state.selectedPatrolId = data.id;
   },
   toggle (state, variable) {
     state[variable] = !state[variable]
@@ -109,59 +111,13 @@ export default new Vuex.Store({
   state,
   mutations,
   actions: {
-    update_patrols({commit},patrols){
+    authenticate({commit},jwt){
+      console.log('authenticate',jwt);
       return new Promise((resolve, reject) => {
-        localStorage.setItem('patrols', {patrols:patrols.patrol});
-        commit('update_patrols', patrols);
-        resolve();
-      });
-    },
-    authenticate({commit},resp){
-      console.log('authenticate',resp);
-      return new Promise((resolve, reject) => {
-        commit('auth_success', resp.data);
-        localStorage.setItem('user', JSON.stringify(state.user));
-        localStorage.setItem('token', state.token);
-        axios.defaults.headers.common['Authorization'] = 'Bearer ' + state.token;
-        localStorage.setItem('patrols', JSON.stringify({patrols:state.patrols}));
-        if(state.patrols && state.patrols.length>0){
-          state.selectedPatrolId = state.patrols[0].id;
-          localStorage.setItem('selectedPatrolId', state.selectedPatrolId);
-        }
-        else {
-          //redirect the user to create a patrol
-        }
-        resolve(resp);
-      });
-    },
-    login({commit}, user){
-      return new Promise((resolve, reject) => {
-        commit('auth_request');
-        axios.post('user/authenticate'+(user.throwaway ? '-throwaway' : ''),user)
-        .then(resp => {
-          commit('auth_success', resp.data);
-          localStorage.setItem('user', JSON.stringify(state.user));
-          localStorage.setItem('token', state.token);
-          axios.defaults.headers.common['Authorization'] = 'Bearer ' + state.token;
-          localStorage.setItem('patrols', JSON.stringify({patrols:state.patrols}));
-          if(state.patrols && state.patrols.length>0){
-            state.selectedPatrolId = state.patrols[0].id;
-            localStorage.setItem('selectedPatrolId', state.selectedPatrolId);
-          }
-          else {
-            //redirect the user to create a patrol
-          }
-
-          resolve(resp);
-        })
-        .catch(err => {
-          commit('auth_error');
-          localStorage.removeItem('user');
-          localStorage.removeItem('token');
-          localStorage.removeItem('patrols');
-          localStorage.removeItem('selectedPatrolId');
-          reject(err);
-        });
+        commit('auth_success', jwt);
+        localStorage.setItem('token', jwt);
+        axios.defaults.headers.common['Authorization'] = 'Bearer ' + jwt;
+        resolve(jwt);
       });
     },
     change_patrol({commit}, patrolId){
@@ -171,40 +127,10 @@ export default new Vuex.Store({
         resolve();
       });
     },
-    register({commit}, user){
-      console.log("store register");
-      return new Promise((resolve, reject) => {
-        commit('auth_request');
-        console.log(user);
-        axios.post('user/register',user)
-        .then(resp => {
-          console.log('auth success',resp);
-          commit('auth_success', resp.data);
-          localStorage.setItem('user', JSON.stringify(state.user));
-          localStorage.setItem('token', state.token);
-          axios.defaults.headers.common['Authorization'] = 'Bearer ' + state.token;
-          localStorage.setItem('patrols', JSON.stringify({patrols:state.patrols}));
-          if(state.patrols && state.patrols.length>0){
-            state.selectedPatrolId = state.patrols[0].id;
-            localStorage.setItem('selectedPatrolId', state.selectedPatrolId);
-          }
-
-          resolve(resp);
-        })
-        .catch(err => {
-          console.log(err);
-          commit('auth_error', err);
-          localStorage.removeItem('token');
-          reject(err);
-        });
-      });
-    },
     logout({commit}){
       return new Promise((resolve, reject) => {
         commit('logout');
-        localStorage.removeItem('user');
         localStorage.removeItem('token');
-        localStorage.removeItem('patrols');
         localStorage.removeItem('selectedPatrolId');
         delete axios.defaults.headers.common['Authorization'];
         resolve();
@@ -244,8 +170,9 @@ export default new Vuex.Store({
       }
     },
     patrols: state => state.patrols,
-    user: state=> state.user,
+    userId: state=> state.userId,
     loadingCount: state=>state.loadingCount,
-    loadingMessage: state=>state.loadingMessage
+    loadingMessage: state=>state.loadingMessage,
+    token: state=> state.token
   }
 })

@@ -55,5 +55,14 @@ namespace Amphibian.Patrol.Api.Repositories
         {
             await _connection.DeleteAsync(token).ConfigureAwait(false);
         }
+
+        public async Task SupersedeActiveTokensForUsers(IList<int> userIds, DateTime when)
+        {
+            await _connection.ExecuteAsync(@"
+            update tokens set supersededat=@when
+            where expiredat is null and supersededat is null
+            and userid in @userIds
+            ", new { userIds, when });
+        }
     }
 }

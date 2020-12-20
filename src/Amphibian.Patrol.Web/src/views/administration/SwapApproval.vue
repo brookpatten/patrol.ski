@@ -107,8 +107,8 @@ export default {
     selectedPatrol: function (){
         return this.$store.getters.selectedPatrol;
     },
-    user: function (){
-        return this.$store.getters.user;
+    userId: function (){
+        return this.$store.getters.userId;
     }
   },
   watch: {

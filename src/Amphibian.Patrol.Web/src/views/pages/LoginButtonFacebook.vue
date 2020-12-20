@@ -28,7 +28,6 @@ export default {
         {
           this.$http.post('user/authenticate/facebook',{accessToken:response.authResponse.accessToken})
               .then(response => {
-                  var result = response.data;
                   console.log(response);
                   this.$emit("authenticated", response);
               }).catch(response => {

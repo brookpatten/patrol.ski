@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authentication;
 using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Infrastructure;
 using Amphibian.Patrol.Api.Services;
+using Amphibian.Patrol.Api.Dtos;
 
 namespace Amphibian.Patrol.Api.Controllers
 {
@@ -43,11 +44,18 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetTraining(int patrolId)
         {
-            var upcomingShifts = await _shiftRepository.GetScheduledShiftAssignments(patrolId, this.User.GetUserId(), _clock.UtcNow.UtcDateTime);
+            if (User.PatrolIds().Any(x => x == patrolId))
+            {
+                var upcomingShifts = await _shiftRepository.GetScheduledShiftAssignments(patrolId, this.User.UserId(), _clock.UtcNow.UtcDateTime);
 
-            upcomingShifts = upcomingShifts.Where(x => x.TraineeCount > 0);
+                upcomingShifts = upcomingShifts.Where(x => x.TraineeCount > 0);
 
-            return Ok(upcomingShifts);
+                return Ok(upcomingShifts);
+            }
+            else
+            {
+                return Forbid();
+            }
         }
 
         [HttpGet]
@@ -55,8 +63,15 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetAvailable(int patrolId)
         {
-            var availableShifts = await _shiftRepository.GetAvailableTrainerShiftsForTrainee(patrolId, this.User.GetUserId(), _clock.UtcNow.UtcDateTime);
-            return Ok(availableShifts);
+            if (User.PatrolIds().Any(x => x == patrolId))
+            {
+                var availableShifts = await _shiftRepository.GetAvailableTrainerShiftsForTrainee(patrolId, this.User.UserId(), _clock.UtcNow.UtcDateTime);
+                return Ok(availableShifts);
+            }
+            else
+            {
+                return Forbid();
+            }
         }
 
         [HttpGet]
@@ -64,8 +79,15 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetCommitted(int patrolId)
         {
-            var shifts = await _shiftRepository.GetCommittedTrainerShiftsForTrainee(patrolId, this.User.GetUserId(), _clock.UtcNow.UtcDateTime);
-            return Ok(shifts);
+            if (User.PatrolIds().Any(x => x == patrolId))
+            {
+                var shifts = await _shiftRepository.GetCommittedTrainerShiftsForTrainee(patrolId, this.User.UserId(), _clock.UtcNow.UtcDateTime);
+                return Ok(shifts);
+            }
+            else
+            {
+                return Forbid();
+            }
         }
 
         [HttpPost]
@@ -81,14 +103,13 @@ namespace Amphibian.Patrol.Api.Controllers
                 throw new InvalidOperationException("The specified shift assignment does not have a person associated with it");
             }
             var trainingShift = await _shiftRepository.GetScheduledShift(shiftTrainer.ScheduledShiftId);
-            var patrols = await _patrolRepository.GetPatrolsForUser(this.User.GetUserId());
-
-            if(patrols.Any(x=>x.Id==trainingShift.PatrolId))
+            
+            if(User.PatrolIds().Any(x=>x==trainingShift.PatrolId))
             {
                 var trainee = new Trainee()
                 {
                     ScheduledShiftAssignmentId = scheduledShiftAssignmentId,
-                    TraineeUserId = this.User.GetUserId()
+                    TraineeUserId = this.User.UserId()
                 };
                 await _shiftRepository.InsertTrainee(trainee);
 
@@ -115,7 +136,7 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             var trainee = await _shiftRepository.GetTrainee(traineeId);
 
-            if (trainee.TraineeUserId == this.User.GetUserId())
+            if (trainee.TraineeUserId == this.User.UserId())
             {
                 await _shiftRepository.DeleteTrainee(trainee);
 

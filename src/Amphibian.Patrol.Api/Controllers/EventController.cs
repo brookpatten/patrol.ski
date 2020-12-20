@@ -46,9 +46,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetEvents(EventQuery query)
         {
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
-            if (patrols.Any(x=>x.Id== query.PatrolId))
+            if (User.PatrolIds().Any(x=>x== query.PatrolId))
             {
                 var patrolEvents = await _eventRepository.GetEvents(query.PatrolId, query.From, query.To);
                 return Ok(patrolEvents);
@@ -64,9 +62,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetUpcomingEvents(int patrolId)
         {
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
-            if (patrols.Any(x => x.Id == patrolId))
+            if (User.PatrolIds().Any(x => x == patrolId))
             {
                 var patrolEvents = await _eventRepository.GetUpcomingEvents(patrolId, _clock.UtcNow.UtcDateTime);
                 return Ok(patrolEvents);
@@ -83,9 +79,8 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> GetEvent(int id)
         {
             var patrolEvent = await _eventRepository.GetById(id);
-            var patrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-
-            if (patrols.Any(x => x.Id == patrolEvent.PatrolId))
+            
+            if (User.PatrolIds().Any(x => x == patrolEvent.PatrolId))
             {
                 return Ok(patrolEvent);
             }
@@ -101,11 +96,11 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> PostEvent(Event patrolEvent)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolEvent.PatrolId)).CanMaintainEvents())
+            if (User.RoleInPatrol( patrolEvent.PatrolId).CanMaintainEvents())
             {
                 if(patrolEvent.Id == default(int))
                 {
-                    patrolEvent.CreatedByUserId = User.GetUserId();
+                    patrolEvent.CreatedByUserId = User.UserId();
                     patrolEvent.CreatedAt = _clock.UtcNow.UtcDateTime;
                     await _eventRepository.InsertEvent(patrolEvent);
                 }
@@ -137,7 +132,7 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             var existing = await _eventRepository.GetById(id);
 
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), existing.PatrolId)).CanMaintainEvents())
+            if (User.RoleInPatrol( existing.PatrolId).CanMaintainEvents())
             {
                 await _eventRepository.Delete(existing);
                 return Ok();

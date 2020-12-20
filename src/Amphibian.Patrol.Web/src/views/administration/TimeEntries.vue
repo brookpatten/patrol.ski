@@ -100,14 +100,14 @@ export default {
       selectedUserId: 0
     }
   },
-  props: ['userId'],
+  props: ['uid'],
   methods: {
     getTimeEntrys() {
-      if(this.selectedUserId==0 && this.userId){
-        this.selectedUserId = this.userId;
+      if(this.selectedUserId==0 && this.uid){
+        this.selectedUserId = this.uid;
       }
       else if(this.selectedUserId==0){
-        this.selectedUserId = this.user.id;
+        this.selectedUserId = this.userId;
       }
 
       if(this.selectedPatrol.enableScheduling){
@@ -151,11 +151,11 @@ export default {
       }
       this.getTimeEntrys();
 
-      if(this.selectedUserId==0 && this.userId){
-        this.selectedUserId = this.userId;
+      if(this.selectedUserId==0 && this.uid){
+        this.selectedUserId = this.uid;
       }
       else if(this.selectedUserId==0){
-        this.selectedUserId = this.user.id;
+        this.selectedUserId = this.userId;
       }
     }
   },
@@ -166,8 +166,8 @@ export default {
     selectedPatrol: function (){
         return this.$store.getters.selectedPatrol;
     },
-    user: function (){
-        return this.$store.getters.user;
+    userId: function (){
+        return this.$store.getters.userId;
     },
     userItems: function(){
         var items = _.map(this.users,function(s){

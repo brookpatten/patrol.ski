@@ -28,9 +28,25 @@ if (token) {
 
 //globally configure axios so that any time an api call returns a 401, we redirect to login
 Axios.interceptors.response.use(function (response) {
-  return response
+  //check for updated token
+  if(response.headers.authorization){
+    var jwt = response.headers.authorization.split(' ')[1];
+    if(jwt!=store.getters.token){
+      store.dispatch('authenticate',jwt);
+    }
+  }
+return response
 }, function (error) {
   console.log(error.response.data)
+  
+  //check for updated token
+  if(error.response.headers.Authorization){
+    var jwt = error.response.headers.Authorization.split(' ')[1];
+    if(jwt!=store.getters.token){
+      store.dispatch('authenticate',jwt);
+    }
+  }
+
   if (error.response.data.status === 401) {
     console.log('401 - Logging out')
     store.dispatch('logout')
@@ -48,5 +64,5 @@ new Vue({
   components: {
     App
   },
-  beforeCreate() { this.$store.commit('initializeState');}
+  beforeCreate() { }
 })

@@ -1,5 +1,6 @@
 ﻿using Amphibian.Patrol.Api.Models;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Amphibian.Patrol.Api.Repositories
@@ -11,5 +12,6 @@ namespace Amphibian.Patrol.Api.Repositories
         Task<Token> GetToken(int id);
         Task InsertToken(Token token);
         Task UpdateToken(Token token);
+        Task SupersedeActiveTokensForUsers(IList<int> userIds,DateTime when);
     }
 }

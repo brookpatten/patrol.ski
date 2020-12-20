@@ -64,7 +64,7 @@ export default {
   methods: {
     getScheduledShifts() {
       this.$store.dispatch('loading','Loading...');
-        this.$http.post('schedule/search',{patrolId:this.selectedPatrolId,from:new Date(),status:'Released',noOverlapWithUserId:this.user.id})
+        this.$http.post('schedule/search',{patrolId:this.selectedPatrolId,from:new Date(),status:'Released',noOverlapWithUserId:this.userId})
             .then(response => {
                 console.log(response);
                 this.scheduledShifts = response.data;
@@ -78,7 +78,7 @@ export default {
       this.$http.post('schedule/scheduled-shift-assignment/claim?scheduledShiftAssignmentId='+scheduledShiftAssignment.id)
         .then(response=>{
           scheduledShiftAssignment.status='Claimed';
-          scheduledShiftAssignment.claimedByUser = this.user;
+          scheduledShiftAssignment.claimedByUser = response.data.claimedByUser;
 
           var shift = _.find(scheduledShifts,function(s)
           {
@@ -98,8 +98,8 @@ export default {
     selectedPatrol: function (){
         return this.$store.getters.selectedPatrol;
     },
-    user: function (){
-        return this.$store.getters.user;
+    userId: function (){
+        return this.$store.getters.userId;
     }
   },
   watch: {

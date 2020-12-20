@@ -41,10 +41,9 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> Plans(int patrolId)
         {
-            var patrol = (await _patrolRepository.GetPatrolsForUser(User.GetUserId())).SingleOrDefault(x=>x.Id==patrolId);
-            if(patrol!=null)
+            if(User.PatrolIds().Any(x=>x==patrolId))
             {
-                var plans = await _planRepository.GetPlansForPatrol(patrol.Id);
+                var plans = await _planRepository.GetPlansForPatrol(patrolId);
                 return Ok(plans);
             }
             else
@@ -58,9 +57,8 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> PlanDetails(int planId)
         {
-            var plan = await _planService.GetPlan(planId, User.GetUserId());
-            var userPatrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-            if(userPatrols.Any(x=>x.Id==plan.PatrolId))
+            var plan = await _planService.GetPlan(planId, User.UserId());
+            if(User.PatrolIds().Any(x=>x==plan.PatrolId))
             {
                 return Ok(plan);
             }
@@ -75,8 +73,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetLevels(int patrolId)
         {
-            var userPatrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-            if (userPatrols.Any(x => x.Id == patrolId))
+            if (User.PatrolIds().Any(x => x == patrolId))
             {
                 var levels = await _planRepository.GetLevels(patrolId);
                 return Ok(levels);
@@ -92,8 +89,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetSkills(int patrolId)
         {
-            var userPatrols = await _patrolRepository.GetPatrolsForUser(User.GetUserId());
-            if (userPatrols.Any(x => x.Id == patrolId))
+            if (User.PatrolIds().Any(x=>x==patrolId))
             {
                 var skills = await _planRepository.GetSkills(patrolId);
                 return Ok(skills);
@@ -110,7 +106,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> Create(int patrolId, string name, int? copyFromPlanId)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), patrolId)).CanMaintainPlans())
+            if (User.RoleInPatrol(patrolId).CanMaintainPlans())
             {
                 var plan = await _planService.CreatePlan(name, patrolId, copyFromPlanId);
                 return Ok(plan);
@@ -129,12 +125,12 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             var existingPlan = await _planRepository.GetPlan(dto.Id);
 
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), dto.PatrolId)).CanMaintainPlans())
+            if (User.RoleInPatrol(existingPlan.PatrolId).CanMaintainPlans())
             {
                 if (await _planService.IsPlanFormatValid(dto))
                 {
                     await _planService.UpdatePlan(dto);
-                    var updatedPlan = await _planService.GetPlan(dto.Id, User.GetUserId());
+                    var updatedPlan = await _planService.GetPlan(dto.Id, User.UserId());
                     return Ok(updatedPlan);
                 }
                 else
@@ -155,7 +151,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CreateLevel(Level level)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), level.PatrolId)).CanMaintainPlans())
+            if (User.RoleInPatrol(level.PatrolId).CanMaintainPlans())
             {
                 await _planRepository.InsertLevel(level);
                 return Ok(level);
@@ -172,7 +168,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CreateSkill(Skill skill)
         {
-            if ((await _patrolService.GetUserRoleInPatrol(User.GetUserId(), skill.PatrolId)).CanMaintainPlans())
+            if (User.RoleInPatrol(skill.PatrolId).CanMaintainPlans())
             {
                 await _planRepository.InsertSkill(skill);
                 return Ok(skill);

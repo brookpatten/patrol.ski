@@ -29,9 +29,9 @@
                     <CButtonGroup size="sm">
                       <CButton color="primary" :to="{ name: 'EditUser', params: { userId: data.item.id } }">Edit</CButton>
                       <CButton color="danger" v-on:click="removeUser(data.item.id)">Remove</CButton>
-                      <CButton v-if="selectedPatrol.enableTimeClock && hasPermission('MaintainTimeClock')" color="primary" :to="{ name: 'TimeEntries', params: { userId: data.item.id } }">Time Entries</CButton>
+                      <!--<CButton v-if="selectedPatrol.enableTimeClock && hasPermission('MaintainTimeClock')" color="primary" :to="{ name: 'TimeEntries', params: { userId: data.item.id } }">Time Entries</CButton>
                       <CButton v-if="selectedPatrol.enableTraining && hasPermission('MaintainAssignments')" color="info" :to="{ name: 'Assignments', params: { userId: data.item.id } }">Assignments</CButton>
-                      <CButton v-if="selectedPatrol.enableScheduling" color="success" :to="{ name: 'Calendar', params: { userId: data.item.id } }">Schedule</CButton>
+                      <CButton v-if="selectedPatrol.enableScheduling" color="success" :to="{ name: 'Calendar', params: { userId: data.item.id } }">Schedule</CButton>-->
                     </CButtonGroup>
                   </td>
                 </template>

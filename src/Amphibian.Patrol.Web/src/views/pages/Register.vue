@@ -106,20 +106,15 @@ export default {
         nspNumber: this.nspNumber
       };
       console.log("register",data);
-      this.$store.dispatch('register', data)
-       .then(() => {
-         if(this.$store.getters.patrols.length>0){
-            this.$router.push('/');
-          }
-          else{
-            this.$router.push({name:'NewPatrol'});
-          }
+      this.$store.dispatch('loading','Registering');
+      this.$http.post('user/register',data)
+        .then(resp => {
+          //the http interceptor automatically picks up the new jwt on the response 
+          this.$router.push({name:'NewPatrol'});
         })
-       .catch(err => 
-        {
+        .catch(err => {
           this.processValidations(err.response.data.errors,this)
-          console.log(err);
-        });
+        }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     processValidations: function(errors, vm) {
       vm.validation.validated=true;

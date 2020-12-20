@@ -21,7 +21,6 @@ export default {
     loginApp(accessToken){
             this.$http.post('user/authenticate/microsoft',{accessToken:accessToken})
             .then(response => {
-                var result = response.data;
                 console.log(response);
                 this.$emit("authenticated", response);
             }).catch(response => {

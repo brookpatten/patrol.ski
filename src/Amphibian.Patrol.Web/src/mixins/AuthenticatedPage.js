@@ -1,8 +1,4 @@
 export default {
-    //data () {
-    //  return {
-    //  }
-    //},
     methods: {
         hasPermission: function(permission){
             return this.selectedPatrol!=null && this.selectedPatrol.permissions!=null && _.indexOf(this.selectedPatrol.permissions,permission) >= 0;
@@ -15,8 +11,8 @@ export default {
       selectedPatrol: function (){
           return this.$store.getters.selectedPatrol;
       },
-      user: function (){
-          return this.$store.getters.user;
+      userId: function (){
+          return this.$store.getters.userId;
       }
     }
   }

@@ -12,5 +12,7 @@ namespace Amphibian.Patrol.Api.Models
         public int UserId { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime LastRequestAt { get; set; }
+        public DateTime? ExpiredAt { get; set; }
+        public DateTime? SupersededAt { get; set; }
     }
 }

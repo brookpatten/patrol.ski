@@ -15,38 +15,46 @@ using Amphibian.Patrol.Api.Services;
 using Amphibian.Patrol.Api.Repositories;
 using IAuthenticationService = Amphibian.Patrol.Api.Services.IAuthenticationService;
 using Microsoft.AspNetCore.Http;
+using System.Linq;
+using System.IdentityModel.Tokens.Jwt;
+using Amphibian.Patrol.Api.Dtos;
 
 namespace Amphibian.Patrol.Api.Infrastructure
 {
     public class AuthenticationHandler : AuthenticationHandler<AuthenticationSchemeOptions>
     {
         private readonly IAuthenticationService _authenticationService;
+        private readonly ITokenRepository _tokenRepository;
+        private readonly ISystemClock _systemClock;
 
         public AuthenticationHandler(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
             ISystemClock clock,
-            IAuthenticationService authenticationService)
+            IAuthenticationService authenticationService, ITokenRepository tokenRepositry)
             : base(options, logger, encoder, clock)
         {
             _authenticationService = authenticationService;
+            _tokenRepository = tokenRepositry;
+            _systemClock = clock;
         }
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+            var now = _systemClock.UtcNow.UtcDateTime;
             if (!Request.Headers.ContainsKey("Authorization"))
             {
                 Logger.LogError("Missing Authorization Header");
                 return AuthenticateResult.Fail("Missing Authorization Header");
             }
 
-            User user = null;
+            ClaimsPrincipal principal=null;
+
             try
             {
                 AuthenticationHeaderValue authenticationHeader;
-                Guid tokenGuid;
-
+                
                 if (AuthenticationHeaderValue.TryParse(Request.Headers["Authorization"], out authenticationHeader))
                 {
                     if (authenticationHeader.Scheme == "Basic")
@@ -59,7 +67,7 @@ namespace Amphibian.Patrol.Api.Infrastructure
                             var credentials = credentialString.Split(new[] { ':' }, 2);
                             var email = credentials[0];
                             var password = credentials[1];
-                            user = await _authenticationService.AuthenticateUserWithPassword(email, password);
+                            var user = await _authenticationService.AuthenticateUserWithPassword(email, password);
                             if (user == null)
                             {
                                 //bad password
@@ -70,23 +78,43 @@ namespace Amphibian.Patrol.Api.Infrastructure
                             {
                                 //make a token and put it in the response header?
                                 
-                                var token = await _authenticationService.CreateNewTokenForUser(user);
-                                Logger.LogInformation("Authenticated User {@email} via email/password, created token {@token}", user.Email, token );
-                                Response.Headers.Add("Authorization", "Token " + token.TokenGuid);
+                                Logger.LogInformation("Authenticated User {@email} via email/password", user.Email );
+
+                                var jwt = await _authenticationService.IssueJwtToUser(user.Id);
+                                principal = _authenticationService.ValidateSignedJwtToken(jwt);
+
+                                Response.Headers.Add("Authorization", "Token " + jwt);
                             }
                         }
                     }
                     else if(authenticationHeader.Scheme=="Token" || authenticationHeader.Scheme == "Bearer") //TODO: remove "Token"
                     {
-                        if(Guid.TryParse(authenticationHeader.Parameter,out tokenGuid))
+                        if ((new JwtSecurityTokenHandler()).CanReadToken(authenticationHeader.Parameter))
                         {
-                            user = await _authenticationService.AuthenticateUserWithToken(tokenGuid);
-                            if (user == null)
+                            var jwtPrincipal = _authenticationService.ValidateSignedJwtToken(authenticationHeader.Parameter);
+                            var parsed = jwtPrincipal.ParseAllClaims();
+
+                            //TODO: update this so that only superseded/expired token are in the db, "good" tokens will not be
+                            var token = await _tokenRepository.GetToken(parsed.Token.TokenGuid);
+                            if(token.ExpiredAt.HasValue && token.ExpiredAt < now)
                             {
-                                Logger.LogError("Invalid Bearer Token");
-                                return AuthenticateResult.Fail("Invalid Authorization Header");
+                                //note we do NOT set the principle, it's expired so we let it fail as invalid
                             }
-                            Logger.LogInformation("Authenticated User {@email} via bearer token {@tokenGuid}", user.Email, tokenGuid );
+                            else if (token.SupersededAt.HasValue && token.SupersededAt < now)
+                            {
+                                //token is valid, but needs to be updated due to some change that was made to data contained therein
+                                var refreshedJwt = await _authenticationService.IssueJwtToUser(parsed.User.Id,token.TokenGuid);
+                                //send the updated token back to client
+                                Response.Headers.Add("Authorization", "Token " + refreshedJwt);
+
+                                principal = _authenticationService.ValidateSignedJwtToken(refreshedJwt);
+                            }
+                            else
+                            {
+                                principal = jwtPrincipal;
+                            }
+
+                            Logger.LogInformation("Authenticated User {@id} via bearer token {@tokenGuid}", parsed.User.Id, parsed.Token.TokenGuid );
                         }
                     }
                     else
@@ -110,24 +138,14 @@ namespace Amphibian.Patrol.Api.Infrastructure
                 return AuthenticateResult.Fail("Invalid Authorization Header");
             }
 
-            if (user == null)
+            if (principal == null)
             {
                 //this shouldn't actually happen, but just in case
                 Logger.LogError("Invalid Username or Password");
                 return AuthenticateResult.Fail("Invalid Username or Password");
             }
 
-            var claims = new[] {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, $"{user.FirstName} {user.LastName}")
-            };
-
-            var identity = new ClaimsIdentity(claims, Scheme.Name);
-            var principal = new ClaimsPrincipal(identity);
             var ticket = new AuthenticationTicket(principal, Scheme.Name);
-
-            
 
             return AuthenticateResult.Success(ticket);
         }
