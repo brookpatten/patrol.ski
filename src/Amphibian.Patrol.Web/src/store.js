@@ -24,9 +24,16 @@ var loadState = function(){
 
     newState.token = localStorage.getItem('token') !=null ? localStorage.getItem('token') : '';
     if(newState.token){
+      try{
       var decoded = jwt_decode(newState.token);
       newState.patrols = JSON.parse(decoded.patrols);
       newState.userId = parseInt(decoded.uid);
+      }
+      catch(err){
+        newState.token = '';
+        newState.patrols=[];
+        newState.userId = 0;
+      }
     }
     newState.selectedPatrolId= localStorage.getItem('selectedPatrolId')!=null ? parseInt(localStorage.getItem('selectedPatrolId')) : 0;
 
@@ -59,9 +66,16 @@ const mutations = {
   auth_success(state, jwt){
     state.status = 'success';
     state.token = jwt;
+    try{
     var decoded = jwt_decode(jwt);
     state.patrols = JSON.parse(decoded.patrols);
     state.userId = parseInt(decoded.uid);
+    }
+    catch(err){
+      state.patrols=[];
+      state.userId=0;
+      state.token='';
+    }
 
     //if no patrol is selected, or the selected patrol is no longer allowed, just pick the first one that IS allowed
     if(!state.selectedPatrolId
