@@ -25,6 +25,7 @@
     <None Remove="Scripts\0017-AllowAvailableScheduledShiftAssignments.sql" />
     <None Remove="Scripts\0018-Timeclock.sql" />
     <None Remove="Scripts\0019-AuthProviders.sql" />
+    <None Remove="Scripts\0020-WorkItems.sql" />
     <None Remove="Scripts\0021-Jwt.sql" />
     <None Remove="Scripts\0999-Indexes.sql" />
     <None Remove="Scripts\1001-TestData.sql" />
@@ -50,6 +51,7 @@
     <EmbeddedResource Include="Scripts\0017-AllowAvailableScheduledShiftAssignments.sql" />
     <EmbeddedResource Include="Scripts\0018-Timeclock.sql" />
     <EmbeddedResource Include="Scripts\0019-AuthProviders.sql" />
+    <EmbeddedResource Include="Scripts\0020-WorkItems.sql" />
     <EmbeddedResource Include="Scripts\0021-Jwt.sql" />
     <EmbeddedResource Include="Scripts\0999-Indexes.sql" />
     <EmbeddedResource Include="Scripts\1001-TestData.sql" />

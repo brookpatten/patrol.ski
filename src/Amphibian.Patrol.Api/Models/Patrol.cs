@@ -15,6 +15,7 @@ namespace Amphibian.Patrol.Api.Models
         public bool EnableScheduling { get; set; }
         public bool EnableShiftSwaps { get; set; }
         public bool EnableTimeClock { get; set; }
+        public bool EnableWorkItems { get; set; }
         public string TimeZone { get; set; }
     }
 }
