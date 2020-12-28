@@ -175,7 +175,7 @@ namespace Amphibian.Patrol.Api.Repositories
                     return st;
                 }, new { patrolId, traineeUserId, after });
         }
-        public async Task<IEnumerable<ScheduledShiftAssignmentDto>> GetScheduledShiftAssignments(int patrolId, int? userId=null, DateTime? from = null, DateTime? to = null, ShiftStatus? status=null, int? scheduledShiftId=null, int? noOverlapWithExistingScheduleUserId = null)
+        public async Task<IEnumerable<ScheduledShiftAssignmentDto>> GetScheduledShiftAssignments(int patrolId, int? userId=null, DateTime? from = null, DateTime? to = null, ShiftStatus? status=null, int? scheduledShiftId=null, int? noOverlapWithExistingScheduleUserId = null, int? shiftId = null)
         {
             return await _connection.QueryAsync<ScheduledShiftAssignmentDto, UserIdentifier, UserIdentifier, UserIdentifier,Group,Shift, ScheduledShiftAssignmentDto>(
                 @"select
@@ -234,6 +234,7 @@ namespace Amphibian.Patrol.Api.Repositories
                     or @userId is null)
                     and (@status is null or @status=st.status)
                     and (@scheduledShiftId is null or ts.id=@scheduledShiftId)
+                    and (@shiftId is null or ts.shiftId = @shiftId)
                     --exclude shifts with overlaps
                     and (@noOverlapWithExistingScheduleUserId is null or 
                     (
@@ -257,7 +258,7 @@ namespace Amphibian.Patrol.Api.Repositories
                     st.Group = g;
                     st.Shift = s;
                     return st;
-                }, new { patrolId, userId, from,to,status, scheduledShiftId, noOverlapWithExistingScheduleUserId });
+                }, new { patrolId, userId, from,to,status, scheduledShiftId, noOverlapWithExistingScheduleUserId, shiftId });
         }
         public async Task<Trainee> InsertTrainee(Trainee trainee)
         {

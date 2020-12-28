@@ -85,5 +85,74 @@ namespace Amphibian.Patrol.Api.Repositories
         {
             return _connection.UpdateAsync(item);
         }
+
+        public Task<IEnumerable<WorkItemAssignment>> GetWorkItemAssignments(int workItemId)
+        {
+            return _connection.SelectAsync<WorkItemAssignment>(x => x.WorkItemId == workItemId);
+        }
+
+        public Task<IEnumerable<ShiftRecurringWorkItem>> GetShiftRecurringWorkItems(int recurringWorkItemId)
+        {
+            return _connection.SelectAsync<ShiftRecurringWorkItem>(x => x.RecurringWorkItemId == recurringWorkItemId);
+        }
+
+        public Task DeleteShiftRecurringWorkItem(ShiftRecurringWorkItem shiftRecurringWorkItem)
+        {
+            return _connection.DeleteAsync(shiftRecurringWorkItem);
+        }
+        public Task<IEnumerable<WorkItem>> GetWorkItems(int recurringWorkItemId,DateTime after)
+        {
+            return _connection.QueryAsync<WorkItem>(@"select wi.*
+                from workitems wi 
+                where wi.recurringworkitemid = @recurringWorkItemId and wi.scheduledat > @after", new { recurringWorkItemId, after });
+        }
+
+        public Task DeleteWorkItem(WorkItem item)
+        {
+            return _connection.DeleteAsync(item);
+        }
+
+        public Task DeleteWorkItemAssignment(WorkItemAssignment item)
+        {
+            return _connection.DeleteAsync(item);
+        }
+
+        public Task<IEnumerable<WorkItemAssignment>> GetWorkItemAssignments(int recurringWorkItemId, DateTime after)
+        {
+            return _connection.QueryAsync<WorkItemAssignment>(@"select distinct wia.*
+                from workitems wi 
+                inner join workitemassignments wia on wia.workitemid=wi.id
+                where wi.recurringworkitemid = @recurringWorkItemId and wi.scheduledat > @after", new { recurringWorkItemId, after });
+        }
+
+        public Task<IEnumerable<WorkItem>> GetWorkItemsForShifts(IList<int> scheduledShiftIds)
+        {
+            return _connection.QueryAsync<WorkItem>(@"select * from workitems where scheduledshiftid in @scheduledShiftIds", new { scheduledShiftIds });
+        }
+
+        public Task<IEnumerable<WorkItemAssignment>> GetWorkItemAssignmentsForShifts(IList<int> scheduledShiftIds)
+        {
+            return _connection.QueryAsync<WorkItemAssignment>(@"select wia.*
+                from workitems wi 
+                inner join workitemassignments wia on wia.workitemid=wi.id
+                where wi.scheduledshiftid in @scheduledShiftIds", new { scheduledShiftIds });
+        }
+
+        public Task<IEnumerable<RecurringWorkItem>> GetRecurringWorkItemsForShifts(IList<int> scheduledShiftIds)
+        {
+            return _connection.QueryAsync<RecurringWorkItem>(@"select distinct rwi.*
+                from workitems wi 
+                inner join recurringworkitems rwi on rwi.id=wi.recurringworkitemid
+                where wi.scheduledshiftid in @scheduledShiftIds", new { scheduledShiftIds });
+        }
+
+        public Task<IEnumerable<ShiftRecurringWorkItem>> GetShiftRecurringWorkItemsForShifts(IList<int> scheduledShiftIds)
+        {
+            return _connection.QueryAsync<ShiftRecurringWorkItem>(@"select distinct srwi.*
+                from workitems wi 
+                inner join recurringworkitems rwi on rwi.id=wi.recurringworkitemid
+                inner join shiftrecurringworkitems srwi on srwi.recurringworkitemid=rwi.id
+                where wi.scheduledshiftid in @scheduledShiftIds", new { scheduledShiftIds });
+        }
     }
 }

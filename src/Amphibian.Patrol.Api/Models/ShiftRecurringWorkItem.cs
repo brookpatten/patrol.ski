@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace Amphibian.Patrol.Api.Models
 {
+    public enum ShiftAssignmentMode { CopyPrevious, ManualEachShift, Auto }
     public class ShiftRecurringWorkItem
     {
         public int Id { get; set; }
@@ -12,5 +13,6 @@ namespace Amphibian.Patrol.Api.Models
         public int RecurringWorkItemId { get; set; }
         public int ScheduledAtHour { get; set; }
         public int ScheduledAtMinute { get; set; }
+        public ShiftAssignmentMode? ShiftAssignmentMode { get; set; }
     }
 }

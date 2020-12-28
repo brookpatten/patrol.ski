@@ -32,7 +32,6 @@ namespace Amphibian.Patrol.Tests.Repositories
                 CreatedByUserId = 1,
                 Name="Name",
                 Location="Location",
-                ShiftAssignmentMode = ShiftAssignmentMode.ManualEachShift,
                 CompletionMode = CompletionMode.Any,
                 DescriptionMarkup = "Markup",
                 AdminGroupId = 1
@@ -53,7 +52,6 @@ namespace Amphibian.Patrol.Tests.Repositories
                 CreatedByUserId = 1,
                 Name = "Name",
                 Location = "Location",
-                ShiftAssignmentMode = ShiftAssignmentMode.ManualEachShift,
                 CompletionMode = CompletionMode.Any,
                 DescriptionMarkup = "Markup",
                 AdminGroupId = 1
@@ -68,7 +66,6 @@ namespace Amphibian.Patrol.Tests.Repositories
             Assert.AreEqual(recurringWorkItem.CreatedByUserId, inserted.CreatedByUserId);
             Assert.AreEqual(recurringWorkItem.Name, inserted.Name);
             Assert.AreEqual(recurringWorkItem.Location, inserted.Location);
-            Assert.AreEqual(recurringWorkItem.ShiftAssignmentMode, inserted.ShiftAssignmentMode);
             Assert.AreEqual(recurringWorkItem.CompletionMode, inserted.CompletionMode);
             Assert.AreEqual(recurringWorkItem.DescriptionMarkup, inserted.DescriptionMarkup);
             Assert.AreEqual(recurringWorkItem.AdminGroupId, inserted.AdminGroupId);
@@ -84,7 +81,6 @@ namespace Amphibian.Patrol.Tests.Repositories
                 CreatedByUserId = 1,
                 Name = "Name",
                 Location = "Location",
-                ShiftAssignmentMode = ShiftAssignmentMode.ManualEachShift,
                 CompletionMode = CompletionMode.Any,
                 DescriptionMarkup = "Markup",
                 AdminGroupId = 1
@@ -96,7 +92,6 @@ namespace Amphibian.Patrol.Tests.Repositories
             recurringWorkItem.CreatedByUserId = 2;
             recurringWorkItem.Name = "Name2";
             recurringWorkItem.Location = "Location2";
-            recurringWorkItem.ShiftAssignmentMode = ShiftAssignmentMode.CopyPrevious;
             recurringWorkItem.CompletionMode = CompletionMode.AllAssigned;
             recurringWorkItem.DescriptionMarkup = "Markup2";
             recurringWorkItem.AdminGroupId = 2;
@@ -109,7 +104,6 @@ namespace Amphibian.Patrol.Tests.Repositories
             Assert.AreEqual(recurringWorkItem.CreatedByUserId, inserted.CreatedByUserId);
             Assert.AreEqual(recurringWorkItem.Name, inserted.Name);
             Assert.AreEqual(recurringWorkItem.Location, inserted.Location);
-            Assert.AreEqual(recurringWorkItem.ShiftAssignmentMode, inserted.ShiftAssignmentMode);
             Assert.AreEqual(recurringWorkItem.CompletionMode, inserted.CompletionMode);
             Assert.AreEqual(recurringWorkItem.DescriptionMarkup, inserted.DescriptionMarkup);
             Assert.AreEqual(recurringWorkItem.AdminGroupId, inserted.AdminGroupId);
@@ -217,7 +211,6 @@ namespace Amphibian.Patrol.Tests.Repositories
                 CreatedByUserId = 1,
                 Name = "Name",
                 Location = "Location",
-                ShiftAssignmentMode = ShiftAssignmentMode.ManualEachShift,
                 CompletionMode = CompletionMode.Any,
                 DescriptionMarkup = "Markup",
                 AdminGroupId = 1
@@ -248,7 +241,6 @@ namespace Amphibian.Patrol.Tests.Repositories
                 CreatedByUserId = 1,
                 Name = "Name",
                 Location = "Location",
-                ShiftAssignmentMode = ShiftAssignmentMode.ManualEachShift,
                 CompletionMode = CompletionMode.Any,
                 DescriptionMarkup = "Markup",
                 AdminGroupId = 1
@@ -285,7 +277,6 @@ namespace Amphibian.Patrol.Tests.Repositories
                 CreatedByUserId = 1,
                 Name = "Name",
                 Location = "Location",
-                ShiftAssignmentMode = ShiftAssignmentMode.ManualEachShift,
                 CompletionMode = CompletionMode.Any,
                 DescriptionMarkup = "Markup",
                 AdminGroupId = 1

@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Amphibian.Patrol.Api.Models
 {
-    public enum ShiftAssignmentMode { CopyPrevious, ManualEachShift, Random }
+    
     public class RecurringWorkItem
     {
         public int Id { get; set; }
@@ -16,8 +16,6 @@ namespace Amphibian.Patrol.Api.Models
 
         public DateTime CreatedAt { get; set; }
         public int CreatedByUserId { get; set; }
-
-        public ShiftAssignmentMode? ShiftAssignmentMode { get; set; }
         public CompletionMode CompletionMode { get; set; }
         public int? MaximumRandomCount { get; set; }
         public int? AdminGroupId { get; set; }

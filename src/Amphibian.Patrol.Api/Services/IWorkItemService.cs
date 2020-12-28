@@ -1,4 +1,5 @@
 ﻿using Amphibian.Patrol.Api.Dtos;
+using Amphibian.Patrol.Api.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,16 +9,25 @@ namespace Amphibian.Patrol.Api.Services
 {
     public interface IWorkItemService
     {
-        Task CreateRecurringWorkItem(RecurringWorkItemDto recurringWorkItem);
-        Task UpdateRecurringWorkItem(RecurringWorkItemDto recurringWorkItem);
+        Task SaveRecurringWorkItem(RecurringWorkItemDto recurringWorkItem, int userId, bool populateWorkItems = true, bool populateWorkItemAssignments = true);
         Task<RecurringWorkItemDto> GetRecurringWorkItem(int id);
-        Task CreateWorkItem(WorkItemDto workItem);
-        Task UpdateWorkItem(WorkItemDto workItem);
+        Task SaveWorkItem(WorkItemDto workItem, int userId);
         Task<WorkItemDto> GetWorkItem(int id);
         Task CompleteWorkItem(int workItemId, int userId, string workNotes);
+        Task CancelWorkItem(int workItemId, int userId);
+
+        Task AddWorkItemsToNewShiftOccurence(ScheduledShift shift);
+        Task RemoveWorkItemsFromShiftOccurence(ScheduledShift shift);
+        Task SwapScheduledShiftWorkItems(int scheduledShiftId, int fromUserId, int toUserId);
 
         //get work items for user
         //get assignments for work item
         //get shifts for recurring work item
+
+        //methods that probably ought to just be internal, but are public for testing
+        Task PopulateShiftWorkItemOccurences(RecurringWorkItemDto recurringWorkItem, DateTime now, int userId, Models.Patrol patrol, bool populateWorkitemAssignments = true);
+        Task RecalculateShiftWorkItemAssignments(List<ScheduledShiftAssignmentDto> scheduledShiftAssignments);
+        Task PopulateTimedWorkItemOccurences(RecurringWorkItem workItem, int userId, List<int> assigneeUserIds, bool populateWorkItemAssignments = true);
+
     }
 }

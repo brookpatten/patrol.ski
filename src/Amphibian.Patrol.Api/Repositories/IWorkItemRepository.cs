@@ -11,6 +11,8 @@ namespace Amphibian.Patrol.Api.Repositories
         Task<WorkItem> GetWorkItem(int id);
         Task InsertWorkItem(WorkItem item);
         Task UpdateWorkItem(WorkItem item);
+        Task DeleteWorkItem(WorkItem item);
+        Task<IEnumerable<WorkItem>> GetWorkItems(int recurringWorkItemId, DateTime after);
 
         Task<RecurringWorkItem> GetRecurringWorkItem(int id);
         Task InsertRecurringWorkItem(RecurringWorkItem item);
@@ -19,9 +21,19 @@ namespace Amphibian.Patrol.Api.Repositories
         Task<WorkItemAssignment> GetWorkItemAssignment(int id);
         Task InsertWorkItemAssignment(WorkItemAssignment item);
         Task UpdateWorkItemAssignment(WorkItemAssignment item);
+        Task<IEnumerable<WorkItemAssignment>> GetWorkItemAssignments(int workItemId);
+        Task DeleteWorkItemAssignment(WorkItemAssignment item);
+        Task<IEnumerable<WorkItemAssignment>> GetWorkItemAssignments(int recurringWorkItemId,DateTime after);
 
         Task<ShiftRecurringWorkItem> GetShiftRecurringWorkItem(int id);
         Task InsertShiftRecurringWorkItem(ShiftRecurringWorkItem item);
         Task UpdateShiftRecurringWorkItem(ShiftRecurringWorkItem item);
+        Task<IEnumerable<ShiftRecurringWorkItem>> GetShiftRecurringWorkItems(int recurringWorkItemId);
+        Task DeleteShiftRecurringWorkItem(ShiftRecurringWorkItem shiftRecurringWorkItem);
+
+        Task<IEnumerable<WorkItem>> GetWorkItemsForShifts(IList<int> scheduledShiftIds);
+        Task<IEnumerable<WorkItemAssignment>> GetWorkItemAssignmentsForShifts(IList<int> scheduledShiftIds);
+        Task<IEnumerable<RecurringWorkItem>> GetRecurringWorkItemsForShifts(IList<int> scheduledShiftIds);
+        Task<IEnumerable<ShiftRecurringWorkItem>> GetShiftRecurringWorkItemsForShifts(IList<int> scheduledShiftIds);
     }
 }

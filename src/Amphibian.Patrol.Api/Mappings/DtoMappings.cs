@@ -29,6 +29,15 @@ namespace Amphibian.Patrol.Api.Mappings
                 cfg.CreateMap<Signature, SignatureDto>();
                 cfg.CreateMap<User, PatrolUserDto>();
                 cfg.CreateMap<SectionGroup, SectionGroupDto>();
+
+                cfg.CreateMap<RecurringWorkItem, RecurringWorkItemDto>();
+                cfg.CreateMap<RecurringWorkItemDto, RecurringWorkItem>();
+                cfg.CreateMap<WorkItem, WorkItemDto>();
+                cfg.CreateMap<WorkItemDto, WorkItem>();
+                cfg.CreateMap<WorkItemAssignment, WorkItemAssignmentDto>();
+                cfg.CreateMap<WorkItemAssignmentDto, WorkItemAssignment>();
+                cfg.CreateMap<ShiftRecurringWorkItem, ShiftRecurringWorkItemDto>();
+                cfg.CreateMap<ShiftRecurringWorkItemDto, ShiftRecurringWorkItem>();
             });
             return configuration;
         }

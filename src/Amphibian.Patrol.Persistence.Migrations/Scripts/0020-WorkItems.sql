@@ -20,7 +20,6 @@ CREATE TABLE dbo.RecurringWorkItems
 	Location varchar(255) NULL,
 	CreatedAt datetime NOT NULL,
 	CreatedByUserId int NOT NULL,
-	ShiftAssignmentMode tinyint NULL,
 	CompletionMode tinyint NOT NULL,
 	MaximumRandomCount tinyint NULL,
 	AdminGroupId int NULL,
@@ -53,17 +52,6 @@ ALTER TABLE dbo.RecurringWorkItems ADD CONSTRAINT
 	 ON DELETE  NO ACTION 
 	
 GO
-ALTER TABLE dbo.RecurringWorkItems ADD CONSTRAINT
-	FK_RecurringWorkItems_Users FOREIGN KEY
-	(
-	CreatedByUserId
-	) REFERENCES dbo.Users
-	(
-	Id
-	) ON UPDATE  NO ACTION 
-	 ON DELETE  NO ACTION 
-	
-GO
 ALTER TABLE dbo.RecurringWorkItems WITH NOCHECK ADD CONSTRAINT
 	FK_RecurringWorkItems_Groups FOREIGN KEY
 	(
@@ -86,6 +74,7 @@ CREATE TABLE dbo.ShiftRecurringWorkItems
 	Id int NOT NULL IDENTITY (1, 1),
 	ShiftId int NOT NULL,
 	RecurringWorkItemId int NOT NULL,
+	ShiftAssignmentMode tinyint NULL,
 	ScheduledAtHour tinyint NULL,
 	ScheduledAtMinute tinyint NULL
 	)  ON [PRIMARY]
@@ -145,6 +134,8 @@ CREATE TABLE dbo.WorkItems
 	ScheduledAt datetime NOT NULL,
 	CreatedAt datetime NOT NULL,
 	CreatedByUserId int NOT NULL,
+	CanceledAt datetime NULL,
+	CanceledByUserId int NULL,
 	CompletedAt datetime NULL,
 	CompletionMode tinyint NOT NULL,
 	AdminGroupId int NULL
@@ -181,6 +172,11 @@ GO
 CREATE NONCLUSTERED INDEX IX_WorkItems_ScheduledAt ON dbo.WorkItems
 	(
 	ScheduledAt
+	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+GO
+CREATE NONCLUSTERED INDEX IX_WorkItems_CanceledAt ON dbo.WorkItems
+	(
+	CanceledAt
 	) WITH( STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
 CREATE NONCLUSTERED INDEX IX_WorkItems_CompletedAt ON dbo.WorkItems
@@ -238,6 +234,17 @@ ALTER TABLE dbo.WorkItems ADD CONSTRAINT
 	FK_WorkItems_Users FOREIGN KEY
 	(
 	CreatedByUserId
+	) REFERENCES dbo.Users
+	(
+	Id
+	) ON UPDATE  NO ACTION 
+	 ON DELETE  NO ACTION 
+	
+GO
+ALTER TABLE dbo.WorkItems ADD CONSTRAINT
+	FK_WorkItems_Users2 FOREIGN KEY
+	(
+	CanceledByUserId
 	) REFERENCES dbo.Users
 	(
 	Id
