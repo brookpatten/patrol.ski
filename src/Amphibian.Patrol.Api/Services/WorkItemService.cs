@@ -3,6 +3,8 @@ using Amphibian.Patrol.Api.Extensions;
 using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Repositories;
 using AutoMapper;
+using Ganss.XSS;
+using Markdig;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using System;
@@ -178,9 +180,9 @@ namespace Amphibian.Patrol.Api.Services
             }
         }
 
-        public async Task SaveRecurringWorkItem(RecurringWorkItemDto recurringWorkItem, int userId, bool populateWorkItems = true, bool populateWorkItemAssignments=true)
+        public async Task SaveRecurringWorkItem(RecurringWorkItemDto recurringWorkItem, int userId, bool populateWorkItems = true, bool populateWorkItemAssignments=true,DateTime? overrideNow=null)
         {
-            var now = _clock.UtcNow.UtcDateTime;
+            var now = overrideNow ?? _clock.UtcNow.UtcDateTime;
             var patrol = await _patrolRepository.GetPatrol(recurringWorkItem.PatrolId);
 
             //save the recurring work item
@@ -201,7 +203,7 @@ namespace Amphibian.Patrol.Api.Services
 
             item.AdminGroupId = recurringWorkItem.AdminGroupId;
             item.CompletionMode = recurringWorkItem.CompletionMode;
-            item.DescriptionMarkup = recurringWorkItem.DescriptionMarkup;
+            item.DescriptionMarkup = SanitizeHtml(recurringWorkItem.DescriptionMarkup);
             item.Location = recurringWorkItem.Location;
             item.Name = recurringWorkItem.Name;
 
@@ -211,10 +213,30 @@ namespace Amphibian.Patrol.Api.Services
                 item.RecurEnd = null;
                 item.RecurIntervalSeconds = null;
                 item.RecurStart = null;
+            }
+            else
+            {
+                item.MaximumRandomCount = null;
+                item.RecurEnd = recurringWorkItem.RecurEnd;
+                item.RecurIntervalSeconds = recurringWorkItem.RecurIntervalSeconds;
+                item.RecurStart = recurringWorkItem.RecurStart;
+            }
 
+            if (item.Id==default(int))
+            {
+                await _workItemRepository.InsertRecurringWorkItem(item);
+                recurringWorkItem.Id = item.Id;
+            }
+            else
+            {
+                await _workItemRepository.UpdateRecurringWorkItem(item);
+            }
+
+            if (recurringWorkItem.Shifts != null && recurringWorkItem.Shifts.Any())
+            {
                 await shifts.DifferenceWith(recurringWorkItem.Shifts,
                     (wi, dto) => wi.Id == dto.Id,
-                    dto => _workItemRepository.InsertShiftRecurringWorkItem(new ShiftRecurringWorkItem() { RecurringWorkItemId = item.Id, ScheduledAtHour = dto.ScheduledAtHour, ScheduledAtMinute = dto.ScheduledAtMinute, ShiftId = dto.ShiftId }),
+                    dto => _workItemRepository.InsertShiftRecurringWorkItem(new ShiftRecurringWorkItem() { RecurringWorkItemId = item.Id, ScheduledAtHour = dto.ScheduledAtHour, ScheduledAtMinute = dto.ScheduledAtMinute, ShiftId = dto.ShiftId, ShiftAssignmentMode = dto.ShiftAssignmentMode }),
                     wi => _workItemRepository.DeleteShiftRecurringWorkItem(wi),
                     (wi, dto) =>
                     {
@@ -228,24 +250,10 @@ namespace Amphibian.Patrol.Api.Services
             }
             else
             {
-                item.MaximumRandomCount = null;
-                item.RecurEnd = recurringWorkItem.RecurEnd;
-                item.RecurIntervalSeconds = recurringWorkItem.RecurIntervalSeconds;
-                item.RecurStart = recurringWorkItem.RecurStart;
-
-                foreach(var shift in shifts)
+                foreach (var shift in shifts)
                 {
                     await _workItemRepository.DeleteShiftRecurringWorkItem(shift);
                 }
-            }
-
-            if (item.Id==default(int))
-            {
-                await _workItemRepository.InsertRecurringWorkItem(item);
-            }
-            else
-            {
-                await _workItemRepository.UpdateRecurringWorkItem(item);
             }
 
             if (populateWorkItems)
@@ -257,7 +265,7 @@ namespace Amphibian.Patrol.Api.Services
                 }
                 else if (recurringWorkItem.RecurStart.HasValue && recurringWorkItem.RecurEnd.HasValue && recurringWorkItem.RecurIntervalSeconds.HasValue)
                 {
-                    await this.PopulateTimedWorkItemOccurences(recurringWorkItem, userId, recurringWorkItem.NextOccurenceUsers != null ? recurringWorkItem.NextOccurenceUsers.Select(x => x.Id).ToList() : null,populateWorkItemAssignments);
+                    await this.PopulateTimedWorkItemOccurences(recurringWorkItem, userId, recurringWorkItem.NextOccurenceUsers != null ? recurringWorkItem.NextOccurenceUsers.Select(x => x.Id).ToList() : null,now,populateWorkItemAssignments);
                 }
                 else
                 {
@@ -368,7 +376,7 @@ namespace Amphibian.Patrol.Api.Services
                 .ToList();
 
             //dictionary of user ids with assignments
-            var shiftAssignments = scheduledShiftAssignments.Where(x => x.ScheduledShiftId == scheduledShiftId)
+            var shiftAssignments = scheduledShiftAssignments.Where(x => x.ScheduledShiftId == scheduledShiftId && x.AssignedUser!=null)
                 .Select(x => x.AssignedUser.Id).Distinct().Select(x => new { Id = x, Assignments = assignments.Where(y => y.UserId == x).ToList() })
                 .ToDictionary(x => x.Id, x => x.Assignments.ToList());
                 
@@ -460,9 +468,8 @@ namespace Amphibian.Patrol.Api.Services
             }
         }
 
-        public async Task PopulateTimedWorkItemOccurences(RecurringWorkItem workItem, int userId, List<int> assigneeUserIds, bool populateWorkItemAssignments=true)
+        public async Task PopulateTimedWorkItemOccurences(RecurringWorkItem workItem, int userId, List<int> assigneeUserIds,DateTime now, bool populateWorkItemAssignments=true)
         {
-            var now = _clock.UtcNow.UtcDateTime;
             var existingWorkItems = (await _workItemRepository.GetWorkItems(workItem.Id, now)).ToList();
 
             var calculatedWorkItems = new List<WorkItem>();
@@ -487,51 +494,52 @@ namespace Amphibian.Patrol.Api.Services
                 }
             }
 
-            if (populateWorkItemAssignments)
+            
+            var allAssignments = await _workItemRepository.GetWorkItemAssignments(workItem.Id, now);
+
+            var missing = calculatedWorkItems.Where(x => !existingWorkItems.Any(y => y.ScheduledAt == x.ScheduledAt)).ToList();
+            var toRemove = existingWorkItems.Where(x => x.ScheduledAt > now && !calculatedWorkItems.Any(y => y.ScheduledAt == x.ScheduledAt));
+            var toUpdate = existingWorkItems.Where(x => x.ScheduledAt > now && calculatedWorkItems.Any(y => y.ScheduledAt == x.ScheduledAt));
+
+            foreach (var wi in missing)
             {
-                var allAssignments = await _workItemRepository.GetWorkItemAssignments(workItem.Id, now);
+                await _workItemRepository.InsertWorkItem(wi);
 
-                var missing = calculatedWorkItems.Where(x => !existingWorkItems.Any(y => y.ScheduledAt == x.ScheduledAt)).ToList();
-                var toRemove = existingWorkItems.Where(x => x.ScheduledAt > now && !calculatedWorkItems.Any(y => y.ScheduledAt == x.ScheduledAt));
-                var toUpdate = existingWorkItems.Where(x => x.ScheduledAt > now && calculatedWorkItems.Any(y => y.ScheduledAt == x.ScheduledAt));
-
-                foreach (var wi in missing)
+                if (populateWorkItemAssignments && assigneeUserIds != null)
                 {
-                    await _workItemRepository.InsertWorkItem(wi);
-
-                    if (assigneeUserIds != null)
+                    foreach (var uid in assigneeUserIds)
                     {
-                        foreach (var uid in assigneeUserIds)
+                        var assignment = new WorkItemAssignment()
                         {
-                            var assignment = new WorkItemAssignment()
-                            {
-                                WorkItemId = wi.Id,
-                                UserId = uid
-                            };
-                            await _workItemRepository.InsertWorkItemAssignment(assignment);
-                        }
+                            WorkItemId = wi.Id,
+                            UserId = uid
+                        };
+                        await _workItemRepository.InsertWorkItemAssignment(assignment);
                     }
                 }
+            }
 
-                foreach (var wi in toRemove)
+            foreach (var wi in toRemove)
+            {
+                var toRemoveAssignments = allAssignments.Where(x => x.WorkItemId == wi.Id).ToList();
+                foreach (var wis in toRemoveAssignments)
                 {
-                    var toRemoveAssignments = allAssignments.Where(x => x.WorkItemId == wi.Id).ToList();
-                    foreach (var wis in toRemoveAssignments)
-                    {
-                        await _workItemRepository.DeleteWorkItemAssignment(wis);
-                    }
-                    await _workItemRepository.DeleteWorkItem(wi);
+                    await _workItemRepository.DeleteWorkItemAssignment(wis);
                 }
+                await _workItemRepository.DeleteWorkItem(wi);
+            }
 
-                foreach (var wi in toUpdate)
+            foreach (var wi in toUpdate)
+            {
+                wi.AdminGroupId = workItem.AdminGroupId;
+                wi.CompletionMode = workItem.CompletionMode;
+                wi.DescriptionMarkup = workItem.DescriptionMarkup;
+                wi.Location = workItem.Location;
+                wi.Name = workItem.Name;
+                await _workItemRepository.UpdateWorkItem(wi);
+
+                if (populateWorkItemAssignments)
                 {
-                    wi.AdminGroupId = workItem.AdminGroupId;
-                    wi.CompletionMode = workItem.CompletionMode;
-                    wi.DescriptionMarkup = workItem.DescriptionMarkup;
-                    wi.Location = workItem.Location;
-                    wi.Name = workItem.Name;
-                    await _workItemRepository.UpdateWorkItem(wi);
-
                     var assignees = allAssignments.Where(x => x.WorkItemId == wi.Id).ToList();
 
                     if (assigneeUserIds != null)
@@ -546,6 +554,7 @@ namespace Amphibian.Patrol.Api.Services
                     }
                 }
             }
+            
         }
 
         public async Task SaveWorkItem(WorkItemDto workItem, int userId)
@@ -567,6 +576,7 @@ namespace Amphibian.Patrol.Api.Services
                 wi.Name = workItem.Name;
                 wi.ScheduledAt = workItem.ScheduledAt;
                 wi.ScheduledShiftId = workItem.ScheduledShiftId;
+                wi.DescriptionMarkup = SanitizeHtml(workItem.DescriptionMarkup);
                 await _workItemRepository.UpdateWorkItem(wi);
                 assignments = (await _workItemRepository.GetWorkItemAssignments(wi.Id)).ToList();
             }
@@ -580,7 +590,7 @@ namespace Amphibian.Patrol.Api.Services
                 {
                     AdminGroupId = workItem.AdminGroupId,
                     CompletionMode = workItem.CompletionMode,
-                    DescriptionMarkup = workItem.DescriptionMarkup,
+                    DescriptionMarkup = SanitizeHtml(workItem.DescriptionMarkup),
                     Location = workItem.Location,
                     Name = workItem.Name,
                     PatrolId = workItem.PatrolId,
@@ -600,7 +610,6 @@ namespace Amphibian.Patrol.Api.Services
                             UserId = id
                         }), wia => _workItemRepository.DeleteWorkItemAssignment(wia));
 
-            //TODO: if the WI is recurring on a shift that is 
         }
 
         public async Task<RecurringWorkItemDto> GetRecurringWorkItem(int id)
@@ -655,6 +664,11 @@ namespace Amphibian.Patrol.Api.Services
 
             dto.CreatedBy = await _userRepository.GetUser(dto.CreatedByUserId);
 
+            if(dto.ScheduledShiftId.HasValue)
+            {
+                dto.ScheduledShift = (await _shiftRepository.GetScheduledShiftAssignments(dto.PatrolId, scheduledShiftId: dto.ScheduledShiftId.Value)).FirstOrDefault();
+            }
+
 
             dto.Assignments = new List<WorkItemAssignmentDto>();
             var assignments = await _workItemRepository.GetWorkItemAssignments(id);
@@ -699,6 +713,76 @@ namespace Amphibian.Patrol.Api.Services
             {
                 throw new InvalidOperationException("Cannot Cancel Completed or canceled work items");
             }
+        }
+
+        public async Task<bool> CanCompleteWorkItem(int workItemId, int userId)
+        {
+            var workItem = await _workItemRepository.GetWorkItem(workItemId);
+
+            if(workItem.CompletionMode== CompletionMode.Any)
+            {
+                return true;
+            }
+            
+            if(workItem.CreatedByUserId == userId)
+            {
+                return true;
+            }
+
+            if (workItem.CompletionMode == CompletionMode.AnyAssigned || workItem.CompletionMode == CompletionMode.AllAssigned)
+            {
+                var assignees = await _workItemRepository.GetWorkItemAssignments(workItemId);
+                if(assignees.Any(x=>x.UserId==userId))
+                {
+                    return true;
+                }
+            }
+
+            if(workItem.AdminGroupId.HasValue)
+            {
+                var members = await _groupRepository.GetUsersInGroup(workItem.AdminGroupId.Value);
+                if(members.Any(x=>x.Id==userId))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public async Task<bool> CanCancelWorkItem(int workItemId, int userId)
+        {
+            var workItem = await _workItemRepository.GetWorkItem(workItemId);
+
+            if (workItem.CreatedByUserId == userId)
+            {
+                return true;
+            }
+
+            if (workItem.AdminGroupId.HasValue)
+            {
+                var members = await _groupRepository.GetUsersInGroup(workItem.AdminGroupId.Value);
+                if (members.Any(x => x.Id == userId))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private string SanitizeHtml(string description)
+        {
+            var sanitizer = new HtmlSanitizer();
+
+            var sanitized = sanitizer.Sanitize(description);
+
+            var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().Build();
+            var normalized = Markdown.Normalize(sanitized, pipeline: pipeline);
+
+            var html = Markdown.ToHtml(normalized, pipeline: pipeline);
+
+            return html;
         }
     }
 }

@@ -131,6 +131,7 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
+            services.AddScoped<IWorkItemRepository, WorkItemRepository>();
 
             //validations
             services.AddScoped<IValidator<AuthenticationController.RegistrationRequest>, RegistrationValidator>();
@@ -151,6 +152,7 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<IAnnouncementService, AnnouncementService>();
             services.AddScoped<IScheduleService, ScheduleService>();
             services.AddScoped<ITimeClockService, TimeClockService>();
+            services.AddScoped<IWorkItemService, WorkItemService>();
 
             services.AddScoped<ISystemClock, SystemClock>();
 

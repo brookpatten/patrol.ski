@@ -23,7 +23,8 @@ namespace Amphibian.Patrol.Api.Models
         MaintainAnnouncements,
         MaintainEvents,
         MaintainSchedule,
-        MaintainTimeClock
+        MaintainTimeClock,
+        MaintainWorkItems
     }
 
     public static class RoleExtensions
@@ -114,6 +115,11 @@ namespace Amphibian.Patrol.Api.Models
         public static bool CanMaintainTimeClock(this Role? role)
         {
             return role.Can(Permission.MaintainTimeClock);
+        }
+
+        public static bool CanMaintainWorkItems(this Role? role)
+        {
+            return role.Can(Permission.MaintainWorkItems);
         }
     }
 }

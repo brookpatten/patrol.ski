@@ -13,6 +13,8 @@ namespace Amphibian.Patrol.Api.Dtos
         public Group AdminGroup { get; set; }
         public UserIdentifier CreatedBy { get; set; }
         public List<WorkItemAssignmentDto> Assignments { get; set; }
+        public bool Completable { get; set; }
+        public bool Cancelable { get; set; }
     }
 
     public class WorkItemAssignmentDto: WorkItemAssignment

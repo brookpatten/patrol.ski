@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using AutoMapper;
 using Serilog.Sinks.SystemConsole.Themes;
 using GenFu;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Services
 {
@@ -30,13 +31,15 @@ namespace Amphibian.Patrol.Api.Services
         private IShiftRepository _shiftRepository;
         private IScheduleService _scheduleService;
         private ITimeClockService _timeClockService;
+        private IWorkItemService _workItemService;
+        private IWorkItemRepository _workItemRepository;
 
         public enum BuiltInPlan { AlpineSki, AlpineSnowboard };
 
         public PatrolCreationService(ILogger<PatrolCreationService> logger, IPatrolRepository patrolRepository, IPlanRepository planRepository, 
             IGroupRepository groupRepository, IUserRepository userRepository, IAssignmentRepository assignmentRepository, IPlanService planService, 
             IAnnouncementService announcementService, IEventRepository eventRepository, IShiftRepository shiftRepository, IScheduleService scheduleService,
-            ITimeClockService timeClockService)
+            ITimeClockService timeClockService, IWorkItemService workItemService, IWorkItemRepository workItemRepository)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
@@ -50,6 +53,8 @@ namespace Amphibian.Patrol.Api.Services
             _shiftRepository = shiftRepository;
             _scheduleService = scheduleService;
             _timeClockService = timeClockService;
+            _workItemService = workItemService;
+            _workItemRepository = workItemRepository;
         }
 
         public async Task CreateBuiltInPlan(BuiltInPlan plan, int patrolId)
@@ -577,26 +582,182 @@ namespace Amphibian.Patrol.Api.Services
                         }
                     }
                 }
-            }
-            else if(patrol.EnableTimeClock)
-            {
-                //timeclock entries without schedule
-                for (int i = 0; i < 14; i++)
+
+                if (patrol.EnableWorkItems)
                 {
-                    var shiftDate = twoWeeksAgo + new TimeSpan(i, 0, 0, 0, 0);
-
-                    var randomUsers = new List<User>();
-                    for(var x=0;x<8;x++)
+                    //workitems without schedule
+                    //equipment check work items
+                    var check = new RecurringWorkItemDto()
                     {
-                        var index = random.Next(allPatrollers.Count());
-                        var user = allPatrollers[index];
-                        if(!randomUsers.Any(y=>y.Id==user.Id))
+                        PatrolId = patrol.Id,
+                        DescriptionMarkup = "Check Toboggan",
+                        Name = "Check Toboggan",
+                        Location = "Red Chair",
+                        CompletionMode = CompletionMode.AnyAssigned,
+                        Shifts = new List<ShiftRecurringWorkItemDto>() { new ShiftRecurringWorkItemDto()
                         {
-                            randomUsers.Add(user);
-                        }
+                            ScheduledAtHour = 9,
+                            ScheduledAtMinute = 0,
+                            Shift = morning,
+                            ShiftId = morning.Id,
+                            ShiftAssignmentMode = ShiftAssignmentMode.Auto
+                        } }
+                    };
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id,overrideNow:twoWeeksAgo);
 
-                        var entry = await _timeClockService.ClockIn(patrol.Id, user.Id, shiftDate + new TimeSpan(8, 50, 0) + new TimeSpan(0, random.Next(30), random.Next(59)));
-                        await _timeClockService.ClockOut(entry.TimeEntry.Id, shiftDate + new TimeSpan(16, 50, 0) + new TimeSpan(0, random.Next(30), random.Next(59)));
+                    //force creation as new, not update
+                    check.Id = 0;
+                    check.Location = "Blue Chair";
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.Location = "Green Chair";
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.DescriptionMarkup = "Check Suction/Sager/O2";
+                    check.Name = "Check Suction/Sager/O2";
+                    check.Location = "White Hut";
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.Location = "Orange Hut";
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.DescriptionMarkup = "Sweep";
+                    check.Name = "Sweep";
+                    check.Location = "Backstage";
+                    check.Shifts = new List<ShiftRecurringWorkItemDto>() { new ShiftRecurringWorkItemDto()
+                        {
+                            ScheduledAtHour = 17,
+                            ScheduledAtMinute = 30,
+                            Shift = afternoon,
+                            ShiftId = afternoon.Id,
+                            ShiftAssignmentMode = ShiftAssignmentMode.Auto
+                        } };
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.Location = "Center Stage";
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.Location = "Far Side";
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.Location = "Deception";
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    var completeWorkItemsBefore = now - new TimeSpan(12, 0, 0);
+                    var workItems = await _workItemRepository.GetWorkItems(admin.Id,patrol.Id, scheduledBefore: completeWorkItemsBefore);
+
+                    foreach (var wi in workItems)
+                    {
+                        var assignees = await _workItemRepository.GetWorkItemAssignments(wi.Id);
+                        await _workItemService.CompleteWorkItem(wi.Id, assignees.First().UserId, "Completed");
+                    }
+                }
+
+            }
+            else 
+            {
+                if (patrol.EnableTimeClock)
+                {
+                    //timeclock entries without schedule
+                    for (int i = 0; i < 14; i++)
+                    {
+                        var shiftDate = twoWeeksAgo + new TimeSpan(i, 0, 0, 0, 0);
+
+                        var randomUsers = new List<User>();
+                        for (var x = 0; x < 8; x++)
+                        {
+                            var index = random.Next(allPatrollers.Count());
+                            var user = allPatrollers[index];
+                            if (!randomUsers.Any(y => y.Id == user.Id))
+                            {
+                                randomUsers.Add(user);
+                            }
+
+                            var entry = await _timeClockService.ClockIn(patrol.Id, user.Id, shiftDate + new TimeSpan(8, 50, 0) + new TimeSpan(0, random.Next(30), random.Next(59)));
+                            await _timeClockService.ClockOut(entry.TimeEntry.Id, shiftDate + new TimeSpan(16, 50, 0) + new TimeSpan(0, random.Next(30), random.Next(59)));
+                        }
+                    }
+                }
+
+                if (patrol.EnableWorkItems)
+                {
+                    //workitems without schedule
+                    //equipment check work items
+                    var check = new RecurringWorkItemDto()
+                    {
+                        PatrolId = patrol.Id,
+                        DescriptionMarkup = "Check Toboggan",
+                        Name = "Check Toboggan",
+                        Location = "Red Chair",
+                        NextOccurenceUsers = new List<UserIdentifier>() { },
+                        RecurStart = (twoWeeksAgo + new TimeSpan(9, 0, 0)).UtcFromPatrolLocal(patrol),
+                        RecurEnd = twoWeeksAgo + new TimeSpan(90, 23, 59, 59),
+                        RecurIntervalSeconds = (int)new TimeSpan(24, 0, 0).TotalSeconds,
+                        CompletionMode = CompletionMode.AnyAssigned,
+                    };
+                    check.NextOccurenceUsers = new List<UserIdentifier>() { allPatrollers[random.Next(allPatrollers.Count)] };
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    //force creation as new, not update
+                    check.Id = 0;
+                    check.Location = "Blue Chair";
+                    check.NextOccurenceUsers = new List<UserIdentifier>() { allPatrollers[random.Next(allPatrollers.Count)] };
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.Location = "Green Chair";
+                    check.NextOccurenceUsers = new List<UserIdentifier>() { allPatrollers[random.Next(allPatrollers.Count)] };
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.DescriptionMarkup = "Check Suction/Sager/O2";
+                    check.Name = "Check Suction/Sager/O2";
+                    check.Location = "White Hut";
+                    check.NextOccurenceUsers = new List<UserIdentifier>() { allPatrollers[random.Next(allPatrollers.Count)] };
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.Location = "Orange Hut";
+                    check.NextOccurenceUsers = new List<UserIdentifier>() { allPatrollers[random.Next(allPatrollers.Count)] };
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.DescriptionMarkup = "Sweep";
+                    check.Name = "Sweep";
+                    check.Location = "Backstage";
+                    check.RecurStart = (twoWeeksAgo + new TimeSpan(22, 0, 0)).UtcFromPatrolLocal(patrol);
+                    check.NextOccurenceUsers = new List<UserIdentifier>() { allPatrollers[random.Next(allPatrollers.Count)] };
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.Location = "Center Stage";
+                    check.NextOccurenceUsers = new List<UserIdentifier>() { allPatrollers[random.Next(allPatrollers.Count)] };
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.Location = "Far Side";
+                    check.NextOccurenceUsers = new List<UserIdentifier>() { allPatrollers[random.Next(allPatrollers.Count)] };
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    check.Id = 0;
+                    check.Location = "Deception";
+                    check.NextOccurenceUsers = new List<UserIdentifier>() { allPatrollers[random.Next(allPatrollers.Count)] };
+                    await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
+
+                    var completeWorkItemsBefore = now - new TimeSpan(12, 0, 0);
+                    var workItems = await _workItemRepository.GetWorkItems(admin.Id, patrol.Id, scheduledBefore: completeWorkItemsBefore);
+
+                    foreach (var wi in workItems)
+                    {
+                        var assignees = await _workItemRepository.GetWorkItemAssignments(wi.Id);
+                        await _workItemService.CompleteWorkItem(wi.Id, assignees.First().UserId, "Completed");
                     }
                 }
             }
@@ -789,7 +950,8 @@ namespace Amphibian.Patrol.Api.Services
                 EnableScheduling = true,
                 EnableShiftSwaps = true,
                 EnableTraining = true,
-                EnableTimeClock = true
+                EnableTimeClock = true,
+                EnableWorkItems = true
             });
 
             await CreateDemoInitialSetup(patrol,user);

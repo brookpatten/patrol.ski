@@ -363,7 +363,7 @@ namespace Amphibian.Patrol.Tests.Services
         }
 
         [Test]
-        public async Task CanCreateWorkItemsFromRecurringWorkitem()
+        public async Task CanCreateWorkItemsFromShiftRecurringWorkitem()
         {
             var dto = new RecurringWorkItemDto();
             int userId = 1;
@@ -613,13 +613,111 @@ namespace Amphibian.Patrol.Tests.Services
         [Test]
         public async Task CanCreateRecurringWorkItem()
         {
+            var dto = new RecurringWorkItemDto();
+            int userId = 1;
 
+            dto.CompletionMode = CompletionMode.AnyAssigned;
+            dto.DescriptionMarkup = "Description";
+            dto.Location = "Location";
+            dto.Name = "Name";
+            dto.PatrolId = 1;
+            dto.RecurStart = new DateTime(2001, 1, 1, 9, 0, 0);
+            dto.RecurEnd = new DateTime(2001, 1, 10, 9, 0, 0);
+            dto.RecurIntervalSeconds = (int)new TimeSpan(24, 0, 0).TotalSeconds;
+            
+            var patrol = new Api.Models.Patrol()
+            {
+                Id = 1,
+                Name = "Patrol",
+                TimeZone = TimeZoneInfo.Local.Id
+            };
+            _patrolRepositoryMock.Setup(x => x.GetPatrol(patrol.Id))
+                .Returns(Task.FromResult(patrol))
+                .Verifiable();
+
+            _workItemRepository.Setup(x => x.InsertRecurringWorkItem(It.Is<RecurringWorkItem>(y => y.Name == dto.Name)))
+                .Verifiable();
+
+            var now = new DateTimeOffset(2001, 1, 1, 0, 0, 0, new TimeSpan());
+            _systemClockMock.Setup(x => x.UtcNow).Returns(now);
+
+            await _workItemService.SaveRecurringWorkItem(dto, userId, false, false);
+
+            _workItemRepository.Verify();
         }
 
         [Test]
-        public async Task CanUpdateRecurringWorkItem()
+        public async Task CanCreateWorkItemsFromRecurringWorkItem()
         {
+            var dto = new RecurringWorkItem();
+            int userId = 1;
 
+            dto.CompletionMode = CompletionMode.AnyAssigned;
+            dto.DescriptionMarkup = "Description";
+            dto.Location = "Location";
+            dto.Name = "Name";
+            dto.PatrolId = 1;
+            dto.RecurStart = new DateTime(2001, 1, 1, 9, 0, 0);
+            dto.RecurEnd = new DateTime(2001, 1, 4, 9, 0, 0);
+            dto.RecurIntervalSeconds = (int)new TimeSpan(24, 0, 0).TotalSeconds;
+
+            var now = new DateTimeOffset(2001, 1, 1, 0, 0, 0, new TimeSpan());
+            _systemClockMock.Setup(x => x.UtcNow).Returns(now);
+
+            _workItemRepository.Setup(x => x.GetWorkItems(It.IsAny<int>(), now.UtcDateTime))
+                .Returns(Task.FromResult(new List<WorkItem>()
+                {
+                }.AsEnumerable()))
+                .Verifiable();
+
+            _workItemRepository.Setup(x => x.InsertWorkItem(It.Is<WorkItem>(y => y.ScheduledAt.Day == 1)))
+                .Verifiable();
+            _workItemRepository.Setup(x => x.InsertWorkItem(It.Is<WorkItem>(y => y.ScheduledAt.Day == 2)))
+                .Verifiable();
+            _workItemRepository.Setup(x => x.InsertWorkItem(It.Is<WorkItem>(y => y.ScheduledAt.Day == 3)))
+                .Verifiable();
+            _workItemRepository.Setup(x => x.InsertWorkItem(It.Is<WorkItem>(y => y.ScheduledAt.Day == 4)))
+                .Verifiable();
+
+            await _workItemService.PopulateTimedWorkItemOccurences(dto, userId,new List<int>() { userId },now.UtcDateTime, false);
+
+            _workItemRepository.Verify();
+        }
+
+        [Test]
+        public async Task CanCreateWorkItemAssignmentsFromRecurringWorkItem()
+        {
+            var dto = new RecurringWorkItem();
+            int userId = 1;
+
+            dto.CompletionMode = CompletionMode.AnyAssigned;
+            dto.DescriptionMarkup = "Description";
+            dto.Location = "Location";
+            dto.Name = "Name";
+            dto.PatrolId = 1;
+            dto.RecurStart = new DateTime(2001, 1, 1, 9, 0, 0);
+            dto.RecurEnd = new DateTime(2001, 1, 1, 9, 0, 0);
+            dto.RecurIntervalSeconds = (int)new TimeSpan(24, 0, 0).TotalSeconds;
+
+            var now = new DateTimeOffset(2001, 1, 1, 0, 0, 0, new TimeSpan());
+            _systemClockMock.Setup(x => x.UtcNow).Returns(now);
+
+            _workItemRepository.Setup(x => x.GetWorkItems(It.IsAny<int>(), now.UtcDateTime))
+                .Returns(Task.FromResult(new List<WorkItem>()
+                {
+                }.AsEnumerable()))
+                .Verifiable();
+
+            _workItemRepository.Setup(x => x.InsertWorkItem(It.Is<WorkItem>(y => y.ScheduledAt.Day == 1)))
+                .Verifiable();
+            
+            
+            _workItemRepository.Setup(x => x.InsertWorkItemAssignment(It.Is<WorkItemAssignment>(y => y.UserId == userId)))
+                .Verifiable();
+
+            await _workItemService.PopulateTimedWorkItemOccurences(dto, userId, new List<int>() { userId }, now.UtcDateTime,true);
+
+            _workItemRepository.Verify();
         }
     }
 }

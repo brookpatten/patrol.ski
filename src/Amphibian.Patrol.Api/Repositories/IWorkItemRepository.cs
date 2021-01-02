@@ -1,4 +1,5 @@
-﻿using Amphibian.Patrol.Api.Models;
+﻿using Amphibian.Patrol.Api.Dtos;
+using Amphibian.Patrol.Api.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,8 +14,10 @@ namespace Amphibian.Patrol.Api.Repositories
         Task UpdateWorkItem(WorkItem item);
         Task DeleteWorkItem(WorkItem item);
         Task<IEnumerable<WorkItem>> GetWorkItems(int recurringWorkItemId, DateTime after);
+        Task<IEnumerable<WorkItem>> GetIncompleteWorkItemsForUser(DateTime after, int userId, int patrolId);
 
         Task<RecurringWorkItem> GetRecurringWorkItem(int id);
+        Task<IEnumerable<RecurringWorkItem>> GetRecurringWorkItems(int patrolId);
         Task InsertRecurringWorkItem(RecurringWorkItem item);
         Task UpdateRecurringWorkItem(RecurringWorkItem item);
 
@@ -35,5 +38,8 @@ namespace Amphibian.Patrol.Api.Repositories
         Task<IEnumerable<WorkItemAssignment>> GetWorkItemAssignmentsForShifts(IList<int> scheduledShiftIds);
         Task<IEnumerable<RecurringWorkItem>> GetRecurringWorkItemsForShifts(IList<int> scheduledShiftIds);
         Task<IEnumerable<ShiftRecurringWorkItem>> GetShiftRecurringWorkItemsForShifts(IList<int> scheduledShiftIds);
+        Task<IEnumerable<WorkItemDto>> GetWorkItems(int userId, int? patrolId=null,bool? complete=null,int? completedByUserId=null,int? recurringWorkItemId=null,
+            DateTime? scheduledBefore=null,DateTime? scheduledAfter=null,int? shiftId=null,int? adminGroupId=null,string name=null,
+            string location=null, int? completableByUserId = null, int? workItemId = null);
     }
 }
