@@ -24,6 +24,7 @@ namespace Amphibian.Patrol.Api.Models
         public DateTime? CanceledAt { get; set; }
         public int? CanceledByUserId { get; set; }
         public DateTime? CompletedAt { get; set; }
+        public int? CompletedByUserId { get; set; }
 
         public CompletionMode CompletionMode { get; set; }
         public int? AdminGroupId { get; set; }

@@ -80,6 +80,24 @@ namespace Amphibian.Patrol.Api.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("workitem/assign")]
+        [Authorize]
+        [UnitOfWork]
+        public async Task<IActionResult> AssignWorkItem(WorkItemDto workItem)
+        {
+            var existing = await _workItemService.GetWorkItem(workItem.Id);
+            if (User.RoleInPatrol(existing.PatrolId).CanMaintainWorkItems())
+            {
+                await _workItemService.ReassignWorkItem(workItem);
+                return Ok();
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
         [HttpGet]
         [Route("workitem/recurring/{id}")]
         [Authorize]
@@ -88,6 +106,22 @@ namespace Amphibian.Patrol.Api.Controllers
             var workItem = await _workItemService.GetRecurringWorkItem(id);
             if (User.RoleInPatrol(workItem.PatrolId).CanMaintainWorkItems())
             {
+                return Ok(workItem);
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
+        [HttpGet]
+        [Route("workitem/recurring/patrol/{id}")]
+        [Authorize]
+        public async Task<IActionResult> GetRecurringWorkItemForPatrol(int id)
+        {
+            if (User.RoleInPatrol(id).CanMaintainWorkItems())
+            {
+                var workItem = await _workItemRepository.GetRecurringWorkItems(id);
                 return Ok(workItem);
             }
             else
@@ -125,6 +159,7 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             public int Id { get; set; }
             public string WorkNotes { get; set; }
+            public int? ForUserId { get; set; }
         }
         [HttpPost]
         [Route("workitem/complete")]
@@ -132,19 +167,49 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CompleteWorkItem(CompleteWorkItemDto dto)
         {
-            var workItem = await _workItemService.GetWorkItem(dto.Id);
-            if (User.IsInPatrol(workItem.PatrolId))
+            var workItem = (await _workItemRepository.GetWorkItems(User.UserId(), workItemId: dto.Id)).Single();
+
+            if(workItem.CompletedAt.HasValue || workItem.CanceledAt.HasValue)
             {
-                if(await _workItemService.CanCompleteWorkItem(dto.Id, User.UserId()))
+                return Problem("Work item is already complete");
+            }
+            else if (User.IsInPatrol(workItem.PatrolId))
+            {
+                if (workItem.CanComplete || workItem.CanAdmin || User.RoleInPatrol(workItem.PatrolId).CanMaintainWorkItems())
                 {
-                    await _workItemService.CompleteWorkItem(dto.Id, User.UserId(), dto.WorkNotes);
+                    //normal user completion
+                    if (workItem.CanComplete && !dto.ForUserId.HasValue)
+                    {
+                        await _workItemService.CompleteWorkItem(dto.Id, User.UserId(), dto.WorkNotes);
+                    }
+                    //admin force completion
+                    else if ((workItem.CanAdmin || User.RoleInPatrol(workItem.PatrolId).CanMaintainWorkItems()) 
+                        && !dto.ForUserId.HasValue)
+                    {
+                        await _workItemService.CompleteWorkItem(dto.Id, User.UserId(), dto.WorkNotes,force:true);
+                    }
+                    //admin proxy completion
+                    else if ((workItem.CanAdmin || User.RoleInPatrol(workItem.PatrolId).CanMaintainWorkItems())
+                        && dto.ForUserId.HasValue && (workItem.CompletionMode == CompletionMode.Any || workItem.Assignments.Any(y=>y.UserId==dto.ForUserId.Value)))
+                    {
+                        await _workItemService.CompleteWorkItem(dto.Id, User.UserId(), dto.WorkNotes,dto.ForUserId.Value);
+                    }
+                    //admin force proxy completion
+                    else if ((workItem.CanAdmin || User.RoleInPatrol(workItem.PatrolId).CanMaintainWorkItems())
+                        && dto.ForUserId.HasValue && workItem.Assignments.Any(y => y.UserId == dto.ForUserId.Value))
+                    {
+                        await _workItemService.CompleteWorkItem(dto.Id, User.UserId(), dto.WorkNotes, dto.ForUserId.Value,true);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Invalid completion paramaters");
+                    }
                     return Ok();
                 }
                 else
                 {
                     return Forbid();
                 }
-                
             }
             else
             {
@@ -158,10 +223,10 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CancelWorkItem(CompleteWorkItemDto dto)
         {
-            var workItem = await _workItemService.GetWorkItem(dto.Id);
+            var workItem = (await _workItemRepository.GetWorkItems(User.UserId(), workItemId: dto.Id)).Single();
             if (User.IsInPatrol(workItem.PatrolId))
             {
-                if (await _workItemService.CanCancelWorkItem(dto.Id, User.UserId()))
+                if (workItem.CanAdmin || User.RoleInPatrol(workItem.PatrolId).CanMaintainWorkItems())
                 {
                     await _workItemService.CancelWorkItem(dto.Id, User.UserId());
                     return Ok();
@@ -190,7 +255,10 @@ namespace Amphibian.Patrol.Api.Controllers
             if (User.IsInPatrol(patrolId))
             {
                 var now = _clock.UtcNow.UtcDateTime;
-                var workItems = await _workItemRepository.GetWorkItems(User.UserId(),patrolId, complete:false,scheduledBefore:now, completableByUserId:User.UserId());
+                var workItems = await _workItemRepository.GetWorkItems(User.UserId(),patrolId, complete:false,scheduledBefore:now
+                    , completableByUserId: User.RoleInPatrol(patrolId).CanMaintainWorkItems() ? (int?)null : User.UserId()
+                    , deDuplicateRecurring:true
+                    , excludeIfMoreRecentCompleteRecurring: true);
                 return Ok(workItems);
             }
             else

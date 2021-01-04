@@ -137,6 +137,7 @@ CREATE TABLE dbo.WorkItems
 	CanceledAt datetime NULL,
 	CanceledByUserId int NULL,
 	CompletedAt datetime NULL,
+	CompletedByUserId int NULL,
 	CompletionMode tinyint NOT NULL,
 	AdminGroupId int NULL
 	)  ON [PRIMARY]

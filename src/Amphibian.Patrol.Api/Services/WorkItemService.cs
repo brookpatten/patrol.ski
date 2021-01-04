@@ -41,7 +41,7 @@ namespace Amphibian.Patrol.Api.Services
             _mapper = mapper;
         }
 
-        public async Task CompleteWorkItem(int workItemId, int userId, string workNotes)
+        public async Task CompleteWorkItem(int workItemId, int userId, string workNotes, int? onBehalfOfUserId=null, bool force=false)
         {
             var workItem = await _workItemRepository.GetWorkItem(workItemId);
             var assignments = await _workItemRepository.GetWorkItemAssignments(workItemId);
@@ -51,64 +51,102 @@ namespace Amphibian.Patrol.Api.Services
                 return;
             }
 
-            if(workItem.CompletionMode == CompletionMode.AdminOnly)
+            //sanitize work note markup
+            if(!string.IsNullOrEmpty(workNotes))
             {
-                await this.CompleteWorkItemAdminOnly(workItem, assignments,userId,workNotes);
+                workNotes = SanitizeHtml(workNotes);
+            }
+
+            //administrative completion
+            if(force)
+            {
+                await this.CompleteWorkItemAdminOnly(workItem, assignments, userId, workNotes,onBehalfOfUserId);
+            }
+            else if(workItem.CompletionMode == CompletionMode.AdminOnly)
+            {
+                await this.CompleteWorkItemAdminOnly(workItem, assignments,userId,workNotes,onBehalfOfUserId);
             }
             else if(workItem.CompletionMode == CompletionMode.AllAssigned)
             {
-                await this.CompleteWorkItemAllAssigned(workItem, assignments, userId, workNotes);
+                await this.CompleteWorkItemAllAssigned(workItem, assignments, onBehalfOfUserId ?? userId, workNotes);
             }
             else if(workItem.CompletionMode == CompletionMode.Any)
             {
-                await this.CompleteWorkItemAny(workItem, assignments, userId, workNotes);
+                await this.CompleteWorkItemAny(workItem, assignments, onBehalfOfUserId ?? userId, workNotes);
             }
             else if(workItem.CompletionMode == CompletionMode.AnyAssigned)
             {
-                await this.CompleteWorkItemAnyAssigned(workItem, assignments, userId, workNotes);
+                await this.CompleteWorkItemAnyAssigned(workItem, assignments, onBehalfOfUserId ?? userId, workNotes);
             }
         }
 
-        private async Task CompleteWorkItemAdminOnly(WorkItem item,IEnumerable<WorkItemAssignment> assignments, int userId, string workNotes)
+        /// <summary>
+        /// used when the work item is completion mode "admin only", and also used to do "admin completion" for any WI
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="assignments"></param>
+        /// <param name="userId"></param>
+        /// <param name="workNotes"></param>
+        /// <param name="onBehalfOfUserId"></param>
+        /// <returns></returns>
+        private async Task CompleteWorkItemAdminOnly(WorkItem item,IEnumerable<WorkItemAssignment> assignments, int userId, string workNotes, int? onBehalfOfUserId=null)
         {
-            IEnumerable<GroupUser> groupUsers = null;
-            if(item.AdminGroupId.HasValue)
+            if(!onBehalfOfUserId.HasValue)
             {
-                groupUsers = await _groupRepository.GetGroupUsersForGroup(item.AdminGroupId.Value);
+                onBehalfOfUserId = userId;
+            }
+            
+            var assignment = assignments.SingleOrDefault(x => x.UserId == onBehalfOfUserId.Value);
+            if (assignment == null)
+            {
+                assignment = new WorkItemAssignment()
+                {
+                    UserId = onBehalfOfUserId.Value,
+                    WorkItemId = item.Id
+                };
+            }
+            var now = _clock.UtcNow.UtcDateTime;
+            assignment.CompletedAt = now;
+            assignment.WorkNotes = workNotes;
+
+            if (assignment.Id == default(int))
+            {
+                await _workItemRepository.InsertWorkItemAssignment(assignment);
+            }
+            else
+            {
+                await _workItemRepository.UpdateWorkItemAssignment(assignment);
             }
 
-            if(item.CreatedByUserId == userId || (groupUsers!=null && groupUsers.Any(x=>x.UserId==userId)))
+            if (onBehalfOfUserId.HasValue && onBehalfOfUserId!=userId)
             {
-                var assignment = assignments.SingleOrDefault(x => x.UserId == userId);
-                if(assignment==null)
+                var assignment2 = assignments.SingleOrDefault(x => x.UserId == userId);
+                if (assignment2 == null)
                 {
-                    assignment = new WorkItemAssignment()
+                    assignment2 = new WorkItemAssignment()
                     {
                         UserId = userId,
                         WorkItemId = item.Id
                     };
                 }
+                assignment2.CompletedAt = now;
+                assignment2.WorkNotes = workNotes;
 
-                var now = _clock.UtcNow.UtcDateTime;
-                assignment.CompletedAt = now;
-                assignment.WorkNotes = workNotes;
-
-                if(assignment.Id==default(int))
+                if (assignment2.Id == default(int))
                 {
-                    await _workItemRepository.InsertWorkItemAssignment(assignment);
+                    await _workItemRepository.InsertWorkItemAssignment(assignment2);
                 }
                 else
                 {
-                    await _workItemRepository.UpdateWorkItemAssignment(assignment);
+                    await _workItemRepository.UpdateWorkItemAssignment(assignment2);
                 }
+            }
 
-                item.CompletedAt = now;
-                await _workItemRepository.UpdateWorkItem(item);
-            }
-            else
-            {
-                throw new ApplicationException("Specified user is not allowed to complete"); 
-            }
+            
+
+            item.CompletedAt = now;
+            item.CompletedByUserId = onBehalfOfUserId.Value;
+            await _workItemRepository.UpdateWorkItem(item);
         }
 
         private async Task CompleteWorkItemAllAssigned(WorkItem item, IEnumerable<WorkItemAssignment> assignments, int userId, string workNotes)
@@ -124,6 +162,7 @@ namespace Amphibian.Patrol.Api.Services
                 if(assignments.All(x=>x.CompletedAt.HasValue))
                 {
                     item.CompletedAt = now;
+                    item.CompletedByUserId = userId;
                     await _workItemRepository.UpdateWorkItem(item);
                 }
             }
@@ -159,24 +198,39 @@ namespace Amphibian.Patrol.Api.Services
             }
 
             item.CompletedAt = now;
+            item.CompletedByUserId = userId;
             await _workItemRepository.UpdateWorkItem(item);
         }
         private async Task CompleteWorkItemAnyAssigned(WorkItem item, IEnumerable<WorkItemAssignment> assignments, int userId, string workNotes)
         {
             var assignment = assignments.SingleOrDefault(x => x.UserId == userId);
-            if (assignment != null && !assignment.CompletedAt.HasValue)
+            if (assignment == null)
+            {
+                assignment = new WorkItemAssignment()
+                {
+                    UserId = userId,
+                    WorkItemId = item.Id
+                };
+            }
+
+            if (!assignment.CompletedAt.HasValue)
             {
                 var now = _clock.UtcNow.UtcDateTime;
                 assignment.CompletedAt = now;
                 assignment.WorkNotes = workNotes;
-                await _workItemRepository.UpdateWorkItemAssignment(assignment);
+
+                if (assignment.Id == default(int))
+                {
+                    await _workItemRepository.InsertWorkItemAssignment(assignment);
+                }
+                else
+                {
+                    await _workItemRepository.UpdateWorkItemAssignment(assignment);
+                }
 
                 item.CompletedAt = now;
+                item.CompletedByUserId = userId;
                 await _workItemRepository.UpdateWorkItem(item);
-            }
-            else
-            {
-                throw new ApplicationException("Unable to complete");
             }
         }
 
@@ -610,6 +664,19 @@ namespace Amphibian.Patrol.Api.Services
                             UserId = id
                         }), wia => _workItemRepository.DeleteWorkItemAssignment(wia));
 
+        }
+
+        public async Task ReassignWorkItem(WorkItemDto workItem)
+        {
+            var wi = await _workItemRepository.GetWorkItem(workItem.Id);
+            var assignments = (await _workItemRepository.GetWorkItemAssignments(wi.Id)).ToList();
+            await assignments.DifferenceWith(workItem.Assignments.Select(x => x.UserId).ToList(),
+                        (a, id) => a.UserId == id,
+                        id => _workItemRepository.InsertWorkItemAssignment(new WorkItemAssignment()
+                        {
+                            WorkItemId = wi.Id,
+                            UserId = id
+                        }), wia => _workItemRepository.DeleteWorkItemAssignment(wia));
         }
 
         public async Task<RecurringWorkItemDto> GetRecurringWorkItem(int id)

@@ -17,7 +17,7 @@ namespace Amphibian.Patrol.Api.Repositories
         Task<IEnumerable<WorkItem>> GetIncompleteWorkItemsForUser(DateTime after, int userId, int patrolId);
 
         Task<RecurringWorkItem> GetRecurringWorkItem(int id);
-        Task<IEnumerable<RecurringWorkItem>> GetRecurringWorkItems(int patrolId);
+        Task<IEnumerable<RecurringWorkItemDto>> GetRecurringWorkItems(int patrolId);
         Task InsertRecurringWorkItem(RecurringWorkItem item);
         Task UpdateRecurringWorkItem(RecurringWorkItem item);
 
@@ -40,6 +40,7 @@ namespace Amphibian.Patrol.Api.Repositories
         Task<IEnumerable<ShiftRecurringWorkItem>> GetShiftRecurringWorkItemsForShifts(IList<int> scheduledShiftIds);
         Task<IEnumerable<WorkItemDto>> GetWorkItems(int userId, int? patrolId=null,bool? complete=null,int? completedByUserId=null,int? recurringWorkItemId=null,
             DateTime? scheduledBefore=null,DateTime? scheduledAfter=null,int? shiftId=null,int? adminGroupId=null,string name=null,
-            string location=null, int? completableByUserId = null, int? workItemId = null);
+            string location=null, int? completableByUserId = null, int? workItemId = null, bool deDuplicateRecurring = false, 
+            bool excludeIfMoreRecentCompleteRecurring = false);
     }
 }
