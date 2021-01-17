@@ -4,6 +4,7 @@
             <CCardHeader>
             <slot name="header">
                 <CIcon name="cil-task"/>Incomplete Work
+                <CButton v-if="hasPermission('MaintainWorkItems')" size="sm" color="success" @click="newWorkItem" class="float-right">New</CButton>
             </slot>
             </CCardHeader>
             <CCardBody>
@@ -38,9 +39,9 @@
                         <template #buttons="data">
                             <td>
                                 <CButtonGroup>
-                                  <CButton v-if="data.item.canComplete || data.item.canAdmin" color="success" size="sm" @click="complete(data.item)">Complete</CButton>
+                                  <CButton v-if="data.item.isDue && (data.item.canComplete || data.item.canAdmin || hasPermission('MaintainWorkItems'))" color="success" size="sm" @click="complete(data.item)">Complete</CButton>
                                   <CButton color="info" size="sm" @click="edit(data.item)">Details</CButton>
-                                  <CButton v-if="data.item.canAdmin" color="warning" size="sm" @click="cancel(data.item)">Cancel</CButton>
+                                  <CButton v-if="data.item.canAdmin || hasPermission('MaintainWorkItems')" color="warning" size="sm" @click="cancel(data.item)">Cancel</CButton>
                                 </CButtonGroup>
                             </td>
                         </template>
@@ -99,7 +100,10 @@ export default {
       this.editWorkItem = wi;
       this.showEditWorkitem++;
     },
-
+    newWorkItem(){
+      this.editWorkItem = {};
+      this.showEditWorkitem++;
+    },
     cancel(wi){
       this.$store.dispatch('loading','Canceling...');
       this.$http.post('workitem/cancel',{id:wi.id})

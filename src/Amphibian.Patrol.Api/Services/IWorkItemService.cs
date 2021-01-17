@@ -11,6 +11,7 @@ namespace Amphibian.Patrol.Api.Services
     {
         Task SaveRecurringWorkItem(RecurringWorkItemDto recurringWorkItem, int userId, bool populateWorkItems = true, bool populateWorkItemAssignments = true, DateTime? overrideNow = null);
         Task<RecurringWorkItemDto> GetRecurringWorkItem(int id);
+        Task EndRecurringWorkItem(int id);
         Task SaveWorkItem(WorkItemDto workItem, int userId);
         Task ReassignWorkItem(WorkItemDto workItem);
         Task<WorkItemDto> GetWorkItem(int id);

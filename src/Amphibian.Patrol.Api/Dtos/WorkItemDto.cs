@@ -23,6 +23,7 @@ namespace Amphibian.Patrol.Api.Dtos
         /// can the current user perform admin (force complete, cancel) on this work item (via createdby + admin group membership)
         /// </summary>
         public bool CanAdmin { get; set; }
+        public bool IsDue { get; set; }
     }
 
     public class WorkItemAssignmentDto: WorkItemAssignment

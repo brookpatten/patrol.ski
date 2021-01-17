@@ -265,14 +265,16 @@ namespace Amphibian.Patrol.Api.Services
             {
                 item.MaximumRandomCount = recurringWorkItem.MaximumRandomCount;
                 item.RecurEnd = null;
-                item.RecurIntervalSeconds = null;
+                item.RecurIntervalCount = null;
+                item.RecurInterval = null;
                 item.RecurStart = null;
             }
             else
             {
                 item.MaximumRandomCount = null;
                 item.RecurEnd = recurringWorkItem.RecurEnd;
-                item.RecurIntervalSeconds = recurringWorkItem.RecurIntervalSeconds;
+                item.RecurInterval = recurringWorkItem.RecurInterval;
+                item.RecurIntervalCount = recurringWorkItem.RecurIntervalCount;
                 item.RecurStart = recurringWorkItem.RecurStart;
             }
 
@@ -317,7 +319,10 @@ namespace Amphibian.Patrol.Api.Services
                 {
                     await this.PopulateShiftWorkItemOccurences(recurringWorkItem, now, userId, patrol,populateWorkItemAssignments);
                 }
-                else if (recurringWorkItem.RecurStart.HasValue && recurringWorkItem.RecurEnd.HasValue && recurringWorkItem.RecurIntervalSeconds.HasValue)
+                else if (recurringWorkItem.RecurStart.HasValue 
+                    && recurringWorkItem.RecurEnd.HasValue 
+                    && recurringWorkItem.RecurInterval.HasValue
+                    && recurringWorkItem.RecurIntervalCount.HasValue)
                 {
                     await this.PopulateTimedWorkItemOccurences(recurringWorkItem, userId, recurringWorkItem.NextOccurenceUsers != null ? recurringWorkItem.NextOccurenceUsers.Select(x => x.Id).ToList() : null,now,populateWorkItemAssignments);
                 }
@@ -522,13 +527,45 @@ namespace Amphibian.Patrol.Api.Services
             }
         }
 
+        private DateTime AddInterval(DateTime add,RecurInterval interval,int count)
+        {
+            if(interval == RecurInterval.Day)
+            {
+                return add + new TimeSpan(count, 0, 0, 0);
+            }
+            else if (interval == RecurInterval.Hour)
+            {
+                return add + new TimeSpan(count, 0, 0);
+            }
+            else if (interval == RecurInterval.Minute)
+            {
+                return add + new TimeSpan(0, count, 0);
+            }
+            else if (interval == RecurInterval.Month)
+            {
+                return add.AddMonths(count);
+            }
+            else if (interval == RecurInterval.Week)
+            {
+                return add.AddDays(7 * count);
+            }
+            else if (interval == RecurInterval.Year)
+            {
+                return add.AddYears(count);
+            }
+            else
+            {
+                throw new ArgumentException("Unknown interval");
+            }
+        }
+
         public async Task PopulateTimedWorkItemOccurences(RecurringWorkItem workItem, int userId, List<int> assigneeUserIds,DateTime now, bool populateWorkItemAssignments=true)
         {
             var existingWorkItems = (await _workItemRepository.GetWorkItems(workItem.Id, now)).ToList();
 
             var calculatedWorkItems = new List<WorkItem>();
 
-            for(var scheduledAt = workItem.RecurStart.Value; scheduledAt <= workItem.RecurEnd.Value; scheduledAt = scheduledAt + new TimeSpan(0,0,workItem.RecurIntervalSeconds.Value))
+            for(var scheduledAt = workItem.RecurStart.Value; scheduledAt <= workItem.RecurEnd.Value; scheduledAt = AddInterval(scheduledAt,workItem.RecurInterval.Value,workItem.RecurIntervalCount.Value))
             {
                 if (scheduledAt >= now)
                 {
@@ -650,6 +687,8 @@ namespace Amphibian.Patrol.Api.Services
                     PatrolId = workItem.PatrolId,
                     ScheduledAt = workItem.ScheduledAt,
                     ScheduledShiftId = workItem.ScheduledShiftId,
+                    CreatedAt = _clock.UtcNow.UtcDateTime,
+                    CreatedByUserId = userId
                 };
                 await _workItemRepository.InsertWorkItem(wi);
             }
@@ -751,19 +790,78 @@ namespace Amphibian.Patrol.Api.Services
             return dto;
         }
 
-        public Task AddWorkItemsToNewShiftOccurence(ScheduledShift shift)
+        public async Task AddWorkItemsToNewShiftOccurence(ScheduledShift shift)
         {
-            throw new NotImplementedException();
+            var now = _clock.UtcNow.UtcDateTime;
+            var scheduledShifts = await _shiftRepository.GetScheduledShiftAssignments(shift.PatrolId, scheduledShiftId: shift.Id);
+            var recurringWorkItems = await _workItemRepository.GetRecurringWorkItemsForShifts(new List<int>(shift.Id));
+            var workItems = await _workItemRepository.GetWorkItemsForShifts(new List<int>(shift.Id));
+            var workItemAssignments = await _workItemRepository.GetWorkItemAssignmentsForShifts(new List<int>() { shift.Id });
+            var shiftRecurringWorkItems = await _workItemRepository.GetShiftRecurringWorkItemsForShifts(new List<int>(shift.Id));
+            var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
+            var shiftAssignments = await _shiftRepository.GetScheduledShiftAssignments(shift.PatrolId, scheduledShiftId: shift.Id);
+
+            var shiftStartLocal = shift.StartsAt.UtcToPatrolLocal(patrol);
+
+            var missings = recurringWorkItems.Where(x => !workItems.Any(y => y.RecurringWorkItemId == x.Id)).ToList();
+
+            foreach(var missing in missings)
+            {
+                var shiftRecurrences = shiftRecurringWorkItems.Where(x => x.RecurringWorkItemId == missing.Id);
+
+                foreach (var recurrence in shiftRecurrences)
+                {
+                    var workItem = new WorkItem()
+                    {
+                        AdminGroupId = missing.AdminGroupId,
+                        CreatedAt = now,
+                        CreatedByUserId = missing.CreatedByUserId,
+                        CompletionMode = missing.CompletionMode,
+                        DescriptionMarkup = missing.DescriptionMarkup,
+                        Location = missing.Location,
+                        Name = missing.Name,
+                        PatrolId = missing.PatrolId,
+                        RecurringWorkItemId = missing.Id,
+                        ScheduledShiftId = shift.Id,
+                        ScheduledAt = new DateTime(shiftStartLocal.Year, shiftStartLocal.Month, shiftStartLocal.Day, recurrence.ScheduledAtHour, recurrence.ScheduledAtMinute, 0).UtcFromPatrolLocal(patrol)
+                    };
+                    await _workItemRepository.InsertWorkItem(workItem);
+                }
+            }
+
+            await RecalculateSingleShiftWorkItemAssignments(shift.Id, shiftAssignments.ToList(), workItems.ToList(), workItemAssignments.ToList(), recurringWorkItems.ToList(), shiftRecurringWorkItems.ToList());
+
         }
 
-        public Task RemoveWorkItemsFromShiftOccurence(ScheduledShift shift)
+        public async Task RemoveWorkItemsFromShiftOccurence(ScheduledShift shift)
         {
-            throw new NotImplementedException();
+            var now = _clock.UtcNow.UtcDateTime;
+            var workItems = await _workItemRepository.GetWorkItems(now, 0, scheduledShiftId: shift.Id);
+
+            foreach (var wi in workItems)
+            {
+                foreach(var asn in wi.Assignments)
+                {
+                    await _workItemRepository.DeleteWorkItemAssignment(asn);
+                }
+                await _workItemRepository.DeleteWorkItem(wi);
+            }
         }
 
-        public Task SwapScheduledShiftWorkItems(int scheduledShiftId, int fromUserId, int toUserId)
+        public async Task SwapScheduledShiftWorkItems(int scheduledShiftId, int fromUserId, int toUserId)
         {
-            throw new NotImplementedException();
+            var now = _clock.UtcNow.UtcDateTime;
+            var workItems = await _workItemRepository.GetWorkItems(now,0, scheduledShiftId: scheduledShiftId);
+
+            foreach(var wi in workItems)
+            {
+                var swaps = wi.Assignments.Where(x => x.UserId == fromUserId);
+                foreach(var swap in swaps)
+                {
+                    swap.UserId = toUserId;
+                    await _workItemRepository.UpdateWorkItemAssignment(swap);
+                }
+            }
         }
 
         public async Task CancelWorkItem(int workItemId, int userId)
@@ -850,6 +948,65 @@ namespace Amphibian.Patrol.Api.Services
             var html = Markdown.ToHtml(normalized, pipeline: pipeline);
 
             return html;
+        }
+
+        public async Task EndRecurringWorkItem(int id)
+        {
+            var now = _clock.UtcNow.UtcDateTime;
+            var recurringWorkItem = await _workItemRepository.GetRecurringWorkItem(id);
+            var shiftRecurringWorkItems = await _workItemRepository.GetShiftRecurringWorkItems(id);
+            var workitems = await _workItemRepository.GetWorkItems(now, 0, recurringWorkItemId: id);
+
+            foreach(var workItem in workitems)
+            {
+                //if it's incomplete, just delete it
+                if(!workItem.CompletedAt.HasValue)
+                {
+                    if (workItem.Assignments != null)
+                    {
+                        foreach (var assignment in workItem.Assignments)
+                        {
+                            await _workItemRepository.DeleteWorkItemAssignment(assignment);
+                        }
+                    }
+                    await _workItemRepository.DeleteWorkItem(workItem);
+                }
+            }
+
+            //we remove recurring differently depending on if it's ever been completed or not
+            if(workitems.Any(x=>x.CompletedAt.HasValue))
+            {
+                //if any have ever been completed, we will end the recurrence
+
+                //if it's timed recurring, end it now
+                if(recurringWorkItem.RecurStart.HasValue)
+                {
+                    //end recurence now
+                    recurringWorkItem.RecurEnd = now;
+                    await _workItemRepository.UpdateRecurringWorkItem(recurringWorkItem);
+                }
+                else
+                {
+                    var shiftRecurring = await _workItemRepository.GetShiftRecurringWorkItems(id);
+                    //remove from shifts
+                    foreach(var sr in shiftRecurring)
+                    {
+                        await _workItemRepository.DeleteShiftRecurringWorkItem(sr);
+                    }
+                }
+            }
+            else
+            {
+                //no existing work items have been completed, so it's not needed for auditing, we can delete the rwi
+                var shiftRecurring = await _workItemRepository.GetShiftRecurringWorkItems(id);
+                //remove from shifts
+                foreach (var sr in shiftRecurring)
+                {
+                    await _workItemRepository.DeleteShiftRecurringWorkItem(sr);
+                }
+                //delete entirely
+                await _workItemRepository.DeleteRecurringWorkItem(recurringWorkItem);
+            }
         }
     }
 }

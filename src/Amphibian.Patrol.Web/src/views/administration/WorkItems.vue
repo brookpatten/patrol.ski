@@ -4,6 +4,7 @@
             <CCardHeader>
             <slot name="header">
                 <CIcon name="cil-task"/>Work Items
+                <CButton size="sm" color="success" @click="newWorkItem" class="float-right">New</CButton>
             </slot>
             </CCardHeader>
             <CCardBody>
@@ -129,7 +130,7 @@
                                 <CButtonGroup>
                                   <CButton v-if="!data.item.completedAt && !data.item.canceledAt" color="info" size="sm" @click="edit(data.item)">Edit</CButton>
                                   <CButton v-if="data.item.completedAt || data.item.canceledAt" color="info" size="sm" @click="edit(data.item)">Details</CButton>
-                                  <CButton v-if="!data.item.completedAt && !data.item.canceledAt && (data.item.canComplete || data.item.canAdmin)" color="success" size="sm" @click="doComplete(data.item)">Complete</CButton>
+                                  <CButton v-if="data.item.isDue && !data.item.completedAt && !data.item.canceledAt && (data.item.canComplete || data.item.canAdmin)" color="success" size="sm" @click="doComplete(data.item)">Complete</CButton>
                                   <CButton v-if="!data.item.completedAt && !data.item.canceledAt && data.item.canAdmin" color="warning" size="sm" @click="cancel(data.item)">Cancel</CButton>
                                 </CButtonGroup>
                             </td>
@@ -202,6 +203,10 @@ export default {
     },
     edit(wi){
       this.editWorkItem = wi;
+      this.showEditWorkitem++;
+    },
+    newWorkItem(){
+      this.editWorkItem = {};
       this.showEditWorkitem++;
     },
 
@@ -302,7 +307,7 @@ export default {
     },
     getRecurringWorkItems() {
       this.$store.dispatch('loading','Loading...');
-      this.$http.get('workitem/recurring/patrol/'+this.selectedPatrolId)
+      this.$http.get('workitem/recurring/patrol/'+this.selectedPatrolId+'/true')
           .then(response => {
               console.log(response);
               this.recurringWorkItems = _.map(response.data,function(u){

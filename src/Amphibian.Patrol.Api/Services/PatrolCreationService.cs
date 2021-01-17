@@ -651,7 +651,7 @@ namespace Amphibian.Patrol.Api.Services
                     await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
 
                     var completeWorkItemsBefore = now - new TimeSpan(12, 0, 0);
-                    var workItems = await _workItemRepository.GetWorkItems(admin.Id,patrol.Id, scheduledBefore: completeWorkItemsBefore);
+                    var workItems = await _workItemRepository.GetWorkItems(now,admin.Id,patrol.Id, scheduledBefore: completeWorkItemsBefore);
 
                     foreach (var wi in workItems)
                     {
@@ -699,7 +699,8 @@ namespace Amphibian.Patrol.Api.Services
                         NextOccurenceUsers = new List<UserIdentifier>() { },
                         RecurStart = (twoWeeksAgo + new TimeSpan(9, 0, 0)).UtcFromPatrolLocal(patrol),
                         RecurEnd = twoWeeksAgo + new TimeSpan(90, 23, 59, 59),
-                        RecurIntervalSeconds = (int)new TimeSpan(24, 0, 0).TotalSeconds,
+                        RecurInterval = RecurInterval.Day,
+                        RecurIntervalCount = 1,
                         CompletionMode = CompletionMode.AnyAssigned,
                     };
                     check.NextOccurenceUsers = new List<UserIdentifier>() { allPatrollers[random.Next(allPatrollers.Count)] };
@@ -752,7 +753,7 @@ namespace Amphibian.Patrol.Api.Services
                     await _workItemService.SaveRecurringWorkItem(check, admin.Id, overrideNow: twoWeeksAgo);
 
                     var completeWorkItemsBefore = now - new TimeSpan(12, 0, 0);
-                    var workItems = await _workItemRepository.GetWorkItems(admin.Id, patrol.Id, scheduledBefore: completeWorkItemsBefore);
+                    var workItems = await _workItemRepository.GetWorkItems(now,admin.Id, patrol.Id, scheduledBefore: completeWorkItemsBefore);
 
                     foreach (var wi in workItems)
                     {

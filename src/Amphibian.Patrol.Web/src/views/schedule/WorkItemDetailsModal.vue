@@ -6,31 +6,36 @@
         size="lg"
         >
     <CRow>
-        <CCol><CInput label="Name" v-model="this.editWorkItem.name" :disabled="!allowEdit"/></CCol>
-        <CCol><CInput label="Location" v-model="this.editWorkItem.location" :disabled="!allowEdit"/></CCol>
+        <CCol><CInput label="Name" v-model="editWorkItem.name" :disabled="!allowEdit"/></CCol>
+        <CCol><CInput label="Location" v-model="editWorkItem.location" :disabled="!allowEdit"/></CCol>
     </CRow>
     <CRow>
-        <CCol><CInput :disabled="!allowEdit" label="Scheduled At" :value="new Date(editWorkItem.scheduledAt).toLocaleDateString() + ' '+new Date(editWorkItem.scheduledAt).toLocaleTimeString()"/></CCol>
-        <CCol><CInput :disabled="!allowEdit" label="Completion" :value="this.editWorkItem.completionMode"/></CCol>
+        <CCol>
+          <div class="form-group" role="group">
+            <label>Scheduled</label>
+            <datetime type="datetime" v-model="editWorkItem.scheduledAt" :minute-step="5" input-class="form-control" :use12-hour="true"></datetime>
+          </div>
+        </CCol>
+        <CCol><CSelect :options="completionModes" label="Completion" :value.sync="editWorkItem.completionMode" :disabled="!allowEdit"></CSelect></CCol>
     </CRow>
     <CRow>
         <CCol><CInput disabled label="Owner" v-if="editWorkItem.createdBy" :value="editWorkItem.createdBy.lastName+', '+editWorkItem.createdBy.firstName"/></CCol>
-        <CCol><CInput :disabled="!allowEdit" label="Owning Group" v-if="this.editWorkItem.adminGroup" v-model="this.editWorkItem.adminGroup.name"/></CCol>
+        <CCol><CSelect :disabled="!allowEdit" :options="groups" label="Owning Group" :value.sync="editWorkItem.adminGroupId"></CSelect></CCol>
     </CRow>
     <CRow>
-        <CCol><CInput v-if="this.editWorkItem.recurringWorkItem" disabled label="Recurring" :value="this.editWorkItem.recurringWorkItem ? 'Yes' : 'No'"/></CCol>
+        <CCol><CInput v-if="editWorkItem.recurringWorkItem" disabled label="Recurring" :value="editWorkItem.recurringWorkItem ? 'Yes' : 'No'"/></CCol>
         <CCol>
-          <CInput disabled label="Shift" v-if="this.editWorkItem.scheduledShift && this.editWorkItem.scheduledShift.shift" :value="this.editWorkItem.scheduledShift.shift.name"/>
-          <CInput disabled label="Group" v-if="this.editWorkItem.scheduledShift && this.editWorkItem.scheduledShift.group" :value="this.editWorkItem.scheduledShift.group.name"/>
+          <CInput disabled label="Shift" v-if="editWorkItem.scheduledShift && editWorkItem.scheduledShift.shift" :value="editWorkItem.scheduledShift.shift.name"/>
+          <CInput disabled label="Group" v-if="editWorkItem.scheduledShift && editWorkItem.scheduledShift.group" :value="editWorkItem.scheduledShift.group.name"/>
         </CCol>
     </CRow>
     <CRow v-if="editWorkItem.canceledAt">
         <CCol><CInput disabled label="Canceled" :value="new Date(editWorkItem.canceledAt).toLocaleDateString() + ' '+new Date(editWorkItem.canceledAt).toLocaleTimeString()"/></CCol>
-        <CCol><CInput disabled label="Canceled By" :value="this.editWorkItem.canceledBy.lastName+', '+editWorkItem.canceledBy.firstName"/></CCol>
+        <CCol><CInput disabled label="Canceled By" :value="editWorkItem.canceledBy.lastName+', '+editWorkItem.canceledBy.firstName"/></CCol>
     </CRow>
     <CRow v-if="editWorkItem.completedAt">
         <CCol><CInput disabled label="Completed" :value="new Date(editWorkItem.completedAt).toLocaleDateString() + ' '+new Date(editWorkItem.completedAt).toLocaleTimeString()"/></CCol>
-        <CCol><CInput disabled label="Completed By" :value="this.editWorkItem.completedBy.lastName+', '+editWorkItem.completedBy.firstName"/></CCol>
+        <CCol><CInput disabled label="Completed By" :value="editWorkItem.completedBy.lastName+', '+editWorkItem.completedBy.firstName"/></CCol>
     </CRow>
     <CRow>
       <CCol>
@@ -76,38 +81,50 @@
       </CCol>
     </CRow>
     <template #header>
-        <h6 class="modal-title">{{editWorkItem.name}} {{editWorkItem.location}}</h6>
+        <h6 v-if="editWorkItem.id" class="modal-title">{{editWorkItem.name}} {{editWorkItem.location}}</h6>
+        <h6 v-if="!editWorkItem.id" class="modal-title">New Work Item</h6>
     </template>
     <template #footer>
       <CButton @click="show = false" color="light">Back</CButton>
-      <CButton v-if="allowEdit || allowAssign" @click="saveWorkItem" color="info">Save Changes</CButton>
-      <CButton v-if="allowCancel" @click="cancel" color="warning">Cancel Work Item</CButton>
-      <CButton v-if="allowComplete" @click="complete" color="success">Complete Work Item</CButton>
+      <CButton v-if="editWorkItem.id && (allowEdit || allowAssign)" @click="saveWorkItem" color="info">Save Changes</CButton>
+      <CButton v-if="editWorkItem.id &&allowCancel" @click="cancel" color="warning">Cancel Work Item</CButton>
+      <CButton v-if="editWorkItem.id &&allowComplete" @click="complete" color="success">Complete Work Item</CButton>
+      <CButton v-if="!editWorkItem.id" @click="saveWorkItem" color="success">Create</CButton>
     </template>
     </CModal>
+    
 </template>
 
 <script>
 
 import AuthenticatedPage from '../../mixins/AuthenticatedPage';
-import { quillEditor } from 'vue-quill-editor'
-import 'quill/dist/quill.core.css'
-import 'quill/dist/quill.snow.css'
-import 'quill/dist/quill.bubble.css'
+import { quillEditor } from 'vue-quill-editor';
+import 'quill/dist/quill.core.css';
+import 'quill/dist/quill.snow.css';
+import 'quill/dist/quill.bubble.css';
+
+import { Datetime } from 'vue-datetime';
+import 'vue-datetime/dist/vue-datetime.css';
+
 
 export default {
   name: 'WorkItemDetailsModal',
   mixins: [AuthenticatedPage],
-  components: { quillEditor
+  components: { quillEditor,Datetime
   },
   props:['workItem','trigger'],
   data () {
     return {
+      completionModes:[{label:'Anyone',value:'Any'}
+                      ,{label:'Any Assigned',value:'AnyAssigned'}
+                      ,{label:'All Assigned',value:'AllAssigned'}
+                      ,{label:'Owner(s)',value:'AdminOnly'}],
       editWorkItem: {},
       users:[],
       filteredUserList:[],
       selectedUserId:null,
-      show:false
+      show:false,
+      groups:[]
     }
   },
   methods: {
@@ -117,10 +134,14 @@ export default {
     },
     addUser(userId){
       var user = _.find(this.users,{id:userId});
-      this.editWorkItem.assignments.push({userId:userId,workItemId:this.editWorkItem.id});
+      this.editWorkItem.assignments.push({userId:userId,user:user,workItemId:this.editWorkItem.id});
       this.filterUserListItems();
     },
     saveWorkItem() {
+      if(!this.editWorkItem.name || this.editWorkItem.name==''){
+        return;
+      }
+
       this.$store.dispatch('loading','Loading...');
 
       if(this.allowEdit){
@@ -170,6 +191,20 @@ export default {
                 console.log(response);
             }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
+    getGroups() {
+      this.$store.dispatch('loading','Loading...');
+      this.$http.get('user/groups/'+this.selectedPatrolId)
+          .then(response => {
+              console.log(response);
+              this.groups = _.map(response.data,function(u){
+                  return {label:u.name,value:u.id};
+              });
+
+              this.groups.splice(0,0,{label:'(None)',value:null});
+          }).catch(response => {
+              console.log(response);
+          }).finally(response=>this.$store.dispatch('loadingComplete'));
+    },
     filterUserListItems:function(){
       let editWorkItem = this.editWorkItem;
       var filtered = _.filter(this.users,function(u){return _.find(editWorkItem.assignments,function(a){return a.user && a.user.id==u.id;})==null;});
@@ -203,7 +238,8 @@ export default {
     allowComplete: function(){
       return !this.editWorkItem.completedAt 
       && !this.editWorkItem.canceledAt 
-      && (this.editWorkItem.canAdmin || this.editWorkItem.canComplete || this.hasPermission('MaintainWorkItems'));
+      && (this.editWorkItem.canAdmin || this.editWorkItem.canComplete || this.hasPermission('MaintainWorkItems'))
+      && this.editWorkItem.isDue;
     },
     allowCancel: function(){
       return !this.editWorkItem.completedAt 
@@ -217,6 +253,34 @@ export default {
     },
     workItem(){
       this.editWorkItem = _.clone(this.workItem);
+
+      //if it's new, fill it with defaults
+      if(!this.editWorkItem.id){
+        this.editWorkItem.name = '';
+        this.editWorkItem.location='';
+        this.editWorkItem.assignments=[];
+        this.editWorkItem.completionMode = 'Any';
+        this.editWorkItem.recurringWorkItemId = null;
+        this.editWorkItem.recurringWorkItemId = null;
+        this.editWorkItem.scheduledShiftId=null;
+        this.editWorkItem.scheduledShift=null;
+        this.editWorkItem.adminGroupId = null;
+        this.editWorkItem.adminGroup = null;
+        this.editWorkItem.createdByUserId = this.userId;
+        this.editWorkItem.createdBy = null;
+        this.editWorkItem.createdAt = new Date();
+        this.editWorkItem.completedAt = null;
+        this.editWorkItem.completedByUserId = null;
+        this.editWorkItem.completedBy = null;
+        this.editWorkItem.canceledAt = null;
+        this.editWorkItem.canceledByUserId = null;
+        this.editWorkItem.canceledBy = null;
+        this.editWorkItem.canAdmin = true;
+        this.editWorkItem.canComplete = false;
+        this.editWorkItem.patrolId = this.selectedPatrolId;
+        this.editWorkItem.descriptionMarkup = '';
+        this.editWorkItem.scheduledAt = new Date().toISOString();
+      }
     },
     trigger(){
       this.show=true;
@@ -225,6 +289,7 @@ export default {
   mounted: function(){
     this.editWorkItem = _.clone(this.workItem);
     this.getUsers();
+    this.getGroups();
   }
 }
 </script>

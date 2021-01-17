@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Amphibian.Patrol.Api.Models
 {
-    
+    public enum RecurInterval { Year,Month,Week,Day,Hour,Minute}
     public class RecurringWorkItem
     {
         public int Id { get; set; }
@@ -22,6 +22,7 @@ namespace Amphibian.Patrol.Api.Models
 
         public DateTime? RecurStart { get; set; }
         public DateTime? RecurEnd { get; set; }
-        public int? RecurIntervalSeconds { get; set; }
+        public RecurInterval? RecurInterval { get; set; }
+        public int? RecurIntervalCount { get; set; }
     }
 }

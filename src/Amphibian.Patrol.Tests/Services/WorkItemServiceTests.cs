@@ -239,6 +239,7 @@ namespace Amphibian.Patrol.Tests.Services
                 {
                     new WorkItemAssignment()
                     {
+                        Id=1,
                         WorkItemId = workItemDto.Id,
                         UserId = userId
                     }
@@ -623,7 +624,8 @@ namespace Amphibian.Patrol.Tests.Services
             dto.PatrolId = 1;
             dto.RecurStart = new DateTime(2001, 1, 1, 9, 0, 0);
             dto.RecurEnd = new DateTime(2001, 1, 10, 9, 0, 0);
-            dto.RecurIntervalSeconds = (int)new TimeSpan(24, 0, 0).TotalSeconds;
+            dto.RecurInterval = RecurInterval.Day;
+            dto.RecurIntervalCount = 1;
             
             var patrol = new Api.Models.Patrol()
             {
@@ -659,7 +661,8 @@ namespace Amphibian.Patrol.Tests.Services
             dto.PatrolId = 1;
             dto.RecurStart = new DateTime(2001, 1, 1, 9, 0, 0);
             dto.RecurEnd = new DateTime(2001, 1, 4, 9, 0, 0);
-            dto.RecurIntervalSeconds = (int)new TimeSpan(24, 0, 0).TotalSeconds;
+            dto.RecurInterval = RecurInterval.Day;
+            dto.RecurIntervalCount = 1;
 
             var now = new DateTimeOffset(2001, 1, 1, 0, 0, 0, new TimeSpan());
             _systemClockMock.Setup(x => x.UtcNow).Returns(now);
@@ -697,7 +700,8 @@ namespace Amphibian.Patrol.Tests.Services
             dto.PatrolId = 1;
             dto.RecurStart = new DateTime(2001, 1, 1, 9, 0, 0);
             dto.RecurEnd = new DateTime(2001, 1, 1, 9, 0, 0);
-            dto.RecurIntervalSeconds = (int)new TimeSpan(24, 0, 0).TotalSeconds;
+            dto.RecurInterval = RecurInterval.Day;
+            dto.RecurIntervalCount = 1;
 
             var now = new DateTimeOffset(2001, 1, 1, 0, 0, 0, new TimeSpan());
             _systemClockMock.Setup(x => x.UtcNow).Returns(now);

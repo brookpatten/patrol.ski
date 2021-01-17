@@ -115,13 +115,13 @@ namespace Amphibian.Patrol.Api.Controllers
         }
 
         [HttpGet]
-        [Route("workitem/recurring/patrol/{id}")]
+        [Route("workitem/recurring/patrol/{id}/{includeInactive}")]
         [Authorize]
-        public async Task<IActionResult> GetRecurringWorkItemForPatrol(int id)
+        public async Task<IActionResult> GetRecurringWorkItemForPatrol(int id,bool includeInactive=false)
         {
             if (User.RoleInPatrol(id).CanMaintainWorkItems())
             {
-                var workItem = await _workItemRepository.GetRecurringWorkItems(id);
+                var workItem = await _workItemRepository.GetRecurringWorkItems(id,includeInactive,_clock.UtcNow.UtcDateTime);
                 return Ok(workItem);
             }
             else
@@ -155,6 +155,24 @@ namespace Amphibian.Patrol.Api.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("workitem/recurring/end/{id}")]
+        [Authorize]
+        [UnitOfWork]
+        public async Task<IActionResult> EndRecurringWorkItem(int id)
+        {
+            var workItem = await _workItemRepository.GetRecurringWorkItem(id);
+            if (User.RoleInPatrol(workItem.PatrolId).CanMaintainWorkItems())
+            {
+                await _workItemService.EndRecurringWorkItem(id);
+                return Ok();
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+
         public class CompleteWorkItemDto
         {
             public int Id { get; set; }
@@ -167,7 +185,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CompleteWorkItem(CompleteWorkItemDto dto)
         {
-            var workItem = (await _workItemRepository.GetWorkItems(User.UserId(), workItemId: dto.Id)).Single();
+            var workItem = (await _workItemRepository.GetWorkItems(_clock.UtcNow.UtcDateTime,User.UserId(), workItemId: dto.Id)).Single();
 
             if(workItem.CompletedAt.HasValue || workItem.CanceledAt.HasValue)
             {
@@ -223,7 +241,7 @@ namespace Amphibian.Patrol.Api.Controllers
         [UnitOfWork]
         public async Task<IActionResult> CancelWorkItem(CompleteWorkItemDto dto)
         {
-            var workItem = (await _workItemRepository.GetWorkItems(User.UserId(), workItemId: dto.Id)).Single();
+            var workItem = (await _workItemRepository.GetWorkItems(_clock.UtcNow.UtcDateTime, User.UserId(), workItemId: dto.Id)).Single();
             if (User.IsInPatrol(workItem.PatrolId))
             {
                 if (workItem.CanAdmin || User.RoleInPatrol(workItem.PatrolId).CanMaintainWorkItems())
@@ -255,7 +273,7 @@ namespace Amphibian.Patrol.Api.Controllers
             if (User.IsInPatrol(patrolId))
             {
                 var now = _clock.UtcNow.UtcDateTime;
-                var workItems = await _workItemRepository.GetWorkItems(User.UserId(),patrolId, complete:false,scheduledBefore:now
+                var workItems = await _workItemRepository.GetWorkItems(_clock.UtcNow.UtcDateTime, User.UserId(),patrolId, complete:false,scheduledBefore:now
                     , completableByUserId: User.RoleInPatrol(patrolId).CanMaintainWorkItems() ? (int?)null : User.UserId()
                     , deDuplicateRecurring:true
                     , excludeIfMoreRecentCompleteRecurring: true);
@@ -287,7 +305,7 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             if (User.IsInPatrol(dto.PatrolId))
             {
-                var workItems = await _workItemRepository.GetWorkItems(User.UserId(), dto.PatrolId, dto.Complete, dto.CompletedByUserId, dto.RecurringWorkItemId, dto.ScheduledBefore, dto.ScheduledAfter, dto.ShiftId, dto.AdminGroupId, dto.Name, dto.Location);
+                var workItems = await _workItemRepository.GetWorkItems(_clock.UtcNow.UtcDateTime, User.UserId(), dto.PatrolId, dto.Complete, dto.CompletedByUserId, dto.RecurringWorkItemId, dto.ScheduledBefore, dto.ScheduledAfter, dto.ShiftId, dto.AdminGroupId, dto.Name, dto.Location);
                 return Ok(workItems);
             }
             else

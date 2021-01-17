@@ -96,7 +96,7 @@ namespace Amphibian.Patrol.Api.Infrastructure
 
                             //TODO: update this so that only superseded/expired token are in the db, "good" tokens will not be
                             var token = await _tokenRepository.GetToken(parsed.Token.TokenGuid);
-                            if(token.ExpiredAt.HasValue && token.ExpiredAt < now)
+                            if(token == null || (token.ExpiredAt.HasValue && token.ExpiredAt < now))
                             {
                                 //note we do NOT set the principle, it's expired so we let it fail as invalid
                             }

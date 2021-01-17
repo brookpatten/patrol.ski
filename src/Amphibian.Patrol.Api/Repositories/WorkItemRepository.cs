@@ -117,6 +117,11 @@ namespace Amphibian.Patrol.Api.Repositories
             return _connection.DeleteAsync(item);
         }
 
+        public Task DeleteRecurringWorkItem(RecurringWorkItem item)
+        {
+            return _connection.DeleteAsync(item);
+        }
+
         public Task<IEnumerable<WorkItemAssignment>> GetWorkItemAssignments(int recurringWorkItemId, DateTime after)
         {
             return _connection.QueryAsync<WorkItemAssignment>(@"select distinct wia.*
@@ -178,38 +183,57 @@ namespace Amphibian.Patrol.Api.Repositories
         //    return _connection.SelectAsync<RecurringWorkItem>(x => x.PatrolId == patrolId);
         //}
 
-        public Task<IEnumerable<RecurringWorkItemDto>> GetRecurringWorkItems(int patrolId)
+        public Task<IEnumerable<RecurringWorkItemDto>> GetRecurringWorkItems(int patrolId, bool includeInactive, DateTime now)
         {
             var shiftRecurringWorkItems = new Dictionary<int, List<ShiftRecurringWorkItemDto>>();
-            return _connection.QueryAsync<RecurringWorkItemDto, ShiftRecurringWorkItemDto, Shift, RecurringWorkItemDto>(@"
+            return _connection.QueryAsync<RecurringWorkItemDto, ShiftRecurringWorkItemDto, Shift,Group,UserIdentifier, RecurringWorkItemDto>(@"
             select
-                rwi.*,srwi.*,s.*
+                rwi.*,
+                (select count(wi2.id) from workitems wi2 where wi2.recurringworkitemid=rwi.id and wi2.completedat is not null) CompletedWorkItemCount,
+                (select count(wi2.id) from workitems wi2 where wi2.recurringworkitemid=rwi.id) WorkItemCount,
+                (select min(wi2.scheduledat) from workitems wi2 where wi2.recurringworkitemid=rwi.id) FirstScheduledAt,
+                (select min(wi2.scheduledat) from workitems wi2 where wi2.recurringworkitemid=rwi.id and wi2.scheduledat>@now) NextScheduledAt,
+                (select max(wi2.scheduledat) from workitems wi2 where wi2.recurringworkitemid=rwi.id) LastScheduledAt,
+                srwi.*,s.*,g.*,u.*
                 from recurringworkitems rwi
+                inner join users u on u.id=rwi.createdbyuserid
+                left join groups g on g.id=rwi.admingroupid
                 left join shiftrecurringworkitems srwi on srwi.recurringworkitemid=rwi.id
                 left join shifts s on s.id=srwi.shiftid
             where rwi.patrolId=@patrolId
+            and (@includeInactive=1 or (select count(wi.id) from workitems wi where wi.recurringworkitemid=rwi.id and wi.scheduledat > @now) >0)
             order by rwi.name,rwi.location
             ",
-                (rwi, srwi, s) =>
+                (rwi, srwi, s,g,u) =>
                 {
                     if (!shiftRecurringWorkItems.ContainsKey(rwi.Id))
                     {
                         shiftRecurringWorkItems.Add(rwi.Id, new List<ShiftRecurringWorkItemDto>());
                     }
 
-                    srwi.Shift = s;
-                    shiftRecurringWorkItems[rwi.Id].Add(srwi);
-                    rwi.Shifts = shiftRecurringWorkItems[rwi.Id];
+                    rwi.AdminGroup = g;
+                    rwi.CreatedBy = u;
+
+                    if (srwi != null)
+                    {
+                        srwi.Shift = s;
+                        shiftRecurringWorkItems[rwi.Id].Add(srwi);
+                        rwi.Shifts = shiftRecurringWorkItems[rwi.Id];
+                    }
+                    else
+                    {
+                        rwi.Shifts = null;
+                    }
 
                     return rwi;
                 }
-                , new { patrolId });
+                , new { patrolId,includeInactive, now });
         }
 
-        public async Task<IEnumerable<WorkItemDto>> GetWorkItems(int userId,int? patrolId=null,bool? complete=null, int? completedByUserId = null, 
+        public async Task<IEnumerable<WorkItemDto>> GetWorkItems(DateTime now,int userId,int? patrolId=null,bool? complete=null, int? completedByUserId = null, 
             int? recurringWorkItemId = null, DateTime? scheduledBefore = null, DateTime? scheduledAfter = null, int? shiftId = null, 
             int? adminGroupId = null, string name = null, string location = null, int? completableByUserId=null,int? workItemId=null, 
-            bool deDuplicateRecurring=false, bool excludeIfMoreRecentCompleteRecurring=false)
+            bool deDuplicateRecurring=false, bool excludeIfMoreRecentCompleteRecurring=false, int? scheduledShiftId = null)
         {
             var assignments = new Dictionary<int, List<WorkItemAssignmentDto>>();
 
@@ -229,6 +253,11 @@ namespace Amphibian.Patrol.Api.Repositories
                     else 0
                     end
                  ) CanAdmin
+                ,( 
+                   case when wi.scheduledat<@now then 1
+                   else 0
+                   end
+                ) IsDue
                 ,rwi.*
                 ,g.*
                 ,u.*
@@ -270,6 +299,7 @@ namespace Amphibian.Patrol.Api.Repositories
                         or (select top 1 gu.id from groupusers gu where gu.groupid=wi.admingroupid and gu.userid=@completableByUserId) is not null
                         or wi.createdbyuserid=@completableByUserId)
                 and (@workItemId is null or wi.id=@workItemId)
+                and (@scheduledShiftId is null or wi.scheduledShiftId=@scheduledShiftId)
                 and (@excludeIfMoreRecentCompleteRecurring=0 
                         or wi.recurringworkitemid is null 
                         or (wi.recurringworkitemid is not null 
@@ -309,13 +339,20 @@ namespace Amphibian.Patrol.Api.Repositories
                     {
                         assignments.Add(wi.Id, new List<WorkItemAssignmentDto>());
                     }
-                    wia.User = wiau;
-                    assignments[wi.Id].Add(wia);
-                    wi.Assignments = assignments[wi.Id];
+                    if (wia != null)
+                    {
+                        wia.User = wiau;
+                        assignments[wi.Id].Add(wia);
+                        wi.Assignments = assignments[wi.Id];
+                    }
+                    else
+                    {
+                        wi.Assignments = null;
+                    }
 
                     return wi;
                 } ,
-                new { userId,patrolId, complete, completedByUserId, recurringWorkItemId, scheduledBefore, scheduledAfter, shiftId, adminGroupId, name, location, completableByUserId, anyCompletionMode = CompletionMode.Any,workItemId, excludeIfMoreRecentCompleteRecurring });
+                new { now,userId,patrolId, complete, completedByUserId, recurringWorkItemId, scheduledBefore, scheduledAfter, shiftId, adminGroupId, name, location, completableByUserId, anyCompletionMode = CompletionMode.Any,workItemId, excludeIfMoreRecentCompleteRecurring,scheduledShiftId });
 
             results = results.GroupBy(x => x.Id).Select(x => x.First()).OrderBy(x => x.Name).ThenBy(x => x.Location);
 

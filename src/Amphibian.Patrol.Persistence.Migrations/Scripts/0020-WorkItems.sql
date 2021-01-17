@@ -25,7 +25,8 @@ CREATE TABLE dbo.RecurringWorkItems
 	AdminGroupId int NULL,
 	RecurStart datetime NULL,
 	RecurEnd datetime NULL,
-	RecurIntervalSeconds int NULL
+	RecurInterval tinyint NULL,
+	RecurIntervalCount int NULL
 	)  ON [PRIMARY]
 	 TEXTIMAGE_ON [PRIMARY]
 GO

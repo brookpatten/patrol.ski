@@ -12,6 +12,11 @@ namespace Amphibian.Patrol.Api.Dtos
         public Group AdminGroup { get; set; }
         public UserIdentifier CreatedBy { get; set; }
         public List<UserIdentifier> NextOccurenceUsers { get; set; }
+        public int CompletedWorkItemCount { get; set; }
+        public int WorkItemCount { get; set; }
+        public DateTime? FirstScheduledAt { get; set; }
+        public DateTime? LastScheduledAt { get; set; }
+        public DateTime? NextScheduledAt { get; set; }
     }
 
     public class ShiftRecurringWorkItemDto:ShiftRecurringWorkItem
