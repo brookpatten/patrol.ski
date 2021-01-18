@@ -23,9 +23,9 @@
             />
             
             <label for="event.startsAt">Start</label>
-            <VueCtkDateTimePicker v-model="event.startsAt" dark noClearButton minute-interval="15" color="#3b2fa4" format="YYYY-MM-DDTHH:mm"></VueCtkDateTimePicker><br/>
+            <datetime type="datetime" v-model="event.startsAt" :minute-step="15" input-class="form-control" :use12-hour="true"></datetime><br/>
             <label for="event.endsAt">End</label>
-            <VueCtkDateTimePicker v-model="event.endsAt" dark noClearButton minute-interval="15" color="#3b2fa4" format="YYYY-MM-DDTHH:mm"></VueCtkDateTimePicker><br/>
+            <datetime type="datetime" v-model="event.endsAt" :minute-step="15" input-class="form-control" :use12-hour="true"></datetime><br/>
 
         </CCardBody>
         <CCardFooter>
@@ -41,14 +41,13 @@
 
 <script>
 
-import Datepicker from 'vuejs-datepicker';
 
-import VueCtkDateTimePicker from 'vue-ctk-date-time-picker';
-import 'vue-ctk-date-time-picker/dist/vue-ctk-date-time-picker.css';
+import { Datetime } from 'vue-datetime';
+import 'vue-datetime/dist/vue-datetime.css';
 
 export default {
   name: 'EditEvent',
-  components: { Datepicker, VueCtkDateTimePicker
+  components: { Datetime
   },
   props: ['eventId'],
   data () {
@@ -68,8 +67,8 @@ export default {
           this.event={
             name:'',
             location:'',
-            startsAt:new Date(),
-            endsAt:new Date(),
+            startsAt:new Date().toUTCString(),
+            endsAt:new Date().toUTCString(),
             patrolId: this.selectedPatrolId
           };
         }

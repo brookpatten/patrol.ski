@@ -172,7 +172,7 @@
                         <label for="newShift.day">Day</label>
                     </CCol>
                     <CCol md="10">
-                        <datepicker v-model="newShift.day" input-class="form-control" calendar-class="card"></datepicker>
+                        <datetime type="date" v-model="newShift.day" :minute-step="5" input-class="form-control"></datetime><br/>
                     </CCol>
                 </CRow>
             </template>
@@ -180,11 +180,11 @@
             <CRow v-if="newShift.shiftId==null">
                 <CCol>
                     <label for="newShift.startsAt">Start</label>
-                    <VueCtkDateTimePicker v-model="newShift.startsAt" dark noClearButton minute-interval="15" color="#3b2fa4" format="YYYY-MM-DDTHH:mm"></VueCtkDateTimePicker><br/>
+                    <datetime type="datetime" v-model="newShift.startsAt" :minute-step="15" input-class="form-control" :use12-hour="true"></datetime><br/>
                 </CCol>
                 <CCol>
                     <label for="newShift.endsAt">End</label>
-                    <VueCtkDateTimePicker v-model="newShift.endsAt" dark noClearButton minute-interval="15" color="#3b2fa4" format="YYYY-MM-DDTHH:mm"></VueCtkDateTimePicker><br/>
+                    <datetime type="datetime" v-model="newShift.endsAt" :minute-step="15" input-class="form-control" :use12-hour="true"></datetime><br/>
                 </CCol>
             </CRow>
 
@@ -259,19 +259,17 @@ import { CalendarView } from "vue-simple-calendar"
 //require("vue-simple-calendar/static/css/default.css")
 //require("vue-simple-calendar/static/css/holidays-us.css")
 
-import Datepicker from 'vuejs-datepicker';
-import VueCtkDateTimePicker from 'vue-ctk-date-time-picker';
-import 'vue-ctk-date-time-picker/dist/vue-ctk-date-time-picker.css';
-
 import CalendarHeader from './CalendarHeader';
+
+import { Datetime } from 'vue-datetime';
+import 'vue-datetime/dist/vue-datetime.css';
 
 export default {
   name: 'Calendar',
   freeSet,
   components: {  CalendarView,
             CalendarHeader,
-            Datepicker,
-            VueCtkDateTimePicker
+            Datetime
   },
   props: [],
   data () {
@@ -299,9 +297,9 @@ export default {
 
         newShift:{
             show: false,
-            startsAt: new Date(),
-            endsAt: new Date(),
-            day: new Date(),
+            startsAt: new Date().toUTCString(),
+            endsAt: new Date().toUTCString(),
+            day: new Date().toUTCString(),
             shiftId: 0,
             groupId: null,
             patrolId: this.selectedPatrolId,
@@ -459,15 +457,15 @@ export default {
                 
                 if(this.shifts.length>0){
                     this.newShift.shiftId = this.shifts[0].id;
-                    this.newShift.day = date;
-                    this.newShift.startsAt = null;
-                    this.newShift.endsAt = null;
+                    this.newShift.day = date.toUTCString();
+                    this.newShift.startsAt = date.toUTCString();
+                    this.newShift.endsAt = date.toUTCString();
                 }
                 else {
                     this.newShift.shiftId = null;
-                    this.newShift.day = null;
-                    this.newShift.startsAt = date;
-                    this.newShift.endsAt = date;
+                    this.newShift.day = date.toUTCString();
+                    this.newShift.startsAt = date.toUTCString();
+                    this.newShift.endsAt = date.toUTCString();
                 }
 
                 this.newShift.show=true;
@@ -485,7 +483,7 @@ export default {
         },
         removeUserFromNewShift(userId){
             var lastIndex = _.findLastIndex(this.newShift.assignments,function(a){return a.assignedUser.id==userId;});
-            this.newShift.assignments.splic(lastIndex,1);
+            this.newShift.assignments.splice(lastIndex,1);
             //this.newShift.assignments = _.filter(this.newShift.assignments,function(a){return a.assignedUser.id!=userId;});
             this.filterUserListItems(this.newShift.assignments);
         },
@@ -505,11 +503,11 @@ export default {
 
             if(this.newShift.shiftId==null){
                 this.newShift.day=null;
-                this.newShift.startsAt = new Date(this.newShift.startsAt).toISOString();
-                this.newShift.endsAt = new Date(this.newShift.endsAt).toISOString();
+                this.newShift.startsAt = this.newShift.startsAt;
+                this.newShift.endsAt = this.newShift.endsAt;
             }
             else{
-                this.newShift.day = new Date(this.newShift.day);
+                this.newShift.day = this.newShift.day;
                 this.newShift.startsAt = null;
                 this.newShift.endsAt = null;
             }

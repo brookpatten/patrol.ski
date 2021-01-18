@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Amphibian.Patrol.Api.Services
 {
-    public class WorkItemService:IWorkItemService
+    public class WorkItemService:IWorkItemService, IShiftWorkItemService
     {
         private ILogger<WorkItemService> _logger;
         private IPatrolRepository _patrolRepository;

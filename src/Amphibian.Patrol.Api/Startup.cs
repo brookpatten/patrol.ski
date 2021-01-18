@@ -153,6 +153,7 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<IScheduleService, ScheduleService>();
             services.AddScoped<ITimeClockService, TimeClockService>();
             services.AddScoped<IWorkItemService, WorkItemService>();
+            services.AddScoped<IShiftWorkItemService, WorkItemService>();
 
             services.AddScoped<ISystemClock, SystemClock>();
 

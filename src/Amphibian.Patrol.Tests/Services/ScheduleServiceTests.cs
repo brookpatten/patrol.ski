@@ -28,6 +28,7 @@ namespace Amphibian.Patrol.Tests.Services
         private Mock<ISystemClock> _systemClockMock;
         private Mock<IUserRepository> _userRepositoryMock;
         private Mock<IEmailService> _emailServiceMock;
+        private Mock<IShiftWorkItemService> _shiftWOrkItemService;
 
         [SetUp]
         public void Setup()
@@ -41,8 +42,9 @@ namespace Amphibian.Patrol.Tests.Services
             _systemClockMock = new Mock<ISystemClock>();
             _userRepositoryMock = new Mock<IUserRepository>();
             _emailServiceMock = new Mock<IEmailService>();
+            _shiftWOrkItemService = new Mock<IShiftWorkItemService>();
 
-            _scheduleService = new ScheduleService(_loggerMock.Object, _patrolRepository.Object, _groupRepositoryMock.Object, _shiftRepositoryMock.Object, _systemClockMock.Object,_emailServiceMock.Object,_userRepositoryMock.Object);
+            _scheduleService = new ScheduleService(_loggerMock.Object, _patrolRepository.Object, _groupRepositoryMock.Object, _shiftRepositoryMock.Object, _systemClockMock.Object,_emailServiceMock.Object,_userRepositoryMock.Object, _shiftWOrkItemService.Object);
         }
 
         [Test]

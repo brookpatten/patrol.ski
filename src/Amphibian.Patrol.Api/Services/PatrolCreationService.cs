@@ -517,7 +517,7 @@ namespace Amphibian.Patrol.Api.Services
                 }
 
                 //replicate that week for 90 more days
-                var replicatedShifts = await _scheduleService.ReplicatePeriod(patrol.Id, false,false, twoWeeksAgo, twoWeeksAgo + new TimeSpan(6, 23, 59, 59, 999), twoWeeksAgo + new TimeSpan(7, 0, 0, 0, 0), twoWeeksAgo + new TimeSpan(90, 23, 59, 59));
+                var replicatedShifts = await _scheduleService.ReplicatePeriod(patrol.Id, false,false, twoWeeksAgo, twoWeeksAgo + new TimeSpan(6, 23, 59, 59, 999), twoWeeksAgo + new TimeSpan(7, 0, 0, 0, 0), twoWeeksAgo + new TimeSpan(90, 23, 59, 59),false);
 
 
                 var distinctReplicatedShifts = replicatedShifts.GroupBy(x => x.ScheduledShiftId).Select(x => x.First()).OrderBy(x => x.StartsAt).ToList();

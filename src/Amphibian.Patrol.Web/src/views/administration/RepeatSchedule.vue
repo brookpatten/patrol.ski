@@ -19,21 +19,21 @@
             <CRow>
               <CCol>
                 <label for="sourceStart">From Start</label>
-                <datepicker v-model="sourceStart" input-class="form-control" calendar-class="card"></datepicker>
+                <datetime type="date" v-model="sourceStart" input-class="form-control" value-zone="local"></datetime>
               </CCol>
               <CCol>
                 <label for="sourceEnd">From End</label>
-                <datepicker v-model="sourceEnd" input-class="form-control" calendar-class="card"></datepicker>
+                <datetime type="date" v-model="sourceEnd" input-class="form-control" value-zone="local"></datetime>
             </CCol>
             </CRow>
             <CRow>
               <CCol>
                 <label for="targetStart">To Start</label>
-                <datepicker v-model="targetStart" input-class="form-control" calendar-class="card"></datepicker>
+                <datetime type="date" v-model="targetStart" input-class="form-control" value-zone="local"></datetime>
               </CCol>
               <CCol>
                 <label for="targetEnd">To End</label>
-                <datepicker v-model="targetEnd" input-class="form-control" calendar-class="card"></datepicker>
+                <datetime type="date" v-model="targetEnd" input-class="form-control" value-zone="local"></datetime>
               </CCol>
             </CRow>
 
@@ -93,19 +93,20 @@
 
 <script>
 
-import Datepicker from 'vuejs-datepicker';
+import { Datetime } from 'vue-datetime';
+import 'vue-datetime/dist/vue-datetime.css';
 
 export default {
   name: 'RepeatSchedule',
-  components: { Datepicker
+  components: { Datetime
   },
   props: [],
   data () {
     return {
-      sourceStart:new Date((new Date()).getFullYear(),(new Date()).getMonth(),(new Date()).getDate()),
-      sourceEnd:new Date((new Date()).getFullYear(),(new Date()).getMonth(),(new Date()).getDate()),
-      targetStart: new Date((new Date()).getFullYear(),(new Date()).getMonth(),(new Date()).getDate()),
-      targetEnd: new Date((new Date()).getFullYear(),(new Date()).getMonth(),(new Date()).getDate()),
+      sourceStart:new Date((new Date()).getFullYear(),(new Date()).getMonth(),(new Date()).getDate(),0,0,0).toUTCString(),
+      sourceEnd:new Date((new Date()).getFullYear(),(new Date()).getMonth(),(new Date()).getDate(),23,59,59).toUTCString(),
+      targetStart: new Date((new Date()).getFullYear(),(new Date()).getMonth(),(new Date()).getDate(),0,0,0).toUTCString(),
+      targetEnd: new Date((new Date()).getFullYear(),(new Date()).getMonth(),(new Date()).getDate(),23,59,59).toUTCString(),
       clearTarget:false,
       testOnly: true,
       results:[],
@@ -122,12 +123,17 @@ export default {
     save(){
         this.$store.dispatch('loading','Repeating...');
 
-        this.sourceStart.setHours(0,0,0,0);
-        this.sourceEnd.setHours(23,59,59,999);
-        this.targetStart.setHours(0,0,0,0);
-        this.targetEnd.setHours(23,59,59,999);
+        var sourceStart = new Date(this.sourceStart);
+        var sourceEnd = new Date(this.sourceEnd);
+        var targetStart = new Date(this.targetStart);
+        var targetEnd = new Date(this.targetEnd);
 
-        this.$http.post('schedule/replicate',{sourceStart:this.sourceStart,sourceEnd:this.sourceEnd,targetStart:this.targetStart,targetEnd:this.targetEnd,clearTarget:this.clearTarget,testOnly:this.testOnly, patrolId:this.selectedPatrolId})
+        sourceStart.setHours(0,0,0,0);
+        sourceEnd.setHours(23,59,59,999);
+        targetStart.setHours(0,0,0,0);
+        targetEnd.setHours(23,59,59,999);
+
+        this.$http.post('schedule/replicate',{sourceStart:new Date(sourceStart.toUTCString()),sourceEnd:new Date(sourceEnd.toUTCString()),targetStart:new Date(targetStart.toUTCString()),targetEnd:new Date(targetEnd.toUTCString()),clearTarget:this.clearTarget,testOnly:this.testOnly, patrolId:this.selectedPatrolId})
           .then(response=>{
             this.results = response.data;
           }).catch(response=>{

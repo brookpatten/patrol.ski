@@ -341,8 +341,8 @@ export default {
         wi.createdAt = new Date();
         wi.patrolId = this.selectedPatrolId;
         wi.descriptionMarkup = '';
-        wi.recurStart = new Date(now.getFullYear(),now.getMonth(),now.getDate(),now.getHours(),0,0,0).toISOString();
-        wi.recurEnd = new Date(endRange.getFullYear(),endRange.getMonth(),endRange.getDate(),endRange.getHours(),0,0,0).toISOString();
+        wi.recurStart = new Date(now.getFullYear(),now.getMonth(),now.getDate(),now.getHours(),0,0,0).toUTCString();
+        wi.recurEnd = new Date(endRange.getFullYear(),endRange.getMonth(),endRange.getDate(),endRange.getHours(),0,0,0).toUTCString();
         wi.recurInterval = 'Day';
         wi.recurIntervalCount = 1;
         this.recurMode = "Timed"
