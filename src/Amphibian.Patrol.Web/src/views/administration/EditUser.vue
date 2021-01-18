@@ -25,6 +25,7 @@
             <CInput
             label="Email"
             v-model="user.email"
+            v-if="!user.id || user.id==0"
             :invalidFeedback="validationErrors.Email ? validationErrors.Email.join() : 'Invalid'"
             :isValid="validated ? validationErrors.Email==null : null"
             />

@@ -27,8 +27,7 @@
                 <CInput
                 label="Email"
                 v-model="user.email"
-                :invalidFeedback="validationErrors.Email ? validationErrors.Email.join() : 'Invalid'"
-                :isValid="validated ? validationErrors.Email==null : null"
+                disabled
                 />
                 <CInput
                 label="NSP #"

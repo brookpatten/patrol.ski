@@ -107,8 +107,11 @@ Please follow use link to reset your password {_urlRoot}{resetRoute}",
             {
                 if (to.Any(x => x.AllowEmailNotifications))
                 {
-                    message.AddTo(new EmailAddress(_overrideTo, "Test User"));
-                    hasTo = true;
+                    if (_overrideTo != "nobody")
+                    {
+                        message.AddTo(new EmailAddress(_overrideTo, "Test User"));
+                        hasTo = true;
+                    }
                 }
             }
             else

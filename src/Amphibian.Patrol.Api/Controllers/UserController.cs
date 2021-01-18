@@ -233,7 +233,7 @@ namespace Amphibian.Patrol.Api.Controllers
 
                     user.FirstName = dto.FirstName;
                     user.LastName = dto.LastName;
-                    user.Email = dto.Email;
+                    //user.Email = dto.Email;
                     user.AllowEmailNotifications = dto.AllowEmailNotifications;
                     user.NspNumber = dto.NspNumber;
                     await _userRepository.UpdateUser(user);

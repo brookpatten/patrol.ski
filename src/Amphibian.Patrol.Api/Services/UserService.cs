@@ -131,7 +131,7 @@ namespace Amphibian.Patrol.Api.Services
             if (newEmailUser == null || newEmailUser.Id == dto.Id)
             {
                 var user = await _userRepository.GetUser(dto.Id);
-                user.Email = dto.Email;
+                //user.Email = dto.Email;
                 user.FirstName = dto.FirstName;
                 user.LastName = dto.LastName;
                 await _userRepository.UpdateUser(user);
