@@ -55,6 +55,8 @@ const TimeEntries = () => import('@/views/administration/TimeEntries')
 const TimeDays = () => import('@/views/administration/TimeDays')
 const TimeMissing = () => import('@/views/administration/TimeMissing')
 const RepeatSchedule = () => import('@/views/administration/RepeatSchedule')
+const WorkItems = () => import('@/views/administration/WorkItems')
+const RecurringWorkItems = () => import('@/views/administration/RecurringWorkItems')
 
 Vue.use(Router)
 
@@ -345,6 +347,22 @@ function configRoutes () {
               path: 'repeat-schedule',
               name: 'RepeatSchedule',
               component: RepeatSchedule,
+              meta: {
+                requiresAuth: true
+              }
+            },
+            {
+              path: 'work-items',
+              name: 'WorkItems',
+              component: WorkItems,
+              meta: {
+                requiresAuth: true
+              }
+            },
+            {
+              path: 'recurring-work-items',
+              name: 'RecurringWorkItems',
+              component: RecurringWorkItems,
               meta: {
                 requiresAuth: true
               }

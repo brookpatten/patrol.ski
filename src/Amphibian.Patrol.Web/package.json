@@ -52,6 +52,7 @@
     "vue-blockui": "^1.1.7",
     "vue-codemirror": "~4.0.6",
     "vue-ctk-date-time-picker": "^2.5.0",
+    "vue-datetime": "^1.0.0-beta.14",
     "vue-facebook-login-component": "^3.0.0",
     "vue-google-signin-button-directive": "^1.0.3",
     "vue-grid-layout": "~2.3.7",

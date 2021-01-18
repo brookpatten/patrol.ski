@@ -7,6 +7,9 @@
         <template v-if="selectedPatrol.enableTimeClock">
             <time-clock></time-clock>
         </template>
+        <template v-if="selectedPatrol.enableWorkItems">
+            <work-current></work-current>
+        </template>
         <template v-if="selectedPatrol.enableAnnouncements">
             <announcements></announcements>
         </template>
@@ -263,12 +266,13 @@ import TimeClockMissing from './TimeClockMissing'
 import TimeClock from './TimeClock'
 import Announcements from './Announcements.vue'
 import UpcomingEvents from './UpcomingEvents.vue'
+import WorkCurrent from './WorkCurrent.vue'
 
 export default {
   name: 'Home',
   components: { CChartLine, BlockUI, TimeClockCurrent,
     TimeClockMissing, TimeClock, Announcements,
-    UpcomingEvents
+    UpcomingEvents,WorkCurrent
   },
   computed: {
     selectedPatrolId: function () {

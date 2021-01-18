@@ -39,6 +39,14 @@
         <CSidebarNavItem name='Shifts' :to='{name:"Shifts"}' icon='cil-indent-increase' />
       </template>
 
+      <template v-if="(selectedPatrol.enableWorkItems && hasPermission('MaintainWorkItems'))">
+        <CSidebarNavTitle>
+          Work Items
+        </CSidebarNavTitle>
+        <CSidebarNavItem name='Recurring' :to='{name:"RecurringWorkItems"}' icon='cil-calendar' />
+        <CSidebarNavItem name='Work Items' :to='{name:"WorkItems"}' icon='cil-task' />
+      </template>
+
       <template v-if="(selectedPatrol.enableTimeClock && hasPermission('MaintainTimeClock'))">
         <CSidebarNavTitle>
           Timeclock

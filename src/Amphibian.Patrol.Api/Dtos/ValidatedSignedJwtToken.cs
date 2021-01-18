@@ -51,6 +51,10 @@ namespace Amphibian.Patrol.Api.Dtos
             return principal.ParseAllClaims().Patrols.SingleOrDefault(x => x.Id == patrolId)?.Role;
         }
 
+        public static bool IsInPatrol(this ClaimsPrincipal principal, int patrolId)
+        {
+            return principal.ParseAllClaims().Patrols.Any(x => x.Id == patrolId);
+        }
 
         public static bool AllowInPatrol(this ClaimsPrincipal principal, int patrolId, Permission permission)
         {

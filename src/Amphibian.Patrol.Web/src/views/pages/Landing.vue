@@ -8,7 +8,7 @@
               <CCol md="8">
                 <h1 class="display-4">Patrol<span style="color:#8C0C00">.Ski</span></h1>
                 <p class="lead">
-                  An app for ski patrol.  Free for NSP patrols.
+                  An app for ski patrol.  Free for Volunteer patrols.
                 </p>
               </CCol>
               <CCol md="4">
@@ -66,123 +66,254 @@
         </CCard>
       </CCol>
     </CRow>
-    <CRow>
-      <CCol md="6">
-        <CRow>
-          <CCol>
-            <CCard>
-              <CCardHeader>
-                Scheduling
-              </CCardHeader>
-              <CCardBody>
-                <ul>
-                  <li><p>Create your schedule quickly.  Schedule every shift individually or create "cookie cutter" shifts</p>
-                    <img src="feature-schedule-calendar.png" alt="announcement screenshot" style="width:300px" @click="openGallery(12)"/>
-                  </li>
-                  <li><p>Allow your patrol to swap & pick up shifts, but administrators retain final approval</p>
-                    <img src="feature-schedule-swap.png" alt="announcement screenshot" style="width:300px" @click="openGallery(15)"/>
-                  </li>
-                  <li><p>Quickly duplicate your schedule out of any period of time desired</p></li>
-                  <li><p>Schedule Available shifts which patrollers can claim to schedule themselves</p>
-                    <img src="feature-schedule-available.png" alt="available scheduling screenshot" style="width:300px" @click="openGallery(23)"/>
-                  </li>
-                </ul>
-              </CCardBody>
-            </CCard>
-          </CCol>
-        </CRow>
-        <CRow>
-          <CCol>
-            <CCard>
-              <CCardHeader>
-                TimeClock
-              </CCardHeader>
-              <CCardBody>
-                <ul>
-                  <li><p>Clock In/Out, View who's currently clocked in, and who's late gone early (if also using scheduling)</p>
-                    <img src="feature-timeclock-dashboard.png" alt="Dashboard screenshot" style="width:300px" @click="openGallery(20)"/>
-                  </li>
-                  <li><p>Report hours per day per person</p>
-                    <img src="feature-timeclock-days.png" alt="Timecard screenshot" style="width:300px" @click="openGallery(21)"/>
-                  </li>
-                  <li><p>Report late arrival, early leaving, and missed shifts (if also using scheduling)</p>
-                    <img src="feature-timeclock-missing.png" alt="Missed shift screenshot" style="width:300px" @click="openGallery(22)"/>
-                  </li>
-                </ul>
-              </CCardBody>
-            </CCard>
-          </CCol>
-        </CRow>
-      </CCol>
-      <CCol md="6">
-        <CCard>
-          <CCardHeader>
-            Training
-          </CCardHeader>
-          <CCardBody>
-            <ul>
-              <li><p>Assign training to members of your patrol and track their progress</p>
-                <img src="feature-assignments.png" alt="announcement screenshot" style="width:300px" @click="openGallery(2)"/>
-              </li>
-              <li><p>Manage multiple simultaneous training plans in a structured, consistent way</p>
-                <img src="feature-training-plans.png" alt="announcement screenshot" style="width:300px" @click="openGallery(16)"/>
-              </li>
-              <li><p>Choose from an existing library of training plans, customize them, or start from scratch.</p>
-                <img src="feature-edit-plan.png" alt="announcement screenshot" style="width:300px" @click="openGallery(6)"/>
-              </li>
-              <li><p>Fine grained control of which trainers can sign off on each requirement</p>
-                <img src="feature-edit-section.png" alt="announcement screenshot" style="width:300px" @click="openGallery(7)"/>
-              </li>
-              <li><p>Allow trainees to quickly find trainers that can help them by joining trainer credentials, training plans, and the schedule</p>
-                <img src="feature-available-training-shifts.png" alt="announcement screenshot" style="width:300px" @click="openGallery(3)"/>
-              </li>
-              <li><p>Manage training group sizes and help trainees find the trainers who can best help them.</p></li>
-            </ul>
-          </CCardBody>
-        </CCard>
-      </CCol>
-    </CRow>
-    <CRow>
-      <CCol md="6">
-        <CCard>
-          <CCardHeader>
-            Communication
-          </CCardHeader>
-          <CCardBody>
-            <ul>
-                <li><p>Create announcements and calendar events, pin them to the dashboard and email the entire patrol</p>
-                  <img src="feature-announcement.png" alt="announcement screenshot" style="width:300px" @click="openGallery(0)"/>
-                </li>
-            </ul>
-          </CCardBody>
-        </CCard>
-      </CCol>
-      <CCol md="6">
-        <CCard>
-          <CCardHeader>
-            Mobile friendly, Notifications for everything
-          </CCardHeader>
-          <CCardBody>
-            <ul>
-                <li><p>Receive email notifications for events that effect you directly</p></li>
-                <li><p>Use the app with a PC, tablet, or mobile</p>
-                  <img src="feature-mobile.png" alt="announcement screenshot" style="height:200px" @click="openGallery(19)"/>
-                </li>
-            </ul>
-          </CCardBody>
-        </CCard>
-      </CCol>
-    </CRow>
-    <CRow>
-      <CCol>
-        <LightBox 
-        :media="images" 
-        ref="lightbox"
-        :show-caption="true"
-        :show-light-box="false"
-      ></LightBox>
-      </CCol>
-    </CRow>
+    <CRow class="justify-content-center">
+      <CCol md="8" lg="8">
+        <CCard color="dark">
+        <CTabs add-tab-classes="mt-1">
+          <CTab active>
+            <template slot="title">
+              <CIcon name="cil-calendar"/> Scheduling
+            </template>
+            <CRow>
+              <CCol md="12" lg="6">
+                <CCard class="justify-content-center">
+                  <CCardBody>
+                    <img src="feature-schedule-calendar.png" alt="announcement screenshot" style="width:250px" @click="openGallery(12)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Create your schedule quickly.  Schedule every shift individually or create "cookie cutter" shifts
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-schedule-swap.png" alt="announcement screenshot" style="width:250px" @click="openGallery(15)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Allow your patrol to swap & pick up shifts, but administrators retain final approval
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-schedule-available.png" alt="available scheduling screenshot" style="width:250px" @click="openGallery(23)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Schedule Available shifts which patrollers can claim to schedule themselves
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+            </CRow>
+          </CTab>
+          <CTab>
+            <template slot="title">
+              <CIcon name="cil-spreadsheet"/> Training
+            </template>
+            <CRow>
+              <CCol md="12" lg="6">
+                <CCard class="justify-content-center">
+                  <CCardBody>
+                    <img src="feature-assignments.png" alt="announcement screenshot" style="width:250px" @click="openGallery(2)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Assign training to members of your patrol and track their progress
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-training-plans.png" alt="announcement screenshot" style="width:250px" @click="openGallery(16)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Manage multiple simultaneous training plans in a structured, consistent way
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-edit-plan.png" alt="announcement screenshot" style="width:250px" @click="openGallery(6)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Choose from an existing library of training plans, customize them, or start from scratch.
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-edit-section.png" alt="announcement screenshot" style="width:250px" @click="openGallery(7)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Fine grained control of which trainers can sign off on each requirement
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-available-training-shifts.png" alt="announcement screenshot" style="width:250px" @click="openGallery(3)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Allow trainees to quickly find trainers that can help them by joining trainer credentials, training plans, and the schedule
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+            </CRow>
+          </CTab>
+          <CTab>
+            <template slot="title">
+              <CIcon name="cil-calendar"/> Timeclock
+            </template>
+            <CRow>
+              <CCol md="12" lg="6">
+                <CCard class="justify-content-center">
+                  <CCardBody>
+                    <img src="feature-timeclock-dashboard.png" alt="Dashboard screenshot" style="width:250px" @click="openGallery(20)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Clock In/Out, View who's currently clocked in, and who's late gone early (if also using scheduling)
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-timeclock-days.png" alt="Timecard screenshot" style="width:250px" @click="openGallery(21)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Report hours per day per person
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-timeclock-missing.png" alt="Missed shift screenshot" style="width:250px" @click="openGallery(22)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Report late arrival, early leaving, and missed shifts (if also using scheduling)
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+            </CRow>
+          </CTab>
+          <CTab>
+              <template slot="title">
+                <CIcon name="cil-task"/> Work Tracking
+              </template><CRow>
+              <CCol md="12" lg="6">
+                <CCard class="justify-content-center">
+                  <CCardBody>
+                    <img src="feature-one-off-work-item.png" alt="announcement screenshot" style="width:250px" @click="openGallery(24)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Create one-off work and track to completion.  Allow work to be marked complete by anyone, any one of a group of assigned patrollers, all of a group, or administrators only.
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-incomplete-work.png" alt="announcement screenshot" style="width:250px" @click="openGallery(25)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Patrollers quickly see work assigned to them directly on their dashboard
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-workitem-list.png" alt="announcement screenshot" style="width:250px" @click="openGallery(26)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Audit completed work and check on assigned and upcoming work in a central addministrative console
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-timed-workitem.png" alt="announcement screenshot" style="width:250px" @click="openGallery(27)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Create timed recurring work (daily, weekly, monthly, yearly) such as equipment checks or paperwork deadlines
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-shift-workitem.png" alt="announcement screenshot" style="width:250px" @click="openGallery(29)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    If you're also using scheduling, create recurring work that occurs at a specific time on specific shifts such as equipment checks for morning shift or run sweeps in evening shfits.
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-recurring-workitem-list.png" alt="announcement screenshot" style="width:250px" @click="openGallery(29)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Manage recurring work in a central administrative console
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+            </CRow>
+          </CTab>
+          <CTab>
+              <template slot="title">
+                <CIcon name="cil-comment-square"/> Communication
+              </template>
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-announcement.png" alt="announcement screenshot" style="width:300px" @click="openGallery(0)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Create announcements and calendar events, pin them to the dashboard and email the entire patrol
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+          </CTab>
+          <CTab>
+              <template slot="title">
+                <CIcon name="cil-phone"/> Mobile
+              </template>
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-mobile.png" alt="announcement screenshot" style="height:200px" @click="openGallery(19)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Use the app with a PC, tablet, or mobile
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+          </CTab>
+        </CTabs>
+      </CCard>
+    </CCol>
+  </CRow>
+  <CRow>
+    <CCol>
+      <LightBox 
+      :media="images" 
+      ref="lightbox"
+      :show-caption="true"
+      :show-light-box="false"
+    ></LightBox>
+    </CCol>
+  </CRow>
   </div>
 </template>
 
@@ -312,10 +443,40 @@ export default {
           thumb:'feature-timeclock-missing.png',
           caption:'Report missed/late/mia shifts if both timeclock and scheduling are used'
         },
-        {
+        {//23
           src:'feature-schedule-available.png',
           thumb:'feature-schedule-available.png',
           caption:'Schedule shifts as Available for users to claim'
+        },
+        {
+          src:'feature-one-off-work-item.png',
+          thumb:'feature-one-off-work-item.png',
+          caption:'Create one-off work at-will and track through to completion'
+        },
+        {
+          src:'feature-incomplete-work.png',
+          thumb:'feature-incomplete-work.png',
+          caption:'Patrollers are shown assigned work directly on the dashboard'
+        },
+        {
+          src:'feature-workitem-list.png',
+          thumb:'feature-workitem-list.png',
+          caption:'Audit completed work and view upcoming work'
+        },
+        {
+          src:'feature-timed-workitem.png',
+          thumb:'feature-timed-workitem.png',
+          caption:'Create recurring work that occur on a timed interval (daily/weekly/monthly/yearly) such as equipment checks or paperwork deadlines'
+        },
+        {
+          src:'feature-shift-workitem.png',
+          thumb:'feature-shift-workitem.png',
+          caption:'Create recurring work that always occur on a particular shift such as equipment checks or sweeps'
+        },
+        {
+          src:'feature-recurring-workitem-list.png',
+          thumb:'feature-recurring-workitem-list.png',
+          caption:'Manage all your recurring work in a central location'
         }
       ],
     }

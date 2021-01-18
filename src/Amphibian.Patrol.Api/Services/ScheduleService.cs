@@ -21,9 +21,11 @@ namespace Amphibian.Patrol.Api.Services
         private ISystemClock _clock;
         private IEmailService _emailService;
         private IUserRepository _userRepository;
+        private IShiftWorkItemService _shiftWorkItemService;
 
         public ScheduleService(ILogger<ScheduleService> logger, IPatrolRepository patrolRepository, 
-            IGroupRepository groupRepository,IShiftRepository shiftRepository, ISystemClock clock, IEmailService emailService, IUserRepository userRepository)
+            IGroupRepository groupRepository,IShiftRepository shiftRepository, ISystemClock clock, IEmailService emailService, IUserRepository userRepository,
+            IShiftWorkItemService shiftWorkItemService)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
@@ -32,6 +34,7 @@ namespace Amphibian.Patrol.Api.Services
             _clock = clock;
             _emailService = emailService;
             _userRepository = userRepository;
+            _shiftWorkItemService = shiftWorkItemService;
         }
 
 
@@ -58,6 +61,14 @@ namespace Amphibian.Patrol.Api.Services
                 var approved = await _userRepository.GetUser(userId);
                 var shift = await _shiftRepository.GetScheduledShift(ssa.ScheduledShiftId);
                 var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
+
+                //also swap any relevant work items
+                //TODO: make this an async event to a wi microservice?
+                if (assignedUserId.HasValue)
+                {
+                    await _shiftWorkItemService.SwapScheduledShiftWorkItems(shift.Id, assignedUserId.Value, claimedUserId);
+                }
+
                 await _emailService.SendShiftApproved(assigned, patrol, claimed,approved, shift);
             }
             else
@@ -117,6 +128,10 @@ namespace Amphibian.Patrol.Api.Services
                     await _emailService.SendTrainerShiftRemoved(trainer, traineeUsers.ToList(), patrol, shift);
                 }
             }
+
+            //remove any work items related to the shift
+            await _shiftWorkItemService.RemoveWorkItemsFromShiftOccurence(scheduledShift);
+
             await _shiftRepository.DeleteScheduledShift(scheduledShift);
 
             //notify users in the shift
@@ -299,6 +314,9 @@ namespace Amphibian.Patrol.Api.Services
                     scheduledShift.DurationSeconds = (int)(scheduledShift.EndsAt - scheduledShift.StartsAt).TotalSeconds;
                     await _shiftRepository.InsertScheduledShift(scheduledShift);
                     assignments = new List<ScheduledShiftAssignment>();
+
+                    //populate with work items if necassary
+                    await _shiftWorkItemService.AddWorkItemsToNewShiftOccurence(scheduledShift);
                 }
             }
 
@@ -409,12 +427,15 @@ namespace Amphibian.Patrol.Api.Services
                 var patrol = await _patrolRepository.GetPatrol(shift.PatrolId);
                 var newAssignee = await _userRepository.GetUser(userId.Value);
                 await _emailService.SendShiftAdded(new List<User>() { newAssignee }, patrol, shift);
+
+                //allocate any work items for the shift to the new assignee
+                await _shiftWorkItemService.AddWorkItemsToNewShiftOccurence(shift);
             }
 
             return scheduledShiftAssignment;
         }
 
-        public async Task<IEnumerable<ScheduledShiftAssignmentDto>> ReplicatePeriod(int patrolId, bool clearTargetPeriodFirst, bool testOnly, DateTime replicatedPeriodStart, DateTime replicatedPeriodEnd, DateTime targetPeriodStart, DateTime targetPeriodEnd)
+        public async Task<IEnumerable<ScheduledShiftAssignmentDto>> ReplicatePeriod(int patrolId, bool clearTargetPeriodFirst, bool testOnly, DateTime replicatedPeriodStart, DateTime replicatedPeriodEnd, DateTime targetPeriodStart, DateTime targetPeriodEnd, bool replicateWorkItems = true)
         {
             var patrol = await _patrolRepository.GetPatrol(patrolId);
 
@@ -524,6 +545,11 @@ namespace Amphibian.Patrol.Api.Services
                             Group = scheduledShift.First().Group,
                             Shift = scheduledShift.First().Shift
                         });
+
+                        if (replicateWorkItems)
+                        {
+                            await _shiftWorkItemService.AddWorkItemsToNewShiftOccurence(createdShift);
+                        }
                     }
                     else
                     {

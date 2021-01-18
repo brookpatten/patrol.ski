@@ -135,17 +135,21 @@ namespace Amphibian.Patrol.Api.Extensions
                     }
                 }
             }
-            foreach(var e in Existing)
+            foreach (var e in Existing)
             {
-                var changed = Changed.SingleOrDefault(x => Compare(e, x));
-                if(changed!=null && Update!=null)
+                if (Changed.Any(x => Compare(e, x)))
                 {
-                    await Update(e, changed);
+                    if (Update != null)
+                    {
+                        await Update(e, Changed.Single(x => Compare(e, x)));
+                    }
                 }
-
-                if(changed==null && Remove!=null)
+                else
                 {
-                    await Remove(e);
+                    if (Remove != null)
+                    {
+                        await Remove(e);
+                    }
                 }
             }
         }

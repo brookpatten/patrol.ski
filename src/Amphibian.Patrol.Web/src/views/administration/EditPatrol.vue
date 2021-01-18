@@ -32,24 +32,27 @@
             
             
             <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableAnnouncements"/>
-            <label for="editedPatrol.enableAnnouncements">Announcements</label>
+            <label for="editedPatrol.enableAnnouncements">Announcements</label> <em>Publish & email announcements to members</em>
             <br/>
             <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableEvents"/>
-            <label for="editedPatrol.enableEvents">Events</label>
+            <label for="editedPatrol.enableEvents">Events</label> <em>Publish & email calendar events to members</em>
             <br/>
             <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableTraining"/>
-            <label for="editedPatrol.enableTraining">Training</label>
+            <label for="editedPatrol.enableTraining">Training</label> <em>Design training, create assignments, and track progress to completion</em>
             <br/>
             <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableScheduling"/>
-            <label for="editedPatrol.enableScheduling">Scheduling</label>
+            <label for="editedPatrol.enableScheduling">Scheduling</label> <em>Assign shifts and hours to members</em>
             <br/>
             <template v-if="editedPatrol.enableScheduling">
               <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableShiftSwaps"/>
-              <label for="editedPatrol.enableShiftSwaps">Shift Exchange</label>
+              <label for="editedPatrol.enableShiftSwaps">Shift Exchange</label> <em>Allow members to release, claim, and trade shifts</em>
               <br/>
             </template>
             <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableTimeClock"/>
-            <label for="editedPatrol.enableTimeClock">Time Clock</label>
+            <label for="editedPatrol.enableTimeClock">Time Clock</label> <em>Allow members to clock in and track hours worked</em>
+            <br/>
+            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableWorkItems"/>
+            <label for="editedPatrol.enableWorkItems">Work Items</label> <em>Assign work and track completion</em>
             <br/>
 
 
@@ -73,7 +76,7 @@ export default {
   props: [],
   data () {
     return {
-      editedPatrol:{id:0,name:'',timeZone:'',enableTraining:false,enableAnnouncements:false,enableEvents:false,enableScheduling:false,enableShiftSwaps:false,enableTimeClock:false},
+      editedPatrol:{id:0,name:'',timeZone:'',enableTraining:false,enableAnnouncements:false,enableEvents:false,enableScheduling:false,enableShiftSwaps:false,enableTimeClock:false, enableWorkItems:false},
       validationMessage:'',
       validationErrors:{},
       validated:false,
@@ -103,6 +106,7 @@ export default {
         this.editedPatrol.enableScheduling = this.selectedPatrol.enableScheduling;
         this.editedPatrol.enableShiftSwaps = this.selectedPatrol.enableScheduling && this.selectedPatrol.enableShiftSwaps;
         this.editedPatrol.enableTimeClock = this.selectedPatrol.enableTimeClock;
+        this.editedPatrol.enableWorkItems = this.selectedPatrol.enableWorkItems;
         this.editedPatrol.timeZone = this.selectedPatrol.timeZone;
     },
     getTimeZones() {

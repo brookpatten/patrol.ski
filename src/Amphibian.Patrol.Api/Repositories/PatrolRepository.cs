@@ -87,6 +87,7 @@ namespace Amphibian.Patrol.Api.Repositories
                     ,p.enablescheduling
                     ,p.enableshiftswaps
                     ,p.enabletimeclock
+                    ,p.enableworkitems
                     ,p.timezone
                     ,pu.role
                     from patrolusers pu
