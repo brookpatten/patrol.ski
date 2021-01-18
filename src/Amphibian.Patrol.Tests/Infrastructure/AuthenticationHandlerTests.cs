@@ -113,7 +113,7 @@ namespace Amphibian.Patrol.Tests.Infrastructure
 
             string jwt = "jwt";
 
-            _authenticationServiceMock.Setup(x => x.IssueJwtToUser(userObj.Id,null)).
+            _authenticationServiceMock.Setup(x => x.IssueJwtToUser(userObj.Id,null,false)).
                 Returns(Task.FromResult(jwt))
                 .Verifiable();
 
