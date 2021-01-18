@@ -173,7 +173,7 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             try
             {
-                var throwaway = await _patrolCreationService.CreateDemoUserAndPatrol();
+                var throwaway = await _patrolCreationService.CreateOrRetrieveDemoUserAndPatrol();
 
                 Response.SendNewToken(await _authenticationService.IssueJwtToUser(throwaway.Item1.Id));
                 return Ok();

@@ -11,6 +11,7 @@ using AutoMapper;
 using Serilog.Sinks.SystemConsole.Themes;
 using GenFu;
 using Amphibian.Patrol.Api.Extensions;
+using Amphibian.Patrol.Configuration;
 
 namespace Amphibian.Patrol.Api.Services
 {
@@ -33,13 +34,14 @@ namespace Amphibian.Patrol.Api.Services
         private ITimeClockService _timeClockService;
         private IWorkItemService _workItemService;
         private IWorkItemRepository _workItemRepository;
+        private int? _demoPatrolId;
 
         public enum BuiltInPlan { AlpineSki, AlpineSnowboard };
 
         public PatrolCreationService(ILogger<PatrolCreationService> logger, IPatrolRepository patrolRepository, IPlanRepository planRepository, 
             IGroupRepository groupRepository, IUserRepository userRepository, IAssignmentRepository assignmentRepository, IPlanService planService, 
             IAnnouncementService announcementService, IEventRepository eventRepository, IShiftRepository shiftRepository, IScheduleService scheduleService,
-            ITimeClockService timeClockService, IWorkItemService workItemService, IWorkItemRepository workItemRepository)
+            ITimeClockService timeClockService, IWorkItemService workItemService, IWorkItemRepository workItemRepository, AppConfiguration appConfiguration)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
@@ -55,6 +57,7 @@ namespace Amphibian.Patrol.Api.Services
             _timeClockService = timeClockService;
             _workItemService = workItemService;
             _workItemRepository = workItemRepository;
+            _demoPatrolId = appConfiguration.DemoPatrolId;
         }
 
         public async Task CreateBuiltInPlan(BuiltInPlan plan, int patrolId)
@@ -928,6 +931,22 @@ namespace Amphibian.Patrol.Api.Services
             };
             await _patrolRepository.InsertPatrolUser(patrolUser);
             return patrolSetup;
+        }
+
+        public async Task<Tuple<User, Models.Patrol>> CreateOrRetrieveDemoUserAndPatrol()
+        {
+            if(_demoPatrolId.HasValue)
+            {
+                var patrol = await _patrolRepository.GetPatrol(_demoPatrolId.Value);
+                var users = await _patrolRepository.GetPatrolUsersForPatrol(_demoPatrolId.Value);
+                var admin = users.FirstOrDefault(x => x.Role == Role.Administrator) ?? users.FirstOrDefault(x => x.Role == Role.Administrator) ?? users.FirstOrDefault();
+                var user = await _userRepository.GetUser(admin.UserId);
+                return new Tuple<User, Models.Patrol>(user, patrol);
+            }
+            else
+            {
+                return await CreateDemoUserAndPatrol();
+            }
         }
         public async Task<Tuple<User, Models.Patrol>> CreateDemoUserAndPatrol()
         {
