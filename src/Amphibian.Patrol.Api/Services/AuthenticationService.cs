@@ -58,7 +58,7 @@ namespace Amphibian.Patrol.Api.Services
             return newToken;
         }
 
-        public string CreateSignedJwtToken(Token token, UserIdentifier user, List<CurrentUserPatrolDto> patrols )
+        public string CreateSignedJwtToken(Token token, UserIdentifier user, List<CurrentUserPatrolDto> patrols, bool minimal=false )
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
@@ -70,11 +70,17 @@ namespace Amphibian.Patrol.Api.Services
             permClaims.Add(new Claim(JwtRegisteredClaimNames.Iat, token.CreatedAt.ToUnixTime().ToString()));
             permClaims.Add(new Claim("uid", user.Id.ToString()));
 
-            var options = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-            options.Converters.Add(new JsonStringEnumConverter());
-            var json = JsonSerializer.Serialize(patrols, options);
-
-            permClaims.Add(new Claim("patrols", json ));
+            if (!minimal)
+            {
+                var options = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                options.Converters.Add(new JsonStringEnumConverter());
+                var json = JsonSerializer.Serialize(patrols, options);
+                permClaims.Add(new Claim("patrols", json));
+            }
+            else
+            {
+                permClaims.Add(new Claim("minimal", minimal.ToString()));
+            }
 
             //Create Security Token object by giving required parameters    
             var jwtSecurityToken = new JwtSecurityToken(_jwtIssuer, //Issuer    
@@ -169,14 +175,13 @@ namespace Amphibian.Patrol.Api.Services
             await _userRepository.InsertUser(user);
             return user;
         }
-        public async Task ChangePassword(string userEmail,string password)
+        public async Task ChangePassword(User user,string password)
         {
-            var user = await _userRepository.GetUser(userEmail);
             _passwordService.SetPassword(user, password);
             await _userRepository.UpdateUser(user);
         }
 
-        public async Task<string> IssueJwtToUser(int userId,Guid? existingToken=null)
+        public async Task<string> IssueJwtToUser(int userId,Guid? existingToken=null,bool minimal=false)
         {
             if (existingToken.HasValue)
             {
@@ -194,7 +199,7 @@ namespace Amphibian.Patrol.Api.Services
 
             var patrols = await _patrolRepository.GetPatrolsForUser(user.Id);
 
-            var jwt = this.CreateSignedJwtToken(newToken, (UserIdentifier)user, patrols.ToList());
+            var jwt = this.CreateSignedJwtToken(newToken, (UserIdentifier)user, patrols.ToList(),minimal);
 
             return jwt;
         }

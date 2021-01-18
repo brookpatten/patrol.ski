@@ -130,9 +130,16 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> ChangePassword(ChangePasswordRequest request)
         {
-            var email = User.FindFirst(ClaimTypes.Email).Value;
-            await _authenticationService.ChangePassword(email, request.Password);
-            return Ok();
+            if (request.Password.Length > 5)
+            {
+                var user = await _userRepository.GetUser(User.UserId());
+                await _authenticationService.ChangePassword(user, request.Password);
+                return Ok();
+            }
+            else
+            {
+                return Problem("Please use a longer password");
+            }
         }
 
         public class ResetPasswordRequest
@@ -148,8 +155,8 @@ namespace Amphibian.Patrol.Api.Controllers
 
             if (user!=null)
             {
-                var token = await _authenticationService.CreateNewTokenForUser(user);
-                await _emailService.SendResetEmail(user, $"user/recover-password/{token.TokenGuid}");
+                var minimalJwt = await _authenticationService.IssueJwtToUser(user.Id, null, true);
+                await _emailService.SendResetEmail(user, $"#/login?jwt={minimalJwt}");
             }
             
             return Ok();

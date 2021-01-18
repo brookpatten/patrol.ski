@@ -100,9 +100,10 @@ namespace Amphibian.Patrol.Api.Infrastructure
                             {
                                 //note we do NOT set the principle, it's expired so we let it fail as invalid
                             }
-                            else if (token.SupersededAt.HasValue && token.SupersededAt < now)
+                            else if ((parsed.Minimal.HasValue && parsed.Minimal.Value) || (token.SupersededAt.HasValue && token.SupersededAt < now))
                             {
                                 //token is valid, but needs to be updated due to some change that was made to data contained therein
+                                //OR the token is a minimal one which needs to be repalced with a "full" token
                                 var refreshedJwt = await _authenticationService.IssueJwtToUser(parsed.User.Id,token.TokenGuid);
                                 //send the updated token back to client
                                 Response.Headers.Add("Authorization", "Token " + refreshedJwt);

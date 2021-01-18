@@ -619,10 +619,17 @@ export default {
             }
         }
   },
-  mounted: function(){
+  beforeMount: function(){
       if(this.uid!=null){
           this.viewUserId = this.uid;
       }
+      else{
+        if(!this.hasPermission('MaintainSchedule')){
+            this.viewUserId = this.userId;
+        }
+      }
+  },
+  mounted: function(){
       this.getEvents();
       this.getScheduledShifts();
       if(this.hasPermission('MaintainSchedule')){
@@ -682,7 +689,13 @@ export default {
                 label: s.lastName+', '+s.firstName
             }
         });
+
         items.splice(0,0,{value:null,label:'(All)'})
+
+        if(items.length==1){
+            items.splice(0,0,{value:this.userId,label:'(Me)'})
+        }
+
         return items;
     },
     calendarEvents: function(){

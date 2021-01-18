@@ -16,6 +16,7 @@ namespace Amphibian.Patrol.Api.Dtos
         public UserIdentifier User { get; set; }
         public Token Token { get; set; }
         public List<CurrentUserPatrolDto> Patrols { get; set; }
+        public bool? Minimal { get; set; }
     }
 
     public static class ValidatedSignedJwtTokenExtensions
@@ -29,15 +30,26 @@ namespace Amphibian.Patrol.Api.Dtos
             token.TokenGuid = Guid.Parse(principal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value);
             token.CreatedAt = long.Parse(principal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Iat).Value).FromUnixTime();
 
-            var options = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-            options.Converters.Add(new JsonStringEnumConverter());
-            List<CurrentUserPatrolDto> patrols = JsonSerializer.Deserialize<List<CurrentUserPatrolDto>>(principal.Claims.Single(x => x.Type == "patrols").Value,options);
+            List<CurrentUserPatrolDto> patrols = null;
+            if (principal.Claims.Any(x => x.Type == "patrols"))
+            {
+                var options = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                options.Converters.Add(new JsonStringEnumConverter());
+                patrols = JsonSerializer.Deserialize<List<CurrentUserPatrolDto>>(principal.Claims.Single(x => x.Type == "patrols").Value, options);
+            }
+
+            bool? minimal = null;
+            if (principal.Claims.Any(x => x.Type == "minimal"))
+            {
+                minimal = bool.Parse(principal.Claims.Single(x => x.Type == "minimal").Value);
+            }
 
             return new ValidatedSignedJwtToken()
             {
                 User = user,
                 Token = token,
-                Patrols = patrols
+                Patrols = patrols,
+                Minimal = minimal
             };
         }
 

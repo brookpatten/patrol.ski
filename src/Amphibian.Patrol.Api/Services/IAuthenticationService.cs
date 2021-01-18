@@ -13,9 +13,9 @@ namespace Amphibian.Patrol.Api.Services
         Task<User> AuthenticateUserWithToken(Guid guid);
         Task<Token> CreateNewTokenForUser(User user);
         Task<User> RegisterUser(string email, string first, string last, string password, string nspNumber);
-        Task ChangePassword(string userEmail, string password);
+        Task ChangePassword(User user, string password);
         ClaimsPrincipal ValidateSignedJwtToken(string jwt);
-        string CreateSignedJwtToken(Token token, UserIdentifier user, List<CurrentUserPatrolDto> patrols);
-        Task<string> IssueJwtToUser(int userId, Guid? existingToken = null);
+        string CreateSignedJwtToken(Token token, UserIdentifier user, List<CurrentUserPatrolDto> patrols, bool minimal = false);
+        Task<string> IssueJwtToUser(int userId, Guid? existingToken = null, bool minimal = false);
     }
 }

@@ -142,7 +142,7 @@ export default {
       let email = this.email;
       if(this.isValidEmail(email)){
         this.$http.post('user/reset-password',{email}).then(response=>{
-          this.message = "We sent you an email with a link to reset your password";
+          this.message = "Check your email for a link to reset your password";
           this.error=null;
         }).catch(err=>{
           this.error = "Hmm, something went wrong";
@@ -153,6 +153,24 @@ export default {
         this.error="Please enter your email address";
         this.message=null;
       }
+    }
+  },
+  mounted:function(){
+    if(this.$route.query.jwt){
+      //there is a minimal jwt in the query string, likely from an emailed link, attempt to auth using that
+      this.$store.dispatch('loading','Signing in');
+      this.$store.dispatch('authenticate',this.$route.query.jwt).then(p=>
+      {
+        //this can really be any authenticated rest call because we're really just using the token exchange that is built into the auth handler,
+        //eg, bearer token is passed in on the request header, new token is returned on the response header
+        this.$http.get('user')
+        .then(resp => {
+          this.$router.push({name:'Profile'})
+        })
+        .catch(err => {
+          this.error = "The email/link has expired";
+        }).finally(response=>this.$store.dispatch('loadingComplete'));
+      });
     }
   }
 }
