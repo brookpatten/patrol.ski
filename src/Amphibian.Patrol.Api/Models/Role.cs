@@ -40,7 +40,8 @@ namespace Amphibian.Patrol.Api.Models
                 Permission.MaintainAnnouncements, 
                 Permission.MaintainEvents, 
                 Permission.MaintainSchedule,
-                Permission.MaintainTimeClock
+                Permission.MaintainTimeClock,
+                Permission.MaintainWorkItems
                 } 
             }
         };
