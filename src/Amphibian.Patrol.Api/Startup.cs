@@ -108,7 +108,9 @@ namespace Amphibian.Patrol.Api
             //db
             services.AddScoped<System.Data.Common.DbConnection, SqlConnection>(sp=>
             {
-                return new SqlConnection(serviceConfiguration.Database.ConnectionString);
+                var connection = new SqlConnection(serviceConfiguration.Database.ConnectionString);
+                Dapper.SqlMapper.Settings.CommandTimeout = 0;
+                return connection;
             });
             services.AddScoped<IUnitOfWork, DbUnitOfWork>();
             //automapper config
