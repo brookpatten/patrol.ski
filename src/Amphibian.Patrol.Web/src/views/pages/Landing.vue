@@ -1,20 +1,21 @@
 <template>
   <div>
     <CRow class="justify-content-center">
-      <CCol md="8" lg="8">
-        <CCard>
+      <CCol md="12" lg="10">
+        <CCard id="app-title">
           <CCardBody>
             <CRow>
-              <CCol md="8">
+              <CCol md="6">
                 <h1 class="display-4">Patrol<span style="color:#8C0C00">.Ski</span></h1>
                 <p class="lead">
                   An app for ski patrol.  Free for Volunteer patrols.
                 </p>
               </CCol>
-              <CCol md="4">
+              <CCol md="6">
                 <CButtonGroup class="float-right">
                   <CButton
                     color="success"
+                    id="register"
                     :to="{name:'Register'}"
                   > Register
                   </CButton>
@@ -28,7 +29,7 @@
       </CCol>
     </CRow>
     <CRow class="justify-content-center">
-      <CCol md="8" lg="8">
+      <CCol md="12" lg="10">
         <CCard>
           <CCardBody>
             <CRow>

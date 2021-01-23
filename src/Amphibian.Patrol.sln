@@ -11,6 +11,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amphibian.Patrol.Persistenc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Amphibian.Patrol.Configuration", "Amphibian.Patrol.Configuration\Amphibian.Patrol.Configuration.csproj", "{E0439015-955B-4A99-BCF6-03B073791E53}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Amphibian.Patrol.UserGuide", "Amphibian.Patrol.UserGuide\Amphibian.Patrol.UserGuide.csproj", "{59761FC5-A1F5-4F1A-9ECD-63D044204E1D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +71,18 @@ Global
 		{E0439015-955B-4A99-BCF6-03B073791E53}.Release|x64.Build.0 = Release|Any CPU
 		{E0439015-955B-4A99-BCF6-03B073791E53}.Release|x86.ActiveCfg = Release|Any CPU
 		{E0439015-955B-4A99-BCF6-03B073791E53}.Release|x86.Build.0 = Release|Any CPU
+		{59761FC5-A1F5-4F1A-9ECD-63D044204E1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59761FC5-A1F5-4F1A-9ECD-63D044204E1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59761FC5-A1F5-4F1A-9ECD-63D044204E1D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{59761FC5-A1F5-4F1A-9ECD-63D044204E1D}.Debug|x64.Build.0 = Debug|Any CPU
+		{59761FC5-A1F5-4F1A-9ECD-63D044204E1D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{59761FC5-A1F5-4F1A-9ECD-63D044204E1D}.Debug|x86.Build.0 = Debug|Any CPU
+		{59761FC5-A1F5-4F1A-9ECD-63D044204E1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59761FC5-A1F5-4F1A-9ECD-63D044204E1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59761FC5-A1F5-4F1A-9ECD-63D044204E1D}.Release|x64.ActiveCfg = Release|Any CPU
+		{59761FC5-A1F5-4F1A-9ECD-63D044204E1D}.Release|x64.Build.0 = Release|Any CPU
+		{59761FC5-A1F5-4F1A-9ECD-63D044204E1D}.Release|x86.ActiveCfg = Release|Any CPU
+		{59761FC5-A1F5-4F1A-9ECD-63D044204E1D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

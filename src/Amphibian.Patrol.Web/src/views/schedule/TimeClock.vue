@@ -1,6 +1,6 @@
 <template>
     <div>
-        <CCard :border-color="timeEntry && timeEntry.id ? (timeEntry.clockOut ? 'danger' : 'primary') : 'info'">
+        <CCard :border-color="timeEntry && timeEntry.id ? (timeEntry.clockOut ? 'danger' : 'primary') : 'info'" id="timeclock">
             <CCardHeader>
               <CIcon name="cil-bell"/>Time Clock
               <CButtonGroup class="float-right">

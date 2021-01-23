@@ -1,7 +1,7 @@
 <template>
     <div>
       <CForm @submit.prevent="save">
-      <CCard>
+      <CCard id="new-patrol">
         <CCardHeader>
           <slot name="header">
             <CIcon name="cil-user"/>
