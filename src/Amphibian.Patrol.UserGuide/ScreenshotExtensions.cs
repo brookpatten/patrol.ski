@@ -39,19 +39,32 @@ namespace Amphibian.Patrol.UserGuide
         {
             //Assert.GreaterOrEqual(img.Width, outputWidth);
             //Assert.GreaterOrEqual(img.Height, outputHeight);
-            if(!outputWidth.HasValue)
-            {
-                outputWidth = element.Size.Width;
-            }
-            if (!outputHeight.HasValue)
-            {
-                outputHeight = element.Size.Height;
-            }
-
-
 
             int elementCenterX = element.Location.X + (element.Size.Width / 2);
             int elementCenterY = element.Location.Y + (element.Size.Height / 2);
+
+            if (!outputWidth.HasValue)
+            {
+                outputWidth = element.Size.Width;
+
+                //if no width was specified, but height was specified, assume only the top of the element is desired
+                if(outputHeight.HasValue)
+                {
+                    elementCenterY = elementCenterY + (outputHeight.Value / 2);
+                }
+            }
+            
+            if (!outputHeight.HasValue)
+            {
+                outputHeight = element.Size.Height;
+
+                //if no height was specified, but width was specified, assume only the left of the element is desired
+                if (outputWidth.HasValue)
+                {
+                    elementCenterX = elementCenterX + (outputWidth.Value / 2);
+                }
+            }
+
 
             //find top left and bottom right coords in source image
             int srcXTL = elementCenterX - (outputWidth.Value / 2);
@@ -98,7 +111,7 @@ namespace Amphibian.Patrol.UserGuide
             g.DrawEllipse(pen, element.Location.X - margin, element.Location.Y - margin, element.Size.Width + margin * 2, element.Size.Height + margin * 2);
         }
 
-        public static void CircleAndScreenshotElement(this IWebDriver driver, string url, string imagePath, By element, Color circleColor, int width = 640, int height = 480, float circleThickness = 5f, int circleMargin = 10)
+        public static void CircleAndScreenshotElement(this IWebDriver driver, string url, string imagePath, By element, Color circleColor, int? width = null, int? height = null, float circleThickness = 5f, int circleMargin = 10)
         {
             driver.Navigate().GoToUrl(url);
             var theElement = driver.FindElement(element);

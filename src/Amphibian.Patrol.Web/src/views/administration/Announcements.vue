@@ -1,6 +1,6 @@
 <template>
     <div>
-      <CCard>
+      <CCard id="announcements">
             <CCardHeader>
             <slot name="header">
                 <CIcon name="cil-comment-square"/>

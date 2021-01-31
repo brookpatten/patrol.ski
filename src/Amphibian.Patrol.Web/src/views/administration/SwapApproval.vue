@@ -1,6 +1,6 @@
 <template>
     <div>
-        <CCard>
+        <CCard id="swap-approval">
             <CCardHeader>
             <slot name="header">
                 <CIcon name="cil-list"/> Schedule Swap Approval

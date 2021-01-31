@@ -1,6 +1,6 @@
 <template>
     <div v-if="timeEntrys && timeEntrys.length>0">
-        <CCard>
+        <CCard id="whos-on">
             <CCardHeader>
             <slot name="header">
                 <CIcon name="cil-bell"/>Who's On

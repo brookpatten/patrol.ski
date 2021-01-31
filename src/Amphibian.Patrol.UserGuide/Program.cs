@@ -20,13 +20,13 @@ namespace Amphibian.Patrol.UserGuide
             string output = "../../../dist";
             string image = "img";
 
-            string outputFormat ="html";//or "md";
+            string outputFormat ="html";//or "md", "pdf";
 
             string imageOutput = Path.Combine(output, image);
-            
-            if(Directory.Exists(output))
+
+            if (Directory.Exists(output))
             {
-                Directory.Delete(output,true); 
+                Directory.Delete(output, true);
             }
             Directory.CreateDirectory(output);
             Directory.CreateDirectory(imageOutput);
@@ -41,14 +41,29 @@ namespace Amphibian.Patrol.UserGuide
                 //hack, should do this with markdig extension
                 md = ScreenshotGenerator.Generate(info.Name.Replace(".md",""), "http://localhost:8080/", output,image, md, "#/test-drive");
 
-                if (outputFormat == "html")
+                if (outputFormat == "html" || outputFormat=="pdf")
                 {
                     var html = Markdown.ToHtml(md, pipeline: pipeline);
 
                     //total bodge, should do this with a markdig extension
                     html = html.Replace(".md", ".html");
 
-                    File.WriteAllText(Path.Combine(output, info.Name.Replace(".md", ".html")), html);
+                    if(outputFormat=="pdf")
+                    {
+                        //TODO: this doesn't work yet
+                        //NOTE: to converto to pdf you need to have wkhtmltox in the bin
+                        //https://wkhtmltopdf.org/downloads.html
+                        var bin = new WkHtmlToPdf.WkHtmlToPdfBinary();
+                        
+                        var htmlToPdf = new WkHtmlToPdf.PdfGenerator(bin);
+                        
+                        var bytes = htmlToPdf.Generate(html).Result;
+                        File.WriteAllBytes(Path.Combine(output, info.Name.Replace(".md", ".pdf")), bytes);
+                    }
+                    else
+                    {
+                        File.WriteAllText(Path.Combine(output, info.Name.Replace(".md", ".html")), html);
+                    }
                 }
                 else if(outputFormat == "md")
                 {

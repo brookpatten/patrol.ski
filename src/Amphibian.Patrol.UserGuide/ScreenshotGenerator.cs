@@ -44,48 +44,53 @@ namespace Amphibian.Patrol.UserGuide
                     var outputUrl = imagePath+"/"+ name+"-"+index + ".jpg";
                     var outputFile = Path.Combine(outputPath, imagePath,name+"-"+index+".jpg");
 
-                    if (driver == null)
+                    if (!File.Exists(outputFile))
                     {
-                        var options = new ChromeOptions();
-                        options.AddArgument("--allow-insecure-localhost");
-                        options.AddArgument("--window-size=1200,1200");
-                        driver = new ChromeDriver(options);
-                    }
-
-                    if(args.Login)
-                    {
-                        driver.Navigate().GoToUrl(baseUrl + loginUrl);
-                        driver.WaitUntilNoLoadingDivs(loadingDivSelector);
-                    }
-                    driver.Navigate().GoToUrl(baseUrl + args.Url);
-                    driver.WaitUntilNoLoadingDivs(loadingDivSelector);
-
-                    //extra wait... because reasons
-                    System.Threading.Thread.Sleep(1000);
-
-                    var image = driver.TakeImage();
-
-                    if (args.Circle && !string.IsNullOrEmpty(args.Element))
-                    {
-                        var element = driver.FindElement(By.CssSelector(args.Element));
-                        image.WithGraphics(g =>
+                        try
                         {
-                            g.CircleElement(element, Color.Red, 5);
-                        });
-                    }
+                            if (driver == null)
+                            {
+                                var options = new ChromeOptions();
+                                options.AddArgument("--allow-insecure-localhost");
+                                options.AddArgument("--window-size=1200,1200");
+                                driver = new ChromeDriver(options);
+                            }
 
-                    if(args.Width.HasValue && args.Height.HasValue && !string.IsNullOrEmpty(args.Element))
-                    {
-                        var element = driver.FindElement(By.CssSelector(args.Element));
-                        image = image.CropAroundElement(element, args.Width.Value, args.Height.Value);
-                    }
-                    if (!string.IsNullOrEmpty(args.Element))
-                    {
-                        var element = driver.FindElement(By.CssSelector(args.Element));
-                        image = image.CropAroundElement(element);
-                    }
+                            if (args.Login)
+                            {
+                                driver.Navigate().GoToUrl(baseUrl + loginUrl);
+                                driver.WaitUntilNoLoadingDivs(loadingDivSelector);
+                            }
+                            driver.Navigate().GoToUrl(baseUrl + args.Url);
+                            driver.WaitUntilNoLoadingDivs(loadingDivSelector);
 
-                    image.SaveAsFile(outputFile);
+                            //extra wait... because reasons
+                            System.Threading.Thread.Sleep(1000);
+
+                            var image = driver.TakeImage();
+
+                            if (args.Circle && !string.IsNullOrEmpty(args.Element))
+                            {
+                                var element = driver.FindElement(By.CssSelector(args.Element));
+                                image.WithGraphics(g =>
+                                {
+                                    g.CircleElement(element, Color.Red, 5);
+                                });
+                            }
+
+                            if (!string.IsNullOrEmpty(args.Element))
+                            {
+                                var element = driver.FindElement(By.CssSelector(args.Element));
+                                image = image.CropAroundElement(element,args.Width,args.Height);
+                            }
+
+                            image.SaveAsFile(outputFile);
+                        }
+                        catch(Exception ex)
+                        {
+                            Console.WriteLine($"Failed to create screenshot: "+json+", "+ex.Message);
+                        }
+                    }
 
 
                     markdown = markdown.Replace(screenshotTag, outputUrl);

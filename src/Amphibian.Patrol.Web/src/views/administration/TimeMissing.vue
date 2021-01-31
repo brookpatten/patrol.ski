@@ -1,6 +1,6 @@
 <template>
     <div>
-        <CCard>
+        <CCard id="time-missing">
             <CCardHeader>
             <slot name="header">
                 <CIcon name="cil-list"/>Time Missing

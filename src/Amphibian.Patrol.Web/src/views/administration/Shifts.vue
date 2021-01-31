@@ -1,6 +1,6 @@
 <template>
     <div>
-        <CCard>
+        <CCard id="shifts">
             <CCardHeader>
             <slot name="header">
                 <CIcon name="cil-indent-increase"/> Shifts

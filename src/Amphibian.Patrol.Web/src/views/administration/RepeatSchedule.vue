@@ -2,7 +2,7 @@
     <div>
       <CRow><CCol>
       <CForm @submit.prevent="save">
-      <CCard>
+      <CCard id="copy">
         <CCardHeader>
           <slot name="header">
               <CIcon name="cil-calendar"/> Repeat Schedule

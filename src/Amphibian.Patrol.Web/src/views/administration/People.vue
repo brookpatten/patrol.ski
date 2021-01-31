@@ -1,6 +1,6 @@
 <template>
     <div>
-      <CCard>
+      <CCard id="people">
             <CCardHeader>
             <slot name="header">
                 <CIcon name="cil-user"/>

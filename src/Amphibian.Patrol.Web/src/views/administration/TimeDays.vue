@@ -1,6 +1,6 @@
 <template>
     <div>
-        <CCard>
+        <CCard id="time-days">
             <CCardHeader>
             <slot name="header">
                 <CIcon name="cil-list"/>Time/Days
