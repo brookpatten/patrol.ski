@@ -86,7 +86,7 @@ namespace Amphibian.Patrol.Api
                     In = ParameterLocation.Header,
 
                 });
-                c.IncludeXmlComments("Amphibian.Patrol.Api.xml", true);
+                //c.IncludeXmlComments("Amphibian.Patrol.Api.xml", true);
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement()
                 {
                     {
@@ -134,6 +134,7 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
             services.AddScoped<IWorkItemRepository, WorkItemRepository>();
+            services.AddScoped<IApiLogRepository, ApiLogRepository>();
 
             //validations
             services.AddScoped<IValidator<AuthenticationController.RegistrationRequest>, RegistrationValidator>();
@@ -156,6 +157,7 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<ITimeClockService, TimeClockService>();
             services.AddScoped<IWorkItemService, WorkItemService>();
             services.AddScoped<IShiftWorkItemService, WorkItemService>();
+            services.AddScoped<ISysAdminService, SysAdminService>();
 
             services.AddScoped<ISystemClock, SystemClock>();
 
@@ -214,8 +216,9 @@ namespace Amphibian.Patrol.Api
                 .AllowAnyHeader());
 
 
+            app.UseMiddleware<ApiLogMiddleware>();
             app.UseUnitOfWorkMiddleware(Assembly.GetAssembly(typeof(AuthenticationController)));
-
+            
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

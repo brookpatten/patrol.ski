@@ -7,6 +7,7 @@
       "launchUrl": "https://localhost:44348/swagger",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Local",
+        "App__SystemAdministrators__0": "Rosalinda.Martinez.demo.ba108dce-6789-4ec0-9958-9df1bd4a05c9@patrol.ski"
       },
       "applicationUrl": "https://localhost:44348;http://localhost:44347"
     }

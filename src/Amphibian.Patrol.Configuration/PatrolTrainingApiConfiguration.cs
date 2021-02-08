@@ -104,6 +104,7 @@ namespace Amphibian.Patrol.Configuration
         public string RootUrl { get; set; }
         public string JwtKey { get; set; }
         public int? DemoPatrolId { get; set; }
+        public string [] SystemAdministrators { get; set; }
     }
 
     public class DatabaseConfiguration

@@ -1,6 +1,6 @@
 <template>
     <div>
-        <CCard>
+        <CCard id="calendar">
             <CCardHeader>
                 <slot name="header">
                     <CIcon name="cil-calendar"/>
@@ -49,7 +49,7 @@
                     </CCol>
                     <CCol md="3" lg="3" sm="12">
                         <label></label><br/>
-                        <CButton color="success" :to="{name:'RepeatSchedule'}" v-if="hasPermission('MaintainSchedule')">Copy Date Range</CButton>
+                        <CButton id="copy-range" color="success" :to="{name:'RepeatSchedule'}" v-if="hasPermission('MaintainSchedule')">Copy Date Range</CButton>
                     </CCol>
                 </CRow>
             </CCardBody>
