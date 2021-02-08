@@ -58,6 +58,9 @@ const RepeatSchedule = () => import('@/views/administration/RepeatSchedule')
 const WorkItems = () => import('@/views/administration/WorkItems')
 const RecurringWorkItems = () => import('@/views/administration/RecurringWorkItems')
 
+//sysadmin
+const SysAdminDashboard = () => import('@/views/sysadmin/Dashboard')
+
 Vue.use(Router)
 
 let router = new Router({
@@ -146,6 +149,22 @@ function configRoutes () {
           meta: {
             requiresAuth: true
           }
+        },
+        {
+          path: 'sysadmin',
+          component: {
+            render (c) {return c('router-view') }
+          },
+          children: [
+            {
+              path: '',
+              name: 'SysAdmin Dashboard',
+              component: SysAdminDashboard,
+              meta: { 
+                requiresAuth: true
+              }
+            }
+          ]
         },
         {
           path: 'admin',

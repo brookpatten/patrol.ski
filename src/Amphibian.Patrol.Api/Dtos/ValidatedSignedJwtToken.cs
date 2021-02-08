@@ -23,34 +23,41 @@ namespace Amphibian.Patrol.Api.Dtos
     {
         public static ValidatedSignedJwtToken ParseAllClaims(this ClaimsPrincipal principal)
         {
-            UserIdentifier user = new UserIdentifier();
-            user.Id = int.Parse(principal.Claims.Single(x => x.Type == "uid").Value);
-
-            Token token = new Token();
-            token.TokenGuid = Guid.Parse(principal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value);
-            token.CreatedAt = long.Parse(principal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Iat).Value).FromUnixTime();
-
-            List<CurrentUserPatrolDto> patrols = null;
-            if (principal.Claims.Any(x => x.Type == "patrols"))
+            if (principal.Claims.Any(x => x.Type == "uid"))
             {
-                var options = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-                options.Converters.Add(new JsonStringEnumConverter());
-                patrols = JsonSerializer.Deserialize<List<CurrentUserPatrolDto>>(principal.Claims.Single(x => x.Type == "patrols").Value, options);
+                UserIdentifier user = new UserIdentifier();
+                user.Id = int.Parse(principal.Claims.Single(x => x.Type == "uid").Value);
+
+                Token token = new Token();
+                token.TokenGuid = Guid.Parse(principal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Jti).Value);
+                token.CreatedAt = long.Parse(principal.Claims.Single(x => x.Type == JwtRegisteredClaimNames.Iat).Value).FromUnixTime();
+
+                List<CurrentUserPatrolDto> patrols = null;
+                if (principal.Claims.Any(x => x.Type == "patrols"))
+                {
+                    var options = new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+                    options.Converters.Add(new JsonStringEnumConverter());
+                    patrols = JsonSerializer.Deserialize<List<CurrentUserPatrolDto>>(principal.Claims.Single(x => x.Type == "patrols").Value, options);
+                }
+
+                bool? minimal = null;
+                if (principal.Claims.Any(x => x.Type == "minimal"))
+                {
+                    minimal = bool.Parse(principal.Claims.Single(x => x.Type == "minimal").Value);
+                }
+
+                return new ValidatedSignedJwtToken()
+                {
+                    User = user,
+                    Token = token,
+                    Patrols = patrols,
+                    Minimal = minimal
+                };
             }
-
-            bool? minimal = null;
-            if (principal.Claims.Any(x => x.Type == "minimal"))
+            else
             {
-                minimal = bool.Parse(principal.Claims.Single(x => x.Type == "minimal").Value);
+                return null;
             }
-
-            return new ValidatedSignedJwtToken()
-            {
-                User = user,
-                Token = token,
-                Patrols = patrols,
-                Minimal = minimal
-            };
         }
 
         public static List<int> PatrolIds(this ClaimsPrincipal principal)

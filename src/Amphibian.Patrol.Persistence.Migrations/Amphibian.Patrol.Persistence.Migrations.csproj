@@ -27,6 +27,7 @@
     <None Remove="Scripts\0019-AuthProviders.sql" />
     <None Remove="Scripts\0020-WorkItems.sql" />
     <None Remove="Scripts\0021-Jwt.sql" />
+    <None Remove="Scripts\0022-ApiLogs.sql" />
     <None Remove="Scripts\0999-Indexes.sql" />
     <None Remove="Scripts\1001-TestData.sql" />
   </ItemGroup>
@@ -53,6 +54,7 @@
     <EmbeddedResource Include="Scripts\0019-AuthProviders.sql" />
     <EmbeddedResource Include="Scripts\0020-WorkItems.sql" />
     <EmbeddedResource Include="Scripts\0021-Jwt.sql" />
+    <EmbeddedResource Include="Scripts\0022-ApiLogs.sql" />
     <EmbeddedResource Include="Scripts\0999-Indexes.sql" />
     <EmbeddedResource Include="Scripts\1001-TestData.sql" />
   </ItemGroup>
