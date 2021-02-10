@@ -22,6 +22,7 @@ const TestDrive = () => import('@/views/pages/TestDrive')
 const Privacy = () => import('@/views/pages/Privacy')
 const Delete = () => import('@/views/pages/Delete')
 const Terms = () => import('@/views/pages/Terms')
+const Subdomain = () => import('@/views/pages/Subdomain')
 
 // App
 const Plan = () => import('@/views/schedule/Plan')
@@ -71,6 +72,14 @@ let router = new Router({
 })
 
 router.beforeEach((to, from, next) => {
+  var host = window.location.host;
+  if(host.indexOf(':')>=0){
+    var portParts = host.split(':');
+    host = portParts[0];
+    var port = portParts[1];
+  }
+  var hostParts = host.split('.');
+
   if(to.matched.some(record => record.meta.requiresAuth)) {
     //if the page being requested needs auth, redirect to auth if it's missing
     console.log('checking auth');
@@ -84,7 +93,35 @@ router.beforeEach((to, from, next) => {
   else if(to.matched.some(record=> record.name=='Landing') && store.getters.isLoggedIn){
     //if the user ended up on the landing page (bookmark etc) and they are already logged in, move them to the app
     next('/app') 
-  } else {
+  }
+  else if(to.matched.some(record=> record.name=='Landing') 
+    && hostParts.length>1 
+    && hostParts[hostParts.length-1] == "localhost"
+    ){
+    var subdomain = "";
+    for(var i=0;i<hostParts.length-1;i++){
+      if(subdomain.length>0){
+        subdomain = subdomain+".";
+      }
+      subdomain = subdomain+hostParts[i];
+    }
+    //if the user ended up on the landing page (bookmark etc) and they are already logged in, move them to the app
+    next({name:'Subdomain',params:{subdomain:subdomain}}); 
+  } 
+  else if(to.matched.some(record=> record.name=='Landing') 
+    && hostParts.length>2
+    ){
+    var subdomain = "";
+    for(var i=0;i<hostParts.length-2;i++){
+      if(subdomain.length>0){
+        subdomain = subdomain+".";
+      }
+      subdomain = subdomain+hostParts[i];
+    }
+    //if the user ended up on the landing page (bookmark etc) and they are already logged in, move them to the app
+    next({name:'Subdomain',params:{subdomain:subdomain}}); 
+  }
+  else {
     next() 
   }
   
@@ -432,6 +469,12 @@ function configRoutes () {
           path: '',
           name: 'Landing',
           component: Landing
+        },
+        {
+          path: 'public',
+          name: 'Subdomain',
+          component: Subdomain,
+          props: true
         },
         {
           path: 'help',

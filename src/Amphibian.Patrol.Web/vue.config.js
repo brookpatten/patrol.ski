@@ -15,6 +15,7 @@ module.exports = {
   devServer: {
     proxy: 'https://localhost:44348',
     publicPath: '/',
+    disableHostCheck: true
     //public: 'fdc9cc9eee2d.ngrok.io'
   }
   // use this option for production linking
