@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 namespace Amphibian.Patrol.Api.Models
 {
+    public enum EventSignupMode { None, Patrol, Anyone }
     public class Event
     {
         public int Id { get; set; }
@@ -16,5 +17,10 @@ namespace Amphibian.Patrol.Api.Models
         public DateTime StartsAt { get; set; }
         public DateTime EndsAt { get; set; }
         public bool Emailed { get; set; }
+        public bool IsPublic { get; set; }
+        public bool IsInternal { get; set; }
+        public string EventHtml { get; set; }
+        public EventSignupMode SignupMode { get; set; }
+        public int? MaxSignups { get; set; }
     }
 }

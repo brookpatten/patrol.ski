@@ -135,6 +135,7 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
             services.AddScoped<IWorkItemRepository, WorkItemRepository>();
             services.AddScoped<IApiLogRepository, ApiLogRepository>();
+            services.AddScoped<IImageUploadRepository, ImageUploadRepository>();
 
             //validations
             services.AddScoped<IValidator<AuthenticationController.RegistrationRequest>, RegistrationValidator>();
