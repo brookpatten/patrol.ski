@@ -29,6 +29,12 @@ namespace Amphibian.Patrol.Api.Repositories
                 .ConfigureAwait(false);
         }
 
+        public async Task<Models.Patrol> GetPatrol(string subdomain)
+        {
+            return await _connection.QuerySingleOrDefaultAsync<Amphibian.Patrol.Api.Models.Patrol>("select * from patrols where subdomain=@subdomain",new { subdomain })
+                .ConfigureAwait(false);
+        }
+
         public async Task InsertPatrol(Amphibian.Patrol.Api.Models.Patrol patrol)
         {
             //TODO: hack job, move this to a service
@@ -67,6 +73,8 @@ namespace Amphibian.Patrol.Api.Repositories
                     ,u.email
                     ,u.firstname
                     ,u.lastname
+                    ,u.allowemailnotifications
+                    ,u.profileimageurl
                     --intentionally don't fill the password fields, doesn't make sense in this context
                     from patrolusers pu
                     inner join users u on u.id=pu.userid
@@ -88,6 +96,9 @@ namespace Amphibian.Patrol.Api.Repositories
                     ,p.enableshiftswaps
                     ,p.enabletimeclock
                     ,p.enableworkitems
+                    ,p.enablepublicsite
+                    ,p.subdomain
+                    ,p.backgroundimageurl
                     ,p.timezone
                     ,pu.role
                     from patrolusers pu

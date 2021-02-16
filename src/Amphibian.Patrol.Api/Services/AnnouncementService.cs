@@ -21,13 +21,13 @@ namespace Amphibian.Patrol.Api.Services
     {
         private IAnnouncementRepository _announcementRepository;
 
-        private ILogger<AnnouncementService> _logger;
+        private ILogger<EventService> _logger;
         private IMapper _mapper;
         private ISystemClock _clock;
         private IEmailService _emailService;
         private IPatrolRepository _patrolRepository;
         private IUserRepository _userRepository;
-        public AnnouncementService(IAnnouncementRepository announcementRepository, ILogger<AnnouncementService> logger, IMapper mapper, 
+        public AnnouncementService(IAnnouncementRepository announcementRepository, ILogger<EventService> logger, IMapper mapper, 
             ISystemClock clock, IEmailService emailService, IPatrolRepository patrolRepository, IUserRepository userRepository)
         {
             _logger = logger;

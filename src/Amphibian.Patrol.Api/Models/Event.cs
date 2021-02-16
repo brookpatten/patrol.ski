@@ -20,6 +20,7 @@ namespace Amphibian.Patrol.Api.Models
         public bool IsPublic { get; set; }
         public bool IsInternal { get; set; }
         public string EventHtml { get; set; }
+        public string EventMarkdown { get; set; }
         public EventSignupMode SignupMode { get; set; }
         public int? MaxSignups { get; set; }
     }

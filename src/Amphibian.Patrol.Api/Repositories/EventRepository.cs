@@ -26,14 +26,7 @@ namespace Amphibian.Patrol.Api.Repositories
         {
             return _connection.QueryAsync<Event>(@"
             select
-            id,
-            patrolid,
-            createdbyuserid, 
-            name,
-            location,
-            createdat,
-            startsat,
-            endsat
+            *
             from events
             where patrolid=@patrolId
             and endsat >= @from

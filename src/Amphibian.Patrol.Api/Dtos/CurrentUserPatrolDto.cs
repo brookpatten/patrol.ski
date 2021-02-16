@@ -20,6 +20,7 @@ namespace Amphibian.Patrol.Api.Dtos
         public bool EnableShiftSwaps { get; set; }
         public bool EnableTimeClock { get; set; }
         public bool EnableWorkItems { get; set; }
+        public bool EnablePublicSite { get; set; }
         public string TimeZone { get; set; }
         public Role? Role { get; set; }
         public IList<Permission> Permissions
@@ -29,5 +30,7 @@ namespace Amphibian.Patrol.Api.Dtos
                 return this.Role.Permissions();
             }
         }
+        public string BackgroundImageUrl { get; set; }
+        public string Subdomain { get; set; }
     }
 }

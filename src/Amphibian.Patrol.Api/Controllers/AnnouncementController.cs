@@ -96,7 +96,7 @@ namespace Amphibian.Patrol.Api.Controllers
             {
                 announcement.CreatedByUserId = User.UserId();
 
-                if(announcement.Id!=default(int))
+                if(announcement.Id!=default(int)) 
                 {
                     var existing = await _announcementRepository.GetById(announcement.Id);
                     if(existing.PatrolId!=announcement.PatrolId)

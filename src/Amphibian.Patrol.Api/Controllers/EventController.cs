@@ -24,15 +24,17 @@ namespace Amphibian.Patrol.Api.Controllers
         private readonly IEventRepository _eventRepository;
         private IPatrolService _patrolService;
         private ISystemClock _clock;
+        private IEventService _eventService;
 
         public EventController(ILogger<EventController> logger, IPatrolRepository patrolRepository,
-            IPatrolService patrolService, ISystemClock systemClock, IEventRepository eventRepository)
+            IPatrolService patrolService, ISystemClock systemClock, IEventRepository eventRepository, IEventService eventService)
         {
             _logger = logger;
             _patrolRepository = patrolRepository;
             _patrolService = patrolService;
             _clock = systemClock;
             _eventRepository = eventRepository;
+            _eventService = eventService;
         }
 
         public class EventQuery
@@ -98,24 +100,17 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             if (User.RoleInPatrol( patrolEvent.PatrolId).CanMaintainEvents())
             {
-                if(patrolEvent.Id == default(int))
-                {
-                    patrolEvent.CreatedByUserId = User.UserId();
-                    patrolEvent.CreatedAt = _clock.UtcNow.UtcDateTime;
-                    await _eventRepository.InsertEvent(patrolEvent);
-                }
-                else
+                if (patrolEvent.Id != default(int))
                 {
                     var existing = await _eventRepository.GetById(patrolEvent.Id);
-                    if(existing.PatrolId==patrolEvent.PatrolId)
-                    {
-                        await _eventRepository.UpdateEvent(patrolEvent);
-                    }
-                    else
+                    if (existing.PatrolId != patrolEvent.PatrolId)
                     {
                         return Forbid();
                     }
                 }
+
+                await _eventService.PostEvent(patrolEvent);
+
                 return Ok(patrolEvent);
             }
             else

@@ -1,4 +1,5 @@
 ﻿ALTER TABLE dbo.Patrols ADD
+	EnablePublicSite bit NOT NULL CONSTRAINT DF_Patrols_EnableWorkItems DEFAULT 0,
 	Subdomain varchar(255) null,
 	LogoImageUrl varchar(1024) null,
 	BackgroundImageUrl varchar(1024) null
@@ -13,8 +14,9 @@ GO
 ALTER TABLE dbo.Events ADD
 	IsPublic bit null,
 	IsInternal bit null,
+	EventMarkdown nvarchar(max) null,
 	EventHtml nvarchar(max) null,
-	SignupMode tinyint not null,
+	SignupMode tinyint null,
 	MaxSignups int null
 GO
 update announcements set ispublic=0,isinternal=1;
@@ -34,7 +36,7 @@ CREATE TABLE dbo.EventSignups
 	SignedUpAt datetime not null
 	)  ON [PRIMARY]
 GO
-CREATE TABLE dbo.ImageUploads
+CREATE TABLE dbo.FileUploads
 	(
 	Id int NOT NULL IDENTITY (1, 1),
 	PatrolId int NULL,
