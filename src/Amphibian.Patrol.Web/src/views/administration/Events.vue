@@ -16,6 +16,14 @@
                   <label for="to">To Date</label>
                   <datepicker v-model="to" input-class="form-control" calendar-class="card"></datepicker><br/>
                 </CCol>
+                <CCol v-if="selectedPatrol.enablePublicSite">
+                  <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="isInternal"/>
+                  <label for="isInternal">Internal Patrol Events</label><br/>
+                </CCol>
+                <CCol v-if="selectedPatrol.enablePublicSite">
+                  <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="isPublic"/>
+                  <label for="isPublic">Public Events</label><br/>
+                </CCol>
               </CRow>
               <CRow>
                 <CCol>
@@ -64,6 +72,8 @@ export default {
     return {
       from: new Date(),
       to: new Date(new Date().getTime() + (86400000 * 90)),
+      isInternal:true,
+      isPublic:true,
       events: [],
       eventFields:[
           {key:'name',label:'Event'},
@@ -77,7 +87,7 @@ export default {
   methods: {
     getEvents() {
       this.$store.dispatch('loading','Loading...');
-        this.$http.post('events/search',{patrolId:this.selectedPatrolId,from:this.from,to:this.to})
+        this.$http.post('events/search',{patrolId:this.selectedPatrolId,from:this.from,to:this.to,isInternal:this.isInternal,isPublic:this.isPublic})
             .then(response => {
                 console.log(response);
                 this.events = response.data;
@@ -112,6 +122,12 @@ export default {
       this.getEvents();
     },
     to(){
+      this.getEvents();
+    },
+    isPublic(){
+      this.getEvents();
+    },
+    isInternal(){
       this.getEvents();
     }
   },

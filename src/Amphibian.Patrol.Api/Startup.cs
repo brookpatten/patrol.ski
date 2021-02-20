@@ -144,6 +144,7 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<IValidator<Group>, GroupValidator>();
             services.AddScoped<IValidator<Shift>, ShiftValidator>();
             services.AddScoped<IValidator<Event>, EventValidator>();
+            services.AddScoped<IValidator<Models.Patrol>, PatrolValidator>();
 
             //services
             services.AddScoped<Services.IAuthenticationService, Services.AuthenticationService>();

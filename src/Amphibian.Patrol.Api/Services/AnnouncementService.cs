@@ -89,10 +89,10 @@ namespace Amphibian.Patrol.Api.Services
 
         
 
-        public async Task<IEnumerable<Announcement>> GetAnnouncementsForPatrol(int patrolId,bool currentOnly)
+        public async Task<IEnumerable<Announcement>> GetAnnouncementsForPatrol(int patrolId,bool currentOnly, bool isInternal, bool isPublic)
         {
             var now = _clock.UtcNow.UtcDateTime;
-            var announcements = await _announcementRepository.GetAnnouncements(patrolId, currentOnly ? (DateTime?)now: null);
+            var announcements = await _announcementRepository.GetAnnouncements(patrolId, currentOnly ? (DateTime?)now: null,isInternal,isPublic);
             return announcements;
         }
     }

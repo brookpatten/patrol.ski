@@ -59,7 +59,7 @@ namespace Amphibian.Patrol.Tests.Repositories
 
             await _eventRepository.InsertEvent(patrolEvent);
 
-            var events = await _eventRepository.GetEvents(1, new DateTime(2001, 1, 1, 0, 0, 0), new DateTime(2001, 1, 1, 23, 59, 59));
+            var events = await _eventRepository.GetEvents(1, new DateTime(2001, 1, 1, 0, 0, 0), new DateTime(2001, 1, 1, 23, 59, 59),true,true);
 
             Assert.IsNotEmpty(events);
         }
@@ -84,7 +84,7 @@ namespace Amphibian.Patrol.Tests.Repositories
 
             await _eventRepository.UpdateEvent(patrolEvent);
 
-            var events = await _eventRepository.GetEvents(1, new DateTime(2001, 1, 1, 0, 0, 0), new DateTime(2001, 1, 1, 23, 59, 59));
+            var events = await _eventRepository.GetEvents(1, new DateTime(2001, 1, 1, 0, 0, 0), new DateTime(2001, 1, 1, 23, 59, 59), true, true);
 
             Assert.AreEqual(patrolEvent.Name, events.ToList()[0].Name);
         }
@@ -105,7 +105,7 @@ namespace Amphibian.Patrol.Tests.Repositories
 
             await _eventRepository.InsertEvent(patrolEvent);
 
-            var events = await _eventRepository.GetEvents(1, new DateTime(2002, 1, 1, 0, 0, 0), new DateTime(2002, 1, 1, 23, 59, 59));
+            var events = await _eventRepository.GetEvents(1, new DateTime(2002, 1, 1, 0, 0, 0), new DateTime(2002, 1, 1, 23, 59, 59), true, true);
 
             Assert.IsEmpty(events);
         }
@@ -126,7 +126,7 @@ namespace Amphibian.Patrol.Tests.Repositories
 
             await _eventRepository.InsertEvent(patrolEvent);
 
-            var events = await _eventRepository.GetEvents(1, new DateTime(2000, 1, 1, 0, 0, 0), new DateTime(2000, 1, 1, 23, 59, 59));
+            var events = await _eventRepository.GetEvents(1, new DateTime(2000, 1, 1, 0, 0, 0), new DateTime(2000, 1, 1, 23, 59, 59), true, true);
 
             Assert.IsEmpty(events);
         }

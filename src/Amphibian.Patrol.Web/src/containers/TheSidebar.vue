@@ -6,6 +6,9 @@
     @update:show="(value) => $store.commit('set', ['sidebarShow', value])"
   >
     <CSidebarBrand class="d-md-down-none" to="/">
+      <template v-if="selectedPatrol && selectedPatrol.logoImageUrl">
+        <img :src="selectedPatrol.logoImageUrl" alt="patrol logo" class="img-fluid rounded" style="height:100px" />
+      </template>
       
     </CSidebarBrand>
 

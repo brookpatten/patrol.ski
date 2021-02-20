@@ -7,12 +7,7 @@
   >
     <template #toggler>
       <CHeaderNavLink>
-        <div class="c-avatar">
-          <img
-            src="img/avatars/patrol-50.jpg"
-            class="c-avatar-img "
-          />
-        </div>
+        <user-avatar v-bind:user="user"/>
       </CHeaderNavLink>
     </template>
     <CDropdownHeader tag="div" class="text-center" color="light" v-if="user">
@@ -50,7 +45,9 @@
 </template>
 
 <script>
+import UserAvatar from '../views/schedule/UserAvatar';
 export default {
+  components: { UserAvatar },
   name: 'TheHeaderDropdownAccnt',
   data () {
     return { 

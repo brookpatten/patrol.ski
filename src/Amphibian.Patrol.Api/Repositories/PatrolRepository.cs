@@ -99,6 +99,7 @@ namespace Amphibian.Patrol.Api.Repositories
                     ,p.enablepublicsite
                     ,p.subdomain
                     ,p.backgroundimageurl
+                    ,p.logoimageurl
                     ,p.timezone
                     ,pu.role
                     from patrolusers pu

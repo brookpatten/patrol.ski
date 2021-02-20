@@ -95,6 +95,24 @@ router.beforeEach((to, from, next) => {
     next('/app') 
   }
   else if(to.matched.some(record=> record.name=='Landing') 
+    && hostParts.length>2
+    ){
+    var subdomain = "";
+    for(var i=0;i<hostParts.length-2;i++){
+      if(subdomain.length>0){
+        subdomain = subdomain+".";
+      }
+      subdomain = subdomain+hostParts[i];
+    }
+    if(subdomain!="www"){
+      next({name:'Subdomain',params:{subdomain:subdomain}}); 
+    }
+    else
+    {
+      return next();
+    }
+  }
+  else if(to.matched.some(record=> record.name=='Landing') 
     && hostParts.length>1 
     && hostParts[hostParts.length-1] == "localhost"
     ){
@@ -105,22 +123,14 @@ router.beforeEach((to, from, next) => {
       }
       subdomain = subdomain+hostParts[i];
     }
-    //if the user ended up on the landing page (bookmark etc) and they are already logged in, move them to the app
-    next({name:'Subdomain',params:{subdomain:subdomain}}); 
-  } 
-  else if(to.matched.some(record=> record.name=='Landing') 
-    && hostParts.length>2
-    ){
-    var subdomain = "";
-    for(var i=0;i<hostParts.length-2;i++){
-      if(subdomain.length>0){
-        subdomain = subdomain+".";
-      }
-      subdomain = subdomain+hostParts[i];
+    if(subdomain!="www"){
+      next({name:'Subdomain',params:{subdomain:subdomain}}); 
     }
-    //if the user ended up on the landing page (bookmark etc) and they are already logged in, move them to the app
-    next({name:'Subdomain',params:{subdomain:subdomain}}); 
-  }
+    else
+    {
+      return next();
+    }
+  } 
   else {
     next() 
   }

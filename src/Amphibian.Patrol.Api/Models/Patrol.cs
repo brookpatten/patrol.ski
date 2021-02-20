@@ -20,5 +20,6 @@ namespace Amphibian.Patrol.Api.Models
         public bool EnablePublicSite { get; set; }
         public string Subdomain { get; set; }
         public string BackgroundImageUrl { get; set; }
+        public string LogoImageUrl { get; set; }
     }
 }

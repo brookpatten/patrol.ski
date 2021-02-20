@@ -22,7 +22,7 @@ namespace Amphibian.Patrol.Api.Repositories
         {
             _connection = connection;
         }
-        public Task<IEnumerable<Event>> GetEvents(int patrolId, DateTime from, DateTime to)
+        public Task<IEnumerable<Event>> GetEvents(int patrolId, DateTime from, DateTime to, bool isInternal, bool isPublic)
         {
             return _connection.QueryAsync<Event>(@"
             select
@@ -31,8 +31,13 @@ namespace Amphibian.Patrol.Api.Repositories
             where patrolid=@patrolId
             and endsat >= @from
             and startsat <= @to
+            and (
+                (@isInternal = 1 and isInternal = 1)
+                or
+                (@isPublic = 1 and isPublic=1)
+            )
             order by startsat asc
-            ",new { patrolId, from,to });
+            ",new { patrolId, from,to, isInternal, isPublic });
         }
 
         /// <summary>
@@ -41,7 +46,7 @@ namespace Amphibian.Patrol.Api.Repositories
         /// <param name="patrolId"></param>
         /// <param name="now"></param>
         /// <returns></returns>
-        public Task<IEnumerable<Event>> GetUpcomingEvents(int patrolId, DateTime now)
+        public Task<IEnumerable<Event>> GetUpcomingEvents(int patrolId, DateTime now, bool isInternal, bool isPublic)
         {
             return _connection.QueryAsync<Event>(@"
             declare @twoweeks datetime;
@@ -54,16 +59,26 @@ namespace Amphibian.Patrol.Api.Repositories
 		            startsat > @now 
 		            and startsat < @twoweeks 
 		            and patrolid=@patrolId
+                    and (
+                        (@isInternal = 1 and isInternal = 1)
+                        or
+                        (@isPublic = 1 and isPublic=1)
+                    )
             union
 	            select top 5 * 
 	            from events 
 	            where 
 		            startsat > @now 
 		            and patrolid=@patrolId 
+                    and (
+                        (@isInternal = 1 and isInternal = 1)
+                        or
+                        (@isPublic = 1 and isPublic=1)
+                    )
 	            order by startsat asc
             ) results
             order by startsat asc
-            ", new { patrolId, now});
+            ", new { patrolId, now, isInternal, isPublic});
         }
 
         public async Task InsertEvent(Event patrolEvent)

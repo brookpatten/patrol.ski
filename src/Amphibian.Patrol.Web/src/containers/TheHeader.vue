@@ -14,7 +14,9 @@
     />
     <CHeaderBrand class="mr-auto" to="/">
       <!--<CIcon name="logo" height="48" alt="Logo"/>-->
-      <img src="ms-icon-310x310.png" alt="patroller taking toboggan down slope" width="48" height="48"/>
+      <!--<template v-if="!selectedPatrol || !selectedPatrol.logoImageUrl">
+        <img src="ms-icon-310x310.png" alt="patroller taking toboggan down slope" width="48" height="48"/>
+      </template>--><span> </span>
     </CHeaderBrand>
 
 

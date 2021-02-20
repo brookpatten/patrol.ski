@@ -8,10 +8,6 @@
           </slot>
         </CCardHeader>
         <CCardBody>
-            <em>Note: Other users will need to log out and back in to see changes to the patrol</em>
-            <br/>
-            <br/>
-
             <CAlert color="danger" v-if="validationMessage">{{validationMessage}}</CAlert>
             <CInput
             label="Name"
@@ -45,18 +41,32 @@
               label="Public Site Address"
               v-if="editedPatrol.enablePublicSite"
               v-model="editedPatrol.subdomain"
-              :invalidFeedback="validationErrors.subdomain ? validationErrors.subdomain.join() : 'Invalid'"
-              :isValid="validated ? validationErrors.subdomain==null : null" class="col-sm-4"
+              :invalidFeedback="validationErrors.Subdomain ? validationErrors.Subdomain.join() : 'Invalid'"
+              :isValid="validated ? validationErrors.Subdomain==null : null" class="col-sm-4"
             >
             <template #append-content>.Patrol.Ski</template>
             </CInput>
-            <CInputFile
-                label="Background Image" @change="fileUpload"
-            />
-            <template v-if="editedPatrol.backgroundImageUrl">
-              <img :src="editedPatrol.backgroundImageUrl" alt="patrol background image" style="width:250px"/>
-              <br/>
-            </template>
+            <CRow>
+              <CCol>
+                <CInputFile
+                    label="Logo Image" @change="logoFileUpload"
+                />
+                <template v-if="editedPatrol.logoImageUrl">
+                  <img :src="editedPatrol.logoImageUrl" alt="patrol logo image" class="img-fluid rounded"/>
+                  <br/>
+                </template>
+              </CCol>
+              <CCol>
+              <CInputFile
+                  label="Background Image" @change="backgroundFileUpload"
+              />
+              <template v-if="editedPatrol.backgroundImageUrl">
+                <img :src="editedPatrol.backgroundImageUrl" alt="patrol background image" class="img-fluid rounded"/>
+                <br/>
+                
+              </template>
+              </CCol>
+            </CRow>
             </template>
             <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="editedPatrol.enableTraining"/>
             <label for="editedPatrol.enableTraining">Training</label> <em>Design training, create assignments, and track progress to completion</em>
@@ -135,8 +145,9 @@ export default {
         this.editedPatrol.enablePublicSite = (this.selectedPatrol.enableAnnouncements || this.selectedPatrol.enableEvents) && this.selectedPatrol.enablePublicSite;
         this.editedPatrol.subdomain = this.selectedPatrol.subdomain;
         this.editedPatrol.backgroundImageUrl = this.selectedPatrol.backgroundImageUrl;
+        this.editedPatrol.logoImageUrl = this.selectedPatrol.logoImageUrl;
     },
-    fileUpload(file,e){
+    backgroundFileUpload(file,e){
       this.$store.dispatch('loading','Uploading...');
       let formData = new FormData();
       formData.append('formFile', file[0]);
@@ -149,6 +160,24 @@ export default {
       })
       .then(response => {
           this.editedPatrol.backgroundImageUrl = response.data.relativeUrl;
+          console.log(response.data.relativeUrl);
+      }).catch(response => {
+          console.log(response);
+      }).finally(response=>this.$store.dispatch('loadingComplete'));
+    },
+    logoFileUpload(file,e){
+      this.$store.dispatch('loading','Uploading...');
+      let formData = new FormData();
+      formData.append('formFile', file[0]);
+      formData.append('patrolId', this.editedPatrol.id);
+
+      this.$http.post('file/upload',formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      .then(response => {
+          this.editedPatrol.logoImageUrl = response.data.relativeUrl;
           console.log(response.data.relativeUrl);
       }).catch(response => {
           console.log(response);

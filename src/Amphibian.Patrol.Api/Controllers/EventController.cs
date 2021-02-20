@@ -42,6 +42,8 @@ namespace Amphibian.Patrol.Api.Controllers
             public int PatrolId { get; set; }
             public DateTime From { get; set; }
             public DateTime To { get; set; }
+            public bool IsPublic { get; set; }
+            public bool IsInternal { get; set; }
         }
         [HttpPost]
         [Route("events/search")]
@@ -50,7 +52,7 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             if (User.PatrolIds().Any(x=>x== query.PatrolId))
             {
-                var patrolEvents = await _eventRepository.GetEvents(query.PatrolId, query.From, query.To);
+                var patrolEvents = await _eventRepository.GetEvents(query.PatrolId, query.From, query.To,query.IsInternal,query.IsPublic);
                 return Ok(patrolEvents);
             }
             else
@@ -66,7 +68,7 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             if (User.PatrolIds().Any(x => x == patrolId))
             {
-                var patrolEvents = await _eventRepository.GetUpcomingEvents(patrolId, _clock.UtcNow.UtcDateTime);
+                var patrolEvents = await _eventRepository.GetUpcomingEvents(patrolId, _clock.UtcNow.UtcDateTime,true,false);
                 return Ok(patrolEvents);
             }
             else

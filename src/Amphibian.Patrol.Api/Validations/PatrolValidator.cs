@@ -33,7 +33,7 @@ namespace Amphibian.Patrol.Api.Validations
                         model.Subdomain = null;
                         return true;
                     }
-                }).WithMessage("Already in use");
+                }).WithMessage("Subdomain already in use by another patrol");
         }
     }
 }

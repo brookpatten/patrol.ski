@@ -42,7 +42,7 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> GetPatrolBySubdomain(string subdomain)
         {
             var patrol = await _patrolRepository.GetPatrol(subdomain);
-            if(patrol!=null && patrol.EnablePublicSite)
+            if(patrol!=null && patrol.EnablePublicSite) 
             {
                 return Ok(patrol);
             }
@@ -57,9 +57,10 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> GetEventsBySubdomain(string subdomain)
         {
             var patrol = await _patrolRepository.GetPatrol(subdomain);
-            if (patrol != null && patrol.EnablePublicSite)
+            if (patrol != null && patrol.EnablePublicSite && patrol.EnableEvents)
             {
-                return Ok(patrol);
+                var events = await _eventRepository.GetUpcomingEvents(patrol.Id, _clock.UtcNow.UtcDateTime, false, true);
+                return Ok(events);
             }
             else
             {
@@ -72,9 +73,10 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> GetAnnouncementsBySubdomain(string subdomain)
         {
             var patrol = await _patrolRepository.GetPatrol(subdomain);
-            if (patrol != null && patrol.EnablePublicSite)
+            if (patrol != null && patrol.EnablePublicSite && patrol.EnableAnnouncements)
             {
-                return Ok(patrol);
+                var announcements = await _announcementRepository.GetAnnouncements(patrol.Id, _clock.UtcNow.UtcDateTime, false, true);
+                return Ok(announcements);
             }
             else
             {
