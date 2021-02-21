@@ -121,6 +121,7 @@ namespace Amphibian.Patrol.Api
 
             services.AddSingleton<AuthenticationConfiguration>(serviceConfiguration.Authentication);
             services.AddSingleton<AppConfiguration>(serviceConfiguration.App);
+            services.AddSingleton<EmailConfiguration>(serviceConfiguration.Email);
 
             //persistence
             services.AddScoped<IUserRepository, UserRepository>();
@@ -135,6 +136,7 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<ITimeEntryRepository, TimeEntryRepository>();
             services.AddScoped<IWorkItemRepository, WorkItemRepository>();
             services.AddScoped<IApiLogRepository, ApiLogRepository>();
+            services.AddScoped<IFileUploadRepository, FileUploadRepository>();
 
             //validations
             services.AddScoped<IValidator<AuthenticationController.RegistrationRequest>, RegistrationValidator>();
@@ -142,11 +144,12 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<IValidator<Group>, GroupValidator>();
             services.AddScoped<IValidator<Shift>, ShiftValidator>();
             services.AddScoped<IValidator<Event>, EventValidator>();
+            services.AddScoped<IValidator<Models.Patrol>, PatrolValidator>();
 
             //services
             services.AddScoped<Services.IAuthenticationService, Services.AuthenticationService>();
             services.AddScoped<Services.IPasswordService, Services.PasswordService>(sp=>new Services.PasswordService(5,32));
-            services.AddScoped<IEmailService, EmailService>(provider => new EmailService(serviceConfiguration.Email.SendGridApiKey, serviceConfiguration.Email.SendAllEmailsTo,serviceConfiguration.Email.FromName,serviceConfiguration.Email.FromEmail,serviceConfiguration.App.RootUrl, serviceConfiguration.Email.ProfileRoute));
+            services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IPlanService, PlanService>();
             services.AddScoped<IAssignmentService, AssignmentService>();
             services.AddScoped<IUserService, UserService>();
@@ -158,6 +161,7 @@ namespace Amphibian.Patrol.Api
             services.AddScoped<IWorkItemService, WorkItemService>();
             services.AddScoped<IShiftWorkItemService, WorkItemService>();
             services.AddScoped<ISysAdminService, SysAdminService>();
+            services.AddScoped<IEventService, EventService>();
 
             services.AddScoped<ISystemClock, SystemClock>();
 
@@ -168,6 +172,8 @@ namespace Amphibian.Patrol.Api
         {
             app.UseSerilogRequestLogging();
             app.UseHttpsRedirection();
+
+            var appConfig = app.ApplicationServices.GetService<AppConfiguration>();
 
             string staticFilesPath=null;
             if (env.IsDevelopment() && Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), "../Amphibian.Patrol.Web/dist")))
@@ -192,6 +198,16 @@ namespace Amphibian.Patrol.Api
                 app.UseStaticFiles(new StaticFileOptions()
                 {
                     FileProvider = new PhysicalFileProvider(staticFilesPath),
+                });
+            }
+
+            //serve up user images.  NOT SECURE!  public events/announcements are not authenticated!
+            if(!string.IsNullOrEmpty(appConfig.UserFilePath) && !string.IsNullOrEmpty(appConfig.UserFileRelativeUrl))
+            {
+                app.UseStaticFiles(new StaticFileOptions()
+                {
+                    FileProvider = new PhysicalFileProvider(appConfig.UserFilePath),
+                    RequestPath = appConfig.UserFileRelativeUrl
                 });
             }
 

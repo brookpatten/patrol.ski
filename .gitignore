@@ -381,3 +381,5 @@ dist/
 # config files that might contain passwords
 *.local.json
 *.Local.json
+
+UserFiles/

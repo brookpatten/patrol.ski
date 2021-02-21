@@ -76,7 +76,7 @@
           >
             <h2>Sign up</h2>
             <p>Schedule, timeclock, training, announcements, calendar and notifications for ski patrol</p>
-            <p>Free for NSP Patrols</p>
+            <p>Free for Volunteer Patrols</p>
             <CButtonGroup class="active mt-3">
             <CButton
               color="success"

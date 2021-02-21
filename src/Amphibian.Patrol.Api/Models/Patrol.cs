@@ -17,5 +17,11 @@ namespace Amphibian.Patrol.Api.Models
         public bool EnableTimeClock { get; set; }
         public bool EnableWorkItems { get; set; }
         public string TimeZone { get; set; }
+        public bool EnablePublicSite { get; set; }
+        public string Subdomain { get; set; }
+        public string BackgroundImageUrl { get; set; }
+        public string LogoImageUrl { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
     }
 }

@@ -9,6 +9,7 @@ namespace Amphibian.Patrol.Api.Repositories
     {
         Task DeletePatrolUser(int patrolId, int userId);
         Task<Models.Patrol> GetPatrol(int id);
+        Task<Models.Patrol> GetPatrol(string subdomain);
         Task<IEnumerable<CurrentUserPatrolDto>> GetPatrolsForUser(int userId);
         Task<IEnumerable<PatrolUser>> GetPatrolUsersForPatrol(int patrolId);
         Task<IEnumerable<PatrolUser>> GetPatrolUsersForUser(int userId);

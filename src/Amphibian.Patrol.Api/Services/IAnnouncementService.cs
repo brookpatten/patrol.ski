@@ -10,6 +10,6 @@ namespace Amphibian.Patrol.Api.Services
     {
         Task PostAnnouncement(Announcement announcement);
         Task PreviewAnnouncement(Announcement announcement);
-        Task<IEnumerable<Announcement>> GetAnnouncementsForPatrol(int patrolId, bool currentOnly);
+        Task<IEnumerable<Announcement>> GetAnnouncementsForPatrol(int patrolId, bool currentOnly, bool isInternal, bool isPublic);
     }
 }

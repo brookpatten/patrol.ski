@@ -16,6 +16,14 @@
                 :fields="peopleFields"
                 column-filter
                 sorter>
+                <template #name="data">
+                    <td>{{data.item.lastName}}, {{data.item.firstName}}</td>
+                </template>
+                <template #profile="data">
+                    <td>
+                      <user-avatar v-bind:user="data.item"/>
+                    </td>
+                </template>
                 <template #role="data">
                     <td><CBadge v-if="data.item.role" color="primary">{{data.item.role}}</CBadge></td>
                 </template>
@@ -45,20 +53,20 @@
 </template>
 
 <script>
+import UserAvatar from '../schedule/UserAvatar'
 
 export default {
+  components: { UserAvatar },
   name: 'People',
-  components: {
-  },
   data () {
     return {
       people: [],
       peopleFields:[
-          {key:'lastName',label:'Last'},
-          {key:'firstName',label:'First'},
+          {key:'profile',label:''},
+          {key:'name',label:'',filter:true,sorter:true},
+          {key:'buttons',label:'',sorter:false,filter:false},
           {key:'role', label:'Role'},
-          {key:'groups', label:'Groups'},
-          {key:'buttons',label:'',sorter:false,filter:false}
+          {key:'groups', label:'Groups'}
       ]
     }
   },

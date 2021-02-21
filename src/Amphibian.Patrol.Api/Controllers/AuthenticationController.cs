@@ -224,13 +224,23 @@ namespace Amphibian.Patrol.Api.Controllers
                             FirstName = given,
                             LastName = fam,
                             AllowEmailNotifications = true,
-                            UsesGoogleAuth=true
+                            UsesGoogleAuth=true,
                         };
+                        if(!string.IsNullOrEmpty(profile))
+                        {
+                            user.ProfileImageUrl = profile;
+                        }
                         await _userRepository.InsertUser(user);
                     }
                     else if(!user.UsesGoogleAuth)
                     {
                         user.UsesGoogleAuth = true;
+
+                        if(!string.IsNullOrEmpty(profile) && string.IsNullOrEmpty(user.ProfileImageUrl))
+                        {
+                            user.ProfileImageUrl = profile;
+                        }
+
                         await _userRepository.UpdateUser(user);
                     }
 
@@ -285,11 +295,21 @@ namespace Amphibian.Patrol.Api.Controllers
                             AllowEmailNotifications = true,
                             UsesFacebookAuth=true
                         };
+                        //if (!string.IsNullOrEmpty(profile))
+                        //{
+                        //    user.ProfileImageUrl = profile;
+                        //}
                         await _userRepository.InsertUser(user);
                     }
                     else if (!user.UsesFacebookAuth)
                     {
                         user.UsesFacebookAuth = true;
+
+                        //if (!string.IsNullOrEmpty(profile) && string.IsNullOrEmpty(user.ProfileImageUrl))
+                        //{
+                        //    user.ProfileImageUrl = profile;
+                       // }
+
                         await _userRepository.UpdateUser(user);
                     }
 

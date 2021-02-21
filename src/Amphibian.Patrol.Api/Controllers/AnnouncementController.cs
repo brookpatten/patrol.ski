@@ -44,7 +44,7 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             if (User.PatrolIds().Any(x=>x==patrolId))
             {
-                var announcements = await _announcementService.GetAnnouncementsForPatrol(patrolId,false);
+                var announcements = await _announcementService.GetAnnouncementsForPatrol(patrolId,false,true,true);
                 return Ok(announcements);
             }
             else
@@ -60,7 +60,7 @@ namespace Amphibian.Patrol.Api.Controllers
         {
             if (User.PatrolIds().Any(x => x == patrolId))
             {
-                var announcements = await _announcementService.GetAnnouncementsForPatrol(patrolId,true);
+                var announcements = await _announcementService.GetAnnouncementsForPatrol(patrolId,true,true,false);
                 return Ok(announcements);
             }
             else
@@ -96,7 +96,7 @@ namespace Amphibian.Patrol.Api.Controllers
             {
                 announcement.CreatedByUserId = User.UserId();
 
-                if(announcement.Id!=default(int))
+                if(announcement.Id!=default(int)) 
                 {
                     var existing = await _announcementRepository.GetById(announcement.Id);
                     if(existing.PatrolId!=announcement.PatrolId)

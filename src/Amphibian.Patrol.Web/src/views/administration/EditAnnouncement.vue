@@ -21,11 +21,17 @@
             <label for="announcement.expireAt">Expire</label>
             <datepicker v-model="announcement.expireAt" input-class="form-control" calendar-class="card"></datepicker><br/>
 
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="announcement.isInternal" v-if="selectedPatrol.enablePublicSite"/>
+            <label for="announcement.isInternal" v-if="selectedPatrol.enablePublicSite">Show for logged in Patrollers</label><br/>
+
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="announcement.isPublic" v-if="selectedPatrol.enablePublicSite"/>
+            <label for="announcement.isPublic" v-if="selectedPatrol.enablePublicSite">Show on Public Site</label>
+            <br/>
             <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="announcement.emailed"/>
             <label for="announcement.emailed">Email to entire patrol</label>
             <br/>
 
-            <quill-editor v-model="announcement.announcementMarkdown"></quill-editor>
+            <quill-editor v-model="announcement.announcementMarkdown" :options="quillOptions"></quill-editor>
         </CCardBody>
         <CCardFooter>
             <CButtonGroup>
@@ -40,11 +46,15 @@
 
 <script>
 
+import Quill from 'quill'
 import { quillEditor } from 'vue-quill-editor'
+import ImageUploader from 'quill-image-uploader'
 import 'quill/dist/quill.core.css'
 import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
 import Datepicker from 'vuejs-datepicker';
+
+Quill.register("modules/imageUploader", ImageUploader);
 
 export default {
   name: 'EditAnnouncement',
@@ -56,7 +66,49 @@ export default {
       announcement:{},
       validationMessage:'',
       validationErrors:{},
-      validated:false
+      validated:false,
+      quillOptions:{
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ 'header': 1 }, { 'header': 2 }],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            [{ 'script': 'sub' }, { 'script': 'super' }],
+            [{ 'indent': '-1' }, { 'indent': '+1' }],
+            [{ 'direction': 'rtl' }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'font': [] }],
+            [{ 'align': [] }],
+            ['clean'],
+            ['link', 'image', 'video']
+          ],
+          imageUploader: {
+            upload: file => {
+              return new Promise((resolve, reject) => {
+                let formData = new FormData();
+                formData.append('formFile', file);
+                formData.append('patrolId', this.selectedPatrolId);
+
+                this.$http.post('file/upload',formData, {
+                  headers: {
+                    'Content-Type': 'multipart/form-data'
+                  }
+                })
+                .then(response => {
+                    console.log(response.data.relativeUrl);
+                    resolve(response.data.relativeUrl);
+                }).catch(response => {
+                    reject();
+                    console.log(response);
+                });
+              });
+            }
+          }
+        }
+      }
     }
   },
   methods: {

@@ -52,12 +52,14 @@ namespace Amphibian.Patrol.Tests.Repositories
                 CreatedAt = DateTime.Now,
                 CreatedByUserId = 1,
                 PostAt = DateTime.Now,
-                Subject = "Test"
+                Subject = "Test",
+                IsInternal=true,
+                IsPublic = true
             };
 
             await _announcementRepository.InsertAnnouncement(announcement);
 
-            var announcements = await _announcementRepository.GetAnnouncements(1,null);
+            var announcements = await _announcementRepository.GetAnnouncements(1,null, true, true);
 
             Assert.IsNotEmpty(announcements);
         }
@@ -72,7 +74,9 @@ namespace Amphibian.Patrol.Tests.Repositories
                 CreatedAt = DateTime.Now,
                 CreatedByUserId = 1,
                 PostAt = DateTime.Now,
-                Subject = "Test"
+                Subject = "Test",
+                IsInternal = true,
+                IsPublic = true
             };
 
             await _announcementRepository.InsertAnnouncement(announcement);
@@ -81,7 +85,7 @@ namespace Amphibian.Patrol.Tests.Repositories
 
             await _announcementRepository.UpdateAnnouncement(announcement);
 
-            var announcements = await _announcementRepository.GetAnnouncements(1, null);
+            var announcements = await _announcementRepository.GetAnnouncements(1, null, true, true);
 
             Assert.AreEqual(announcement.AnnouncementMarkdown, announcements.ToList()[0].AnnouncementMarkdown);
         }
@@ -104,7 +108,7 @@ namespace Amphibian.Patrol.Tests.Repositories
 
             await _announcementRepository.InsertAnnouncement(announcement);
 
-            var announcements = await _announcementRepository.GetAnnouncements(1, now);
+            var announcements = await _announcementRepository.GetAnnouncements(1, now, true, true);
 
             Assert.IsEmpty(announcements);
         }
@@ -129,7 +133,7 @@ namespace Amphibian.Patrol.Tests.Repositories
 
             await _announcementRepository.InsertAnnouncement(announcement);
 
-            var announcements = await _announcementRepository.GetAnnouncements(1, now);
+            var announcements = await _announcementRepository.GetAnnouncements(1, now, true, true);
 
             Assert.IsEmpty(announcements);
         }

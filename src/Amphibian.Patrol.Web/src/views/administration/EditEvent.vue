@@ -27,6 +27,23 @@
             <label for="event.endsAt">End</label>
             <datetime type="datetime" v-model="event.endsAt" :minute-step="15" input-class="form-control" :use12-hour="true"></datetime><br/>
 
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="event.isInternal" v-if="selectedPatrol.enablePublicSite"/>
+            <label for="event.isInternal" v-if="selectedPatrol.enablePublicSite">Show for logged in Patrollers</label><br/>
+
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="event.isPublic" v-if="selectedPatrol.enablePublicSite"/>
+            <label for="event.isPublic" v-if="selectedPatrol.enablePublicSite">Show on Public Site</label>
+
+            <!--<CRow>
+              <CCol>
+                <CSelect :options="eventSignupModes" v-model="event.signupMode" label="Signup"/>
+              </CCol>
+              <CCol>
+                <CInput v-if="event.signupMode!='None'" label="Maximum Participants" v-model="event.maxSignups"/>
+              </CCol>
+            </CRow>-->
+
+            <quill-editor v-model="event.eventMarkdown" :options="quillOptions"></quill-editor>
+
         </CCardBody>
         <CCardFooter>
             <CButtonGroup>
@@ -45,9 +62,17 @@
 import { Datetime } from 'vue-datetime';
 import 'vue-datetime/dist/vue-datetime.css';
 
+import Quill from 'quill'
+import { quillEditor } from 'vue-quill-editor'
+import ImageUploader from 'quill-image-uploader'
+import 'quill/dist/quill.core.css'
+import 'quill/dist/quill.snow.css'
+import 'quill/dist/quill.bubble.css'
+Quill.register("modules/imageUploader", ImageUploader);
+
 export default {
   name: 'EditEvent',
-  components: { Datetime
+  components: { quillEditor,Datetime
   },
   props: ['eventId'],
   data () {
@@ -55,7 +80,49 @@ export default {
       event:{},
       validationMessage:'',
       validationErrors:{},
-      validated:false
+      validated:false,
+      quillOptions:{
+        modules: {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            ['blockquote', 'code-block'],
+            [{ 'header': 1 }, { 'header': 2 }],
+            [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+            [{ 'script': 'sub' }, { 'script': 'super' }],
+            [{ 'indent': '-1' }, { 'indent': '+1' }],
+            [{ 'direction': 'rtl' }],
+            [{ 'size': ['small', false, 'large', 'huge'] }],
+            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+            [{ 'color': [] }, { 'background': [] }],
+            [{ 'font': [] }],
+            [{ 'align': [] }],
+            ['clean'],
+            ['link', 'image', 'video']
+          ],
+          imageUploader: {
+            upload: file => {
+              return new Promise((resolve, reject) => {
+                let formData = new FormData();
+                formData.append('formFile', file);
+                formData.append('patrolId', this.selectedPatrolId);
+
+                this.$http.post('file/upload',formData, {
+                  headers: {
+                    'Content-Type': 'multipart/form-data'
+                  }
+                })
+                .then(response => {
+                    console.log(response.data.relativeUrl);
+                    resolve(response.data.relativeUrl);
+                }).catch(response => {
+                    reject();
+                    console.log(response);
+                });
+              });
+            }
+          }
+        }
+      }
     }
   },
   methods: {
@@ -67,6 +134,11 @@ export default {
           this.event={
             name:'',
             location:'',
+            eventMarkdown:'',
+            isInternal: true,
+            isPublic:false,
+            signupMode:'None',
+            maxSignups: null,
             startsAt:new Date().toUTCString(),
             endsAt:new Date().toUTCString(),
             patrolId: this.selectedPatrolId
@@ -103,6 +175,18 @@ export default {
     },
     selectedPatrol: function (){
         return this.$store.getters.selectedPatrol;
+    },
+    eventSignupModes: function(){
+      var modes = [{label:'No Signup Required',value:'None'}];
+      
+      if(this.event.isInternal){
+        modes.push({label:'Patrol',value:'Patrol'});
+      }
+      if(this.selectedPatrol.enablePublicSite && this.event.isPublic){
+        modes.push({label:'Anyone',value:'Anyone'});
+      }
+
+      return modes;
     }
   },
   watch: {

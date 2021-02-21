@@ -38,6 +38,12 @@
                 
                 <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="user.allowEmailNotifications"/><label>Email notifications</label>
 
+                <CInputFile label="Profile Image" @change="profileFileUpload"/>
+                <template v-if="user.profileImageUrl">
+                  <img :src="user.profileImageUrl" alt="profile image" class="c-avatar-img" style="width:200px"/>
+                  <br/>
+                </template>
+
             </CCardBody>
             <CCardFooter>
                 <CButtonGroup>
@@ -138,6 +144,23 @@ export default {
           }).catch(response=>{
             reset.message="Password Change Failed";
           }).finally(response=>this.$store.dispatch('loadingComplete'));
+    },
+    profileFileUpload(file,e){
+      this.$store.dispatch('loading','Uploading...');
+      let formData = new FormData();
+      formData.append('formFile', file[0]);
+
+      this.$http.post('file/upload',formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      .then(response => {
+          this.user.profileImageUrl = response.data.relativeUrl;
+          console.log(response.data.relativeUrl);
+      }).catch(response => {
+          console.log(response);
+      }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     deleteMe(){
       this.$store.dispatch('loading','Deleting...');

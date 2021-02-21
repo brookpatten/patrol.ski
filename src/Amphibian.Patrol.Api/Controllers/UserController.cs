@@ -236,6 +236,7 @@ namespace Amphibian.Patrol.Api.Controllers
                     //user.Email = dto.Email;
                     user.AllowEmailNotifications = dto.AllowEmailNotifications;
                     user.NspNumber = dto.NspNumber;
+                    user.ProfileImageUrl = dto.ProfileImageUrl;
                     await _userRepository.UpdateUser(user);
                 }
                 else

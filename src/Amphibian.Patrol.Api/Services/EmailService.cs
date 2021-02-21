@@ -9,6 +9,9 @@ using SendGrid.Helpers.Mail;
 using Amphibian.Patrol.Api.Models;
 using System.Net;
 using Amphibian.Patrol.Api.Extensions;
+using Microsoft.Extensions.Logging;
+using System.IO;
+using Amphibian.Patrol.Configuration;
 
 namespace Amphibian.Patrol.Api.Services
 {
@@ -25,15 +28,23 @@ namespace Amphibian.Patrol.Api.Services
         private string _fromEmail;
         private string _urlRoot;
         private string _profileRoute;
+        private ILogger<EmailService> _logger;
+        private string _userFileRelativeUrl;
+        private string _userFilePath;
+        
 
-        public EmailService(string sendGridApiKey,string overrideTo,string fromName,string fromEmail, string urlRoot, string profileRoute)
+        public EmailService(EmailConfiguration emailConfig,AppConfiguration appConfig, ILogger<EmailService> logger)
         {
-            _apiKey = sendGridApiKey;
-            _overrideTo = overrideTo;
-            _fromName = fromName;
-            _fromEmail = fromEmail;
-            _urlRoot = urlRoot;
-            _profileRoute = profileRoute;
+            _apiKey = emailConfig.SendGridApiKey;
+            _overrideTo = emailConfig.SendAllEmailsTo;
+            _fromName = emailConfig.FromName;
+            _fromEmail = emailConfig.FromEmail;
+            _urlRoot = appConfig.RootUrl;
+            _profileRoute = emailConfig.ProfileRoute;
+            _logger = logger;
+
+            _userFilePath = appConfig.UserFilePath;
+            _userFileRelativeUrl = appConfig.UserFileRelativeUrl;
         }
         public async Task SendRegistrationEmail(User user)
         {
@@ -91,6 +102,80 @@ Please follow use link to reset your password {_urlRoot}{resetRoute}",
             var response = await Send(msg, null, user);
         }
 
+        private void AttachEmbeddedImages(SendGridMessage message)
+        {
+            var html = message.HtmlContent;
+
+            HtmlAgilityPack.HtmlDocument htmlDoc = new HtmlAgilityPack.HtmlDocument();
+            htmlDoc.LoadHtml(html);
+
+            var imageNodes = htmlDoc.DocumentNode.Descendants("img");
+
+            foreach (var node in imageNodes)
+            {
+                if (node.Attributes.Contains("src"))
+                {
+                    var src = node.Attributes["src"].Value;
+                    if (src.StartsWith("data:image"))
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        Attachment attachment = new Attachment();
+                        string fileName = src;
+                        if (fileName.Contains("/"))
+                        {
+                            fileName = fileName.Substring(fileName.LastIndexOf("/") + 1);
+                        }
+
+
+                        if (src.StartsWith("/"))
+                        {
+                            if (src.StartsWith(_userFileRelativeUrl))
+                            {
+                                string path = Path.Combine(_userFilePath, fileName);
+                                using (var fs = new FileStream(path, FileMode.Open))
+                                {
+                                    var bytes = new byte[fs.Length];
+                                    fs.Read(bytes, 0, (int)fs.Length);
+                                    attachment.Content = Convert.ToBase64String(bytes);
+                                }
+                            }
+                            else
+                            {
+                                //another 
+                                _logger.LogWarning("unrecognized local image url", src);
+                            }
+                        }
+                        else if (src.StartsWith("http"))
+                        {
+                            using (var client = new WebClient())
+                            {
+                                var bytes = client.DownloadData(src);
+                                attachment.Content = Convert.ToBase64String(bytes);
+                            }
+                        }
+                        else
+                        {
+                            _logger.LogWarning("unknown image src format", src);
+                            continue;
+                        }
+
+                        attachment.Disposition = "inline";
+                        attachment.Filename = fileName;
+                        attachment.ContentId = fileName;
+
+                        node.SetAttributeValue("src", $"cid:{attachment.ContentId}");
+                        message.AddAttachment(attachment);
+                    }
+                }
+            }
+
+            //set the modified html back o the message to update src's to cids
+            message.HtmlContent = htmlDoc.DocumentNode.InnerHtml;
+        }
+
         private async Task<Response> Send(SendGridMessage message,Models.Patrol patrol,params User[] to)
         {
             SendGridClient client = new SendGridClient(new SendGridClientOptions()
@@ -146,6 +231,8 @@ Please follow use link to reset your password {_urlRoot}{resetRoute}",
 
             if (hasTo)
             {
+                AttachEmbeddedImages(message);
+
                 var response = await client.SendEmailAsync(message);
 
                 if(response.StatusCode!=System.Net.HttpStatusCode.Accepted)

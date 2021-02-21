@@ -8,10 +8,6 @@
           </slot>
         </CCardHeader>
         <CCardBody>
-            <em>Note: Other users will need to log out and back in to see changes to the patrol</em>
-            <br/>
-            <br/>
-
             <CAlert color="danger" v-if="validationMessage">{{validationMessage}}</CAlert>
             <CInput
             label="Name"
@@ -31,29 +27,82 @@
             <br/>
             
             
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableAnnouncements"/>
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="editedPatrol.enableAnnouncements"/>
             <label for="editedPatrol.enableAnnouncements">Announcements</label> <em>Publish & email announcements to members</em>
             <br/>
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableEvents"/>
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="editedPatrol.enableEvents"/>
             <label for="editedPatrol.enableEvents">Events</label> <em>Publish & email calendar events to members</em>
             <br/>
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableTraining"/>
+            <template v-if="editedPatrol.enableAnnouncements || editedPatrol.enableEvents">
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="editedPatrol.enablePublicSite"/>
+            <label for="editedPatrol.enablePublicSite">Public Site</label> <em>Publicly available site can display announcements and/or events marked public</em>
+            <br/>
+            <template v-if="editedPatrol.enablePublicSite">
+              <CInput :inline="true"
+                label="Public Site Address"
+                v-model="editedPatrol.subdomain"
+                :invalidFeedback="validationErrors.Subdomain ? validationErrors.Subdomain.join() : 'Invalid'"
+                :isValid="validated ? validationErrors.Subdomain==null : null" class="col-sm-4"
+              >
+              <template #append-content>
+                <a :href="'https://'+editedPatrol.subdomain+'.patrol.ski'" v-if="editedPatrol.subdomain" target="_blank" >.Patrol.Ski</a>
+                <template v-if="!editedPatrol.subdomain">.Patrol.Ski</template>
+              </template>
+              </CInput>
+              <CInput
+              label="Public Phone Number"
+              v-model="editedPatrol.phone"
+              :invalidFeedback="validationErrors.Phone ? validationErrors.Phone.join() : 'Invalid'"
+              :isValid="validated ? validationErrors.Phone==null : null"
+              />
+              <CInput
+              label="Public Email"
+              v-model="editedPatrol.email"
+              :invalidFeedback="validationErrors.Email ? validationErrors.Email.join() : 'Invalid'"
+              :isValid="validated ? validationErrors.Email==null : null"
+              />
+            </template>
+            
+            <CRow>
+              <CCol>
+                <CInputFile
+                    label="Logo Image" @change="logoFileUpload"
+                />
+                <template v-if="editedPatrol.logoImageUrl">
+                  <img :src="editedPatrol.logoImageUrl" alt="patrol logo image" class="img-fluid rounded" style="height:200px"/>
+                  <br/>
+                </template>
+              </CCol>
+              <!--<CCol>
+              <CInputFile
+                  label="Background Image" @change="backgroundFileUpload"
+              />
+              <template v-if="editedPatrol.backgroundImageUrl">
+                <img :src="editedPatrol.backgroundImageUrl" alt="patrol background image" class="img-fluid rounded"/>
+                <br/>
+                
+              </template>
+              </CCol>-->
+            </CRow>
+            </template>
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="editedPatrol.enableTraining"/>
             <label for="editedPatrol.enableTraining">Training</label> <em>Design training, create assignments, and track progress to completion</em>
             <br/>
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableScheduling"/>
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="editedPatrol.enableScheduling"/>
             <label for="editedPatrol.enableScheduling">Scheduling</label> <em>Assign shifts and hours to members</em>
             <br/>
             <template v-if="editedPatrol.enableScheduling">
-              <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableShiftSwaps"/>
+              <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="editedPatrol.enableShiftSwaps"/>
               <label for="editedPatrol.enableShiftSwaps">Shift Exchange</label> <em>Allow members to release, claim, and trade shifts</em>
               <br/>
             </template>
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableTimeClock"/>
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="editedPatrol.enableTimeClock"/>
             <label for="editedPatrol.enableTimeClock">Time Clock</label> <em>Allow members to clock in and track hours worked</em>
             <br/>
-            <CSwitch class="mx-1" color="primary" variant="3d" shape="3d" :checked.sync="editedPatrol.enableWorkItems"/>
+            <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="editedPatrol.enableWorkItems"/>
             <label for="editedPatrol.enableWorkItems">Work Items</label> <em>Assign work and track completion</em>
             <br/>
+            
 
 
         </CCardBody>
@@ -76,11 +125,13 @@ export default {
   props: [],
   data () {
     return {
-      editedPatrol:{id:0,name:'',timeZone:'',enableTraining:false,enableAnnouncements:false,enableEvents:false,enableScheduling:false,enableShiftSwaps:false,enableTimeClock:false, enableWorkItems:false},
+      editedPatrol:{id:0,name:'',timeZone:'',enableTraining:false,enableAnnouncements:false,enableEvents:false,enableScheduling:false,enableShiftSwaps:false,enableTimeClock:false, enableWorkItems:false,enablePublicSite:false},
       validationMessage:'',
       validationErrors:{},
       validated:false,
-      timeZones:[]
+      timeZones:[],
+      counter:0,
+      backgroundFile: {}
     }
   },
   methods: {
@@ -97,7 +148,7 @@ export default {
           }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     load(){
-        this.editedPatrol={id:0,name:'',enableTraining:false,enableAnnouncements:false,enableEvents:false};
+        //this.editedPatrol={id:0,name:'',enableTraining:false,enableAnnouncements:false,enableEvents:false};
         this.editedPatrol.id = this.selectedPatrol.id;
         this.editedPatrol.name = this.selectedPatrol.name;
         this.editedPatrol.enableTraining = this.selectedPatrol.enableTraining;
@@ -108,6 +159,48 @@ export default {
         this.editedPatrol.enableTimeClock = this.selectedPatrol.enableTimeClock;
         this.editedPatrol.enableWorkItems = this.selectedPatrol.enableWorkItems;
         this.editedPatrol.timeZone = this.selectedPatrol.timeZone;
+        this.editedPatrol.enablePublicSite = (this.selectedPatrol.enableAnnouncements || this.selectedPatrol.enableEvents) && this.selectedPatrol.enablePublicSite;
+        this.editedPatrol.subdomain = this.selectedPatrol.subdomain;
+        this.editedPatrol.backgroundImageUrl = this.selectedPatrol.backgroundImageUrl;
+        this.editedPatrol.logoImageUrl = this.selectedPatrol.logoImageUrl;
+        this.editedPatrol.email = this.selectedPatrol.email;
+        this.editedPatrol.phone = this.selectedPatrol.phone;
+    },
+    backgroundFileUpload(file,e){
+      this.$store.dispatch('loading','Uploading...');
+      let formData = new FormData();
+      formData.append('formFile', file[0]);
+      formData.append('patrolId', this.editedPatrol.id);
+
+      this.$http.post('file/upload',formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      .then(response => {
+          this.editedPatrol.backgroundImageUrl = response.data.relativeUrl;
+          console.log(response.data.relativeUrl);
+      }).catch(response => {
+          console.log(response);
+      }).finally(response=>this.$store.dispatch('loadingComplete'));
+    },
+    logoFileUpload(file,e){
+      this.$store.dispatch('loading','Uploading...');
+      let formData = new FormData();
+      formData.append('formFile', file[0]);
+      formData.append('patrolId', this.editedPatrol.id);
+
+      this.$http.post('file/upload',formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      .then(response => {
+          this.editedPatrol.logoImageUrl = response.data.relativeUrl;
+          console.log(response.data.relativeUrl);
+      }).catch(response => {
+          console.log(response);
+      }).finally(response=>this.$store.dispatch('loadingComplete'));
     },
     getTimeZones() {
       this.$store.dispatch('loading','Loading...');
@@ -127,11 +220,18 @@ export default {
     selectedPatrol: function (){
         return this.$store.getters.selectedPatrol;
     }
+    
   },
   watch: {
     selectedPatrolId(){
         this.load();
+    },
+    backgroundFile(){
+      console.log('file changed');
     }
+    //editedPatrol: function(){
+    //  this.counter++;
+    //}
   },
   mounted: function(){
      this.getTimeZones();

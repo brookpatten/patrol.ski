@@ -22,7 +22,7 @@ namespace Amphibian.Patrol.Api.Repositories
         {
             _connection = connection;
         }
-        public Task<IEnumerable<Announcement>> GetAnnouncements(int patrolId, DateTime? now)
+        public Task<IEnumerable<Announcement>> GetAnnouncements(int patrolId, DateTime? now, bool isInternal, bool isPublic)
         {
             return _connection.QueryAsync<Announcement>(@"
             select
@@ -39,8 +39,13 @@ namespace Amphibian.Patrol.Api.Repositories
             where patrolid=@patrolId
             and (@now is null or @now > postat)
             and (@now is null or expireat is null or @now < expireat)
+            and (
+                (@isInternal = 1 and isInternal = 1)
+                or
+                (@isPublic = 1 and isPublic=1)
+            )
             order by createdat desc
-            ",new { patrolId, now });
+            ", new { patrolId, now, isInternal, isPublic });
         }
 
         public async Task InsertAnnouncement(Announcement announcement)

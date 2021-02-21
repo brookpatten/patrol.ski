@@ -8,7 +8,7 @@ namespace Amphibian.Patrol.Api.Repositories
 {
     public interface IAnnouncementRepository
     {
-        Task<IEnumerable<Announcement>> GetAnnouncements(int patrolId, DateTime? now);
+        Task<IEnumerable<Announcement>> GetAnnouncements(int patrolId, DateTime? now, bool isInternal, bool isPublic);
         Task InsertAnnouncement(Announcement announcement);
         Task UpdateAnnouncement(Announcement announcement);
         Task<Announcement> GetById(int id);

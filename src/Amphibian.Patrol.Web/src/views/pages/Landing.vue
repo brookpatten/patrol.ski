@@ -300,6 +300,21 @@
                 </CCard>
               </CCol>
           </CTab>
+          <CTab>
+              <template slot="title">
+                <CIcon name="cil-people"/> Public Site
+              </template>
+              <CCol md="12" lg="6">
+                <CCard>
+                  <CCardBody>
+                    <img src="feature-public.png" alt="announcement screenshot" style="height:200px" @click="openGallery(30)"/>
+                  </CCardBody>
+                  <CCardFooter>
+                    Enable a public-facing site to share selected information, events, and announcements with the public.
+                  </CCardFooter>
+                </CCard>
+              </CCol>
+          </CTab>
         </CTabs>
       </CCard>
     </CCol>
@@ -477,6 +492,12 @@ export default {
           src:'feature-recurring-workitem-list.png',
           thumb:'feature-recurring-workitem-list.png',
           caption:'Manage all your recurring work in a central location'
+        }
+        ,
+        {
+          src:'feature-public.png',
+          thumb:'feature-public.png',
+          caption:'Enable a public-facing site to share selected events and announcements'
         }
       ],
     }

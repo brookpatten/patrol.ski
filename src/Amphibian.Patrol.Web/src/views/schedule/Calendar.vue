@@ -67,6 +67,9 @@
         {{(new Date(selectedEvent.startsAt)).toLocaleString()}} - {{(new Date(selectedEvent.endsAt)).toLocaleString()}}<br/>
         {{selectedEvent.name}}<br/>
         Location: {{selectedEvent.location}}<br/>
+        <hr/>
+        <div style="overflow:hidden;" v-html="selectedEvent.eventHtml"/>
+
         <template #header>
         </template>
         <template #footer>
@@ -528,7 +531,7 @@ export default {
         },
         getEvents() {
             this.$store.dispatch('loading','Loading...');
-            this.$http.post('events/search',{patrolId:this.selectedPatrolId,from:this.from,to:this.to})
+            this.$http.post('events/search',{patrolId:this.selectedPatrolId,from:this.from,to:this.to, isInternal:true,isPublic:false})
                 .then(response => {
                     console.log(response);
                     this.events = response.data;

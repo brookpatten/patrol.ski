@@ -164,6 +164,7 @@ namespace Amphibian.Patrol.Api.Services
             user.PasswordHash = null;
             user.PasswordHashIterations = null;
             user.PasswordSalt = null;
+            user.ProfileImageUrl = null;
             user.Email = "Removed-" + Guid.NewGuid() + "@patrol.ski";
             user.AllowEmailNotifications = false;
             await _userRepository.UpdateUser(user);
