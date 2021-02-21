@@ -33,5 +33,7 @@ namespace Amphibian.Patrol.Api.Dtos
         public string BackgroundImageUrl { get; set; }
         public string LogoImageUrl { get; set; }
         public string Subdomain { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
     }
 }

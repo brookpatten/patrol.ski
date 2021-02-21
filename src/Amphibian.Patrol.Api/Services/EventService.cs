@@ -38,16 +38,18 @@ namespace Amphibian.Patrol.Api.Services
             _patrolRepository = patrolRepository;
             _emailService = emailService;
         }
-        public async Task PostEvent(Event theEvent)
+        public async Task PostEvent(Event theEvent, int userId)
         {
             var plainText = SanitizeAndNormalize(theEvent);
             if (theEvent.Id == default(int))
             {
+                theEvent.CreatedByUserId = userId;
                 theEvent.CreatedAt = _clock.UtcNow.UtcDateTime;
                 await _eventRepository.InsertEvent(theEvent);
             }
             else
             {
+                theEvent.CreatedByUserId = userId;
                 await _eventRepository.UpdateEvent(theEvent);
             }
 

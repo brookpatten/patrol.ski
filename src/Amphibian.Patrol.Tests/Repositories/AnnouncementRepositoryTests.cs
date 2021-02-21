@@ -52,7 +52,9 @@ namespace Amphibian.Patrol.Tests.Repositories
                 CreatedAt = DateTime.Now,
                 CreatedByUserId = 1,
                 PostAt = DateTime.Now,
-                Subject = "Test"
+                Subject = "Test",
+                IsInternal=true,
+                IsPublic = true
             };
 
             await _announcementRepository.InsertAnnouncement(announcement);
@@ -72,7 +74,9 @@ namespace Amphibian.Patrol.Tests.Repositories
                 CreatedAt = DateTime.Now,
                 CreatedByUserId = 1,
                 PostAt = DateTime.Now,
-                Subject = "Test"
+                Subject = "Test",
+                IsInternal = true,
+                IsPublic = true
             };
 
             await _announcementRepository.InsertAnnouncement(announcement);

@@ -5,6 +5,6 @@ namespace Amphibian.Patrol.Api.Services
 {
     public interface IEventService
     {
-        Task PostEvent(Event theEvent);
+        Task PostEvent(Event theEvent,int userId);
     }
 }

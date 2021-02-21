@@ -1,8 +1,10 @@
 ﻿ALTER TABLE dbo.Patrols ADD
-	EnablePublicSite bit NOT NULL CONSTRAINT DF_Patrols_EnableWorkItems DEFAULT 0,
+	EnablePublicSite bit NOT NULL CONSTRAINT DF_Patrols_EnablePublicSite DEFAULT 0,
 	Subdomain varchar(255) null,
 	LogoImageUrl varchar(1024) null,
-	BackgroundImageUrl varchar(1024) null
+	BackgroundImageUrl varchar(1024) null,
+	Phone varchar(128) null,
+	Email varchar(255) null
 GO
 ALTER TABLE dbo.Users ADD
 	ProfileImageUrl varchar(1024) null

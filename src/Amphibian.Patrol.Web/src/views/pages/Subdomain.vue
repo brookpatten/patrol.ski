@@ -10,30 +10,58 @@
               </CCol>
               <CCol md="8">
                 <h1 class="display-4">{{patrol.name}}</h1>
+                <h3 v-if="patrol.phone">Phone: <a :href="'tel:'+patrol.phone">{{patrol.phone}}</a></h3>
+                <h3 v-if="patrol.email">Email: <a :href="'mailto:'+patrol.email">{{patrol.email}}</a></h3>
               </CCol>
             </CRow>
           </CCardBody>
+          <CCardFooter>
+            <CButtonGroup class="float-right">
+                  <CButton
+                    color="success"
+                    :to="{name:'Register'}"
+                  > Register
+                  </CButton>
+                  <CButton color="primary" :to="{name:'Login'}">Sign in</CButton>
+                </CButtonGroup>
+          </CCardFooter>
         </CCard>
       </CCol>
     </CRow>
-    
-    <CRow v-for="announcement in announcements" :key="'a'-announcement.id">
-      <CCard>
-        <CCardHeader>{{announcement.subject}}</CCardHeader>
-        <CCardBody>
-          <div style="overflow:hidden;" v-html="announcement.announcementHtml"/>
-        </CCardBody>
-      </CCard>
-    </CRow>
 
-    <CRow v-for="event in events" :key="'e'-event.id">
-      <CCard>
-        <CCardHeader>Upcoming Event: {{event.name}}</CCardHeader>
-        <CCardBody>
-          <div style="overflow:hidden;" v-html="event.eventHtml"/>
-        </CCardBody>
-      </CCard>
-    </CRow>
+    <CRow class="justify-content-center">
+      <CCol md="4" lg="4" v-if="events && events.length>0">
+        <CRow>
+          <CCol>
+            <CCard>
+              <CCardBody><h2>Upcoming Events</h2></CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+        <CRow v-for="event in events" :key="'e'-event.id">
+          <CCol>
+            <CCard>
+              <CCardHeader>{{event.name}}</CCardHeader>
+              <CCardBody>
+                When: {{(new Date(event.startsAt)).toLocaleString()}} - {{(new Date(event.endsAt)).toLocaleString()}}<br/>
+                Where: {{event.location}}<br/>
+                <div style="overflow:hidden;" v-html="event.eventHtml"/>
+              </CCardBody>
+            </CCard>
+          </CCol>
+        </CRow>
+      </CCol>
+      <CCol md="8" lg="8" v-if="announcements && announcements.length>0">
+        <CRow v-for="announcement in announcements" :key="'a'-announcement.id">
+          <CCard>
+            <CCardHeader>{{announcement.subject}}</CCardHeader>
+            <CCardBody>
+              <div style="overflow:hidden;" v-html="announcement.announcementHtml"/>
+            </CCardBody>
+          </CCard>
+        </CRow>
+      </CCol>
+    </CRow>    
   </div>
 </template>
 

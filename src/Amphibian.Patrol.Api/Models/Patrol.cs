@@ -21,5 +21,7 @@ namespace Amphibian.Patrol.Api.Models
         public string Subdomain { get; set; }
         public string BackgroundImageUrl { get; set; }
         public string LogoImageUrl { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
     }
 }

@@ -111,7 +111,7 @@ namespace Amphibian.Patrol.Api.Controllers
                     }
                 }
 
-                await _eventService.PostEvent(patrolEvent);
+                await _eventService.PostEvent(patrolEvent,User.UserId());
 
                 return Ok(patrolEvent);
             }

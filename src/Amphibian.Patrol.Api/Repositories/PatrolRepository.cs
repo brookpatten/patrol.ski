@@ -101,6 +101,8 @@ namespace Amphibian.Patrol.Api.Repositories
                     ,p.backgroundimageurl
                     ,p.logoimageurl
                     ,p.timezone
+                    ,p.email
+                    ,p.phone
                     ,pu.role
                     from patrolusers pu
                     inner join patrols p on p.id=pu.patrolid

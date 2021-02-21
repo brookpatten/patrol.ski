@@ -54,7 +54,9 @@ namespace Amphibian.Patrol.Tests.Repositories
                 CreatedAt = DateTime.Now,
                 CreatedByUserId = 1,
                 StartsAt = new DateTime(2001, 1, 1, 0, 0, 0),
-                EndsAt = new DateTime(2001, 1, 1, 23, 59, 59)
+                EndsAt = new DateTime(2001, 1, 1, 23, 59, 59),
+                IsInternal = true,
+                IsPublic = true
             };
 
             await _eventRepository.InsertEvent(patrolEvent);
@@ -75,7 +77,9 @@ namespace Amphibian.Patrol.Tests.Repositories
                 CreatedAt = DateTime.Now,
                 CreatedByUserId = 1,
                 StartsAt = new DateTime(2001, 1, 1, 0, 0, 0),
-                EndsAt = new DateTime(2001, 1, 1, 23, 59, 59)
+                EndsAt = new DateTime(2001, 1, 1, 23, 59, 59),
+                IsInternal = true,
+                IsPublic = true
             };
 
             await _eventRepository.InsertEvent(patrolEvent);

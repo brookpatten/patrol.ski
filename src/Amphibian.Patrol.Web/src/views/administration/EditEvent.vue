@@ -33,14 +33,14 @@
             <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="event.isPublic" v-if="selectedPatrol.enablePublicSite"/>
             <label for="event.isPublic" v-if="selectedPatrol.enablePublicSite">Show on Public Site</label>
 
-            <CRow>
+            <!--<CRow>
               <CCol>
                 <CSelect :options="eventSignupModes" v-model="event.signupMode" label="Signup"/>
               </CCol>
               <CCol>
                 <CInput v-if="event.signupMode!='None'" label="Maximum Participants" v-model="event.maxSignups"/>
               </CCol>
-            </CRow>
+            </CRow>-->
 
             <quill-editor v-model="event.eventMarkdown" :options="quillOptions"></quill-editor>
 

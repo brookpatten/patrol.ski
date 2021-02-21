@@ -37,26 +37,43 @@
             <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="editedPatrol.enablePublicSite"/>
             <label for="editedPatrol.enablePublicSite">Public Site</label> <em>Publicly available site can display announcements and/or events marked public</em>
             <br/>
-            <CInput :inline="true"
-              label="Public Site Address"
-              v-if="editedPatrol.enablePublicSite"
-              v-model="editedPatrol.subdomain"
-              :invalidFeedback="validationErrors.Subdomain ? validationErrors.Subdomain.join() : 'Invalid'"
-              :isValid="validated ? validationErrors.Subdomain==null : null" class="col-sm-4"
-            >
-            <template #append-content>.Patrol.Ski</template>
-            </CInput>
+            <template v-if="editedPatrol.enablePublicSite">
+              <CInput :inline="true"
+                label="Public Site Address"
+                v-model="editedPatrol.subdomain"
+                :invalidFeedback="validationErrors.Subdomain ? validationErrors.Subdomain.join() : 'Invalid'"
+                :isValid="validated ? validationErrors.Subdomain==null : null" class="col-sm-4"
+              >
+              <template #append-content>
+                <a :href="'https://'+editedPatrol.subdomain+'.patrol.ski'" v-if="editedPatrol.subdomain" target="_blank" >.Patrol.Ski</a>
+                <template v-if="!editedPatrol.subdomain">.Patrol.Ski</template>
+              </template>
+              </CInput>
+              <CInput
+              label="Public Phone Number"
+              v-model="editedPatrol.phone"
+              :invalidFeedback="validationErrors.Phone ? validationErrors.Phone.join() : 'Invalid'"
+              :isValid="validated ? validationErrors.Phone==null : null"
+              />
+              <CInput
+              label="Public Email"
+              v-model="editedPatrol.email"
+              :invalidFeedback="validationErrors.Email ? validationErrors.Email.join() : 'Invalid'"
+              :isValid="validated ? validationErrors.Email==null : null"
+              />
+            </template>
+            
             <CRow>
               <CCol>
                 <CInputFile
                     label="Logo Image" @change="logoFileUpload"
                 />
                 <template v-if="editedPatrol.logoImageUrl">
-                  <img :src="editedPatrol.logoImageUrl" alt="patrol logo image" class="img-fluid rounded"/>
+                  <img :src="editedPatrol.logoImageUrl" alt="patrol logo image" class="img-fluid rounded" style="height:200px"/>
                   <br/>
                 </template>
               </CCol>
-              <CCol>
+              <!--<CCol>
               <CInputFile
                   label="Background Image" @change="backgroundFileUpload"
               />
@@ -65,7 +82,7 @@
                 <br/>
                 
               </template>
-              </CCol>
+              </CCol>-->
             </CRow>
             </template>
             <CSwitch class="mx-1" color="primary" variant="3d" :checked.sync="editedPatrol.enableTraining"/>
@@ -146,6 +163,8 @@ export default {
         this.editedPatrol.subdomain = this.selectedPatrol.subdomain;
         this.editedPatrol.backgroundImageUrl = this.selectedPatrol.backgroundImageUrl;
         this.editedPatrol.logoImageUrl = this.selectedPatrol.logoImageUrl;
+        this.editedPatrol.email = this.selectedPatrol.email;
+        this.editedPatrol.phone = this.selectedPatrol.phone;
     },
     backgroundFileUpload(file,e){
       this.$store.dispatch('loading','Uploading...');
