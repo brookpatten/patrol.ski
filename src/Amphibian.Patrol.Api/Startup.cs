@@ -43,6 +43,8 @@ using System.Text.Json.Serialization;
 using Amphibian.Patrol.Api.Dtos;
 using Dapper;
 using Amphibian.Patrol.Api.Extensions;
+using Hangfire;
+using Ben.Diagnostics;
 
 namespace Amphibian.Patrol.Api
 {
@@ -165,11 +167,16 @@ namespace Amphibian.Patrol.Api
 
             services.AddScoped<ISystemClock, SystemClock>();
 
+            //hangfire
+            services.AddHangfire(x => x.UseSqlServerStorage(serviceConfiguration.Database.ConnectionString));
+            services.AddHangfireServer();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            app.UseBlockingDetection();
             app.UseSerilogRequestLogging();
             app.UseHttpsRedirection();
 
@@ -240,7 +247,10 @@ namespace Amphibian.Patrol.Api
                 endpoints.MapControllers();
             });
 
-            
+            app.UseHangfireDashboard("/jobs", new DashboardOptions()
+            {
+                Authorization = new[] { new HangfireAuthorizationFilter() }
+            });
         }
     }
 }

@@ -18,6 +18,6 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: "patroltraining.azurecr.io/frontend:latest"
+        image: "patroltraining.azurecr.io/frontend:dev"
         ports:
         - containerPort: 80

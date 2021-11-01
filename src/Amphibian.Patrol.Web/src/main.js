@@ -13,6 +13,7 @@ import lodash from 'lodash'
 import VueLodash from 'vue-lodash'
 import VueBlockUI from 'vue-blockui'
 import VueLazyLoad from 'vue-lazyload'
+import VueCookies from 'vue-cookies'
 
 Vue.config.performance = true
 Vue.use(CoreuiVue)
@@ -20,11 +21,13 @@ Vue.use(lodash,VueLodash)
 Vue.use(VueBlockUI)
 Vue.use(VueLazyLoad)
 Vue.use(VueAxios, Axios)
+Vue.use(VueCookies)
 
-const token = localStorage.getItem('token')
-if (token) {
-  Vue.prototype.$http.defaults.headers.common['Authorization'] = 'Bearer '+token
-}
+//const token = localStorage.getItem('token')
+//const token = Vue.$cookies.get('access_token');
+//if (token) {
+//  Vue.prototype.$http.defaults.headers.common['Authorization'] = 'Bearer '+token
+//}
 
 //globally configure axios so that any time an api call returns a 401, we redirect to login
 Axios.interceptors.response.use(function (response) {

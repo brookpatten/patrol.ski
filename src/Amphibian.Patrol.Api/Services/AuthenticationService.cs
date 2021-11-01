@@ -28,11 +28,12 @@ namespace Amphibian.Patrol.Api.Services
         private readonly ITokenRepository _tokenRepository;
         private readonly IPatrolRepository _patrolRepository;
         private readonly ISystemClock _systemClock;
+        private readonly ISysAdminService _sysAdminService;
         private readonly string _jwtKey;
         private readonly string _jwtIssuer;
 
         public AuthenticationService(ILogger<AuthenticationService> logger, IUserRepository userRepository, IPasswordService passwordService, 
-            ITokenRepository tokenRepository, ISystemClock systemClock,IPatrolRepository patrolRepository, AppConfiguration configuration)
+            ITokenRepository tokenRepository, ISystemClock systemClock,IPatrolRepository patrolRepository, AppConfiguration configuration, ISysAdminService sysAdminService)
         {
             _logger = logger;
             _userRepository = userRepository;
@@ -42,6 +43,7 @@ namespace Amphibian.Patrol.Api.Services
             _jwtKey = configuration.JwtKey;
             _jwtIssuer = configuration.RootUrl;
             _patrolRepository = patrolRepository;
+            _sysAdminService = sysAdminService;
         }
 
         public async Task<Token> CreateNewTokenForUser(User user)
@@ -82,6 +84,11 @@ namespace Amphibian.Patrol.Api.Services
                 permClaims.Add(new Claim("minimal", minimal.ToString()));
             }
 
+            if(_sysAdminService.IsUserSysAdmin(user))
+            {
+                permClaims.Add(new Claim("isSysAdmin", "true"));
+            }
+
             //Create Security Token object by giving required parameters    
             var jwtSecurityToken = new JwtSecurityToken(_jwtIssuer, //Issuer    
                             "all",  //Audience    
@@ -95,7 +102,7 @@ namespace Amphibian.Patrol.Api.Services
         public ClaimsPrincipal ValidateSignedJwtToken(string jwt)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
-
+            
             var handler = new JwtSecurityTokenHandler();
             var validationParameters = new TokenValidationParameters()
             {
@@ -103,7 +110,7 @@ namespace Amphibian.Patrol.Api.Services
                 ValidIssuer = _jwtIssuer,
                 RequireExpirationTime = false,
                 IssuerSigningKey = securityKey,
-                ValidateIssuerSigningKey = true,
+                ValidateIssuerSigningKey = true
             };
 
             SecurityToken validatedToken;

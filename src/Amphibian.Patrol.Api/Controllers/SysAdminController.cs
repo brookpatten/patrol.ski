@@ -19,17 +19,13 @@ namespace Amphibian.Patrol.Api.Controllers
     [ApiController]
     public class SysAdminController : ControllerBase
     {
-        private ISysAdminService _sysAdminService;
         private IApiLogRepository _apiLogRepository;
         ILogger<SysAdminController> _logger;
-        private IUserRepository _userRepository;
-
-        public SysAdminController(ILogger<SysAdminController> logger,ISysAdminService sysAdminService, IApiLogRepository apiLogRepository, IUserRepository userRepository)
+        
+        public SysAdminController(ILogger<SysAdminController> logger,ISysAdminService sysAdminService, IApiLogRepository apiLogRepository)
         {
             _logger = logger;
-            _sysAdminService = sysAdminService;
             _apiLogRepository = apiLogRepository;
-            _userRepository = userRepository;
         }
 
 
@@ -46,8 +42,8 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetRoutes(MetricsQuery query)
         {
-            var user = await _userRepository.GetUser(User.ParseAllClaims().User.Id);
-            if (_sysAdminService.IsUserSysAdmin(user))
+            var claims = User.ParseAllClaims();
+            if (claims.IsSysAdmin.HasValue && claims.IsSysAdmin.Value)
             {
                 var routes = await _apiLogRepository.SearchApiLogs(query.From, query.To, query.UserId, query.Route);
 
@@ -69,8 +65,8 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetUsers(MetricsQuery query)
         {
-            var user = await _userRepository.GetUser(User.ParseAllClaims().User.Id);
-            if (_sysAdminService.IsUserSysAdmin(user))
+            var claims = User.ParseAllClaims();
+            if (claims.IsSysAdmin.HasValue && claims.IsSysAdmin.Value)
             {
                 var routes = await _apiLogRepository.SearchApiLogs(query.From, query.To, query.UserId, query.Route);
 
@@ -97,8 +93,8 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetDays(MetricsQuery query)
         {
-            var user = await _userRepository.GetUser(User.ParseAllClaims().User.Id);
-            if (_sysAdminService.IsUserSysAdmin(user))
+            var claims = User.ParseAllClaims();
+            if (claims.IsSysAdmin.HasValue && claims.IsSysAdmin.Value)
             {
                 var routes = await _apiLogRepository.SearchApiLogs(query.From, query.To, query.UserId, query.Route);
 
@@ -129,8 +125,8 @@ namespace Amphibian.Patrol.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetRouteMetrics(MetricsQuery query)
         {
-            var user = await _userRepository.GetUser(User.ParseAllClaims().User.Id);
-            if (_sysAdminService.IsUserSysAdmin(user))
+            var claims = User.ParseAllClaims();
+            if (claims.IsSysAdmin.HasValue && claims.IsSysAdmin.Value)
             {
                 var metrics = await _apiLogRepository.GetRouteMetrics(query.From, query.To, query.UserId, query.Route);
                 return Ok(metrics);

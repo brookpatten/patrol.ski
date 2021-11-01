@@ -28,6 +28,7 @@ namespace Amphibian.Patrol.Api.Mappings
                 cfg.CreateMap<SectionLevel, SectionLevelDto>();
                 cfg.CreateMap<Signature, SignatureDto>();
                 cfg.CreateMap<User, PatrolUserDto>();
+                cfg.CreateMap<User, UserIdentifier>();
                 cfg.CreateMap<SectionGroup, SectionGroupDto>();
 
                 cfg.CreateMap<RecurringWorkItem, RecurringWorkItemDto>();

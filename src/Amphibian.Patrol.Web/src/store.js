@@ -4,9 +4,11 @@ import axios from 'axios'
 import lodash from 'lodash'
 import VueLodash from 'vue-lodash'
 import jwt_decode from 'jwt-decode'
+import VueCookies from 'vue-cookies'
 
 Vue.use(Vuex)
 Vue.use(VueLodash, lodash)
+Vue.use(VueCookies)
 
 var loadState = function(){
   console.log('Initializing state');
@@ -19,20 +21,24 @@ var loadState = function(){
       patrols: [],
       selectedPatrolId: 0,
       loadingMessage: 'Loading',
-      loadingCount: 0
+      loadingCount: 0,
+      isSysAdmin: false
     };
 
-    newState.token = localStorage.getItem('token') !=null ? localStorage.getItem('token') : '';
+    //newState.token = localStorage.getItem('token') !=null ? localStorage.getItem('token') : '';
+    newState.token = Vue.$cookies.get('access_token') !=null ? Vue.$cookies.get('access_token') : '';
     if(newState.token){
       try{
-      var decoded = jwt_decode(newState.token);
-      newState.patrols = JSON.parse(decoded.patrols);
-      newState.userId = parseInt(decoded.uid);
+        var decoded = jwt_decode(newState.token);
+        newState.patrols = JSON.parse(decoded.patrols);
+        newState.userId = parseInt(decoded.uid);
+        newState.isSysAdmin = decoded.isSysAdmin === 'true';
       }
       catch(err){
         newState.token = '';
         newState.patrols=[];
         newState.userId = 0;
+        newState.isSysAdmin = false;
       }
     }
     newState.selectedPatrolId= localStorage.getItem('selectedPatrolId')!=null ? parseInt(localStorage.getItem('selectedPatrolId')) : 0;
@@ -70,11 +76,13 @@ const mutations = {
     var decoded = jwt_decode(jwt);
     state.patrols = JSON.parse(decoded.patrols);
     state.userId = parseInt(decoded.uid);
+    state.isSysAdmin = decoded.isSysAdmin === 'true';
     }
     catch(err){
       state.patrols=[];
       state.userId=0;
       state.token='';
+      state.isSysAdmin = false;
     }
 
     //if no patrol is selected, or the selected patrol is no longer allowed, just pick the first one that IS allowed
@@ -129,8 +137,9 @@ export default new Vuex.Store({
       console.log('authenticate',jwt);
       return new Promise((resolve, reject) => {
         commit('auth_success', jwt);
-        localStorage.setItem('token', jwt);
-        axios.defaults.headers.common['Authorization'] = 'Bearer ' + jwt;
+        //localStorage.setItem('token', jwt);
+        Vue.$cookies.set('access_token',jwt,null,null,null,false);
+        //axios.defaults.headers.common['Authorization'] = 'Bearer ' + jwt;
         resolve(jwt);
       });
     },
@@ -144,7 +153,7 @@ export default new Vuex.Store({
     logout({commit}){
       return new Promise((resolve, reject) => {
         commit('logout');
-        localStorage.removeItem('token');
+        Vue.$cookies.remove('access_token');
         localStorage.removeItem('selectedPatrolId');
         delete axios.defaults.headers.common['Authorization'];
         resolve();
@@ -187,6 +196,7 @@ export default new Vuex.Store({
     userId: state=> state.userId,
     loadingCount: state=>state.loadingCount,
     loadingMessage: state=>state.loadingMessage,
-    token: state=> state.token
+    token: state=> state.token,
+    isSysAdmin: state=> state.isSysAdmin,
   }
 })

@@ -58,7 +58,7 @@
             </CCardFooter>
         </CCard>
         <CModal
-        :title="selectedEvent.title"
+        :title="selectedEvent.name"
         :show.sync="showSelectedEvent"
         :no-close-on-backdrop="true"
         color="success"

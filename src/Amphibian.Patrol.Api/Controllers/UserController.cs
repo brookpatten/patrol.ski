@@ -14,6 +14,7 @@ using Amphibian.Patrol.Api.Dtos;
 using Microsoft.Extensions.Logging;
 using Amphibian.Patrol.Api.Infrastructure;
 using Microsoft.AspNetCore.Authentication;
+using AutoMapper;
 
 namespace Amphibian.Patrol.Api.Controllers
 {
@@ -30,11 +31,12 @@ namespace Amphibian.Patrol.Api.Controllers
         private Services.IAuthenticationService _authenticationService;
         private ITokenRepository _tokenRepository;
         private ISystemClock _systemClock;
+        private IMapper _mapper;
         
 
         public UserController(ILogger<UserController> logger, IPatrolService patrolService,IUserRepository userRepository,IEmailService emailService
             , IPatrolRepository patrolRepository, IGroupRepository groupRepository, IUserService userService, IPlanRepository planRepository
-            , Services.IAuthenticationService authenticationService, ITokenRepository tokenRepository, ISystemClock systemClock)
+            , Services.IAuthenticationService authenticationService, ITokenRepository tokenRepository, ISystemClock systemClock, IMapper mapper)
         {
             _logger = logger;
             _patrolService = patrolService;
@@ -46,6 +48,7 @@ namespace Amphibian.Patrol.Api.Controllers
             _authenticationService = authenticationService;
             _tokenRepository = tokenRepository;
             _systemClock = systemClock;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -86,7 +89,9 @@ namespace Amphibian.Patrol.Api.Controllers
         public async Task<IActionResult> GetSelf()
         {
             var user = await _userRepository.GetUser(User.UserId());
-            return Ok((UserIdentifier)user);
+            var id = _mapper.Map<User, UserIdentifier>(user);
+
+            return Ok(id);
         }
 
         [HttpGet]

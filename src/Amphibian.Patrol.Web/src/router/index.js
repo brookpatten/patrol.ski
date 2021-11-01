@@ -205,7 +205,7 @@ function configRoutes () {
           children: [
             {
               path: '',
-              name: 'SysAdmin Dashboard',
+              name: 'SysAdminDashboard',
               component: SysAdminDashboard,
               meta: { 
                 requiresAuth: true

@@ -81,6 +81,13 @@
           name='Assignments' :to='{name:"Assignments"}' icon='cil-list-rich' />
       </template>
 
+      <template v-if="isSysAdmin">
+        <CSidebarNavTitle>
+          Sys Admin
+        </CSidebarNavTitle>
+        <CSidebarNavItem name='Usage' :to='{name:"SysAdminDashboard"}' icon='cil-spreadsheet' />
+        <CSidebarNavItem name='Jobs' to='/jobs' icon='cil-spreadsheet' />
+      </template>
       
       
     </CSidebarNav>
@@ -111,6 +118,9 @@ export default {
     },
     showAdministration: function(){
       return this.selectedPatrol!=null && this.selectedPatrol.permissions!=null && this.selectedPatrol.permissions.length>0;
+    },
+    isSysAdmin: function(){
+      return this.$store.getters.isSysAdmin;
     }
   },
   methods: {

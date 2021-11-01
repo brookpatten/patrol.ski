@@ -17,6 +17,7 @@ namespace Amphibian.Patrol.Api.Dtos
         public Token Token { get; set; }
         public List<CurrentUserPatrolDto> Patrols { get; set; }
         public bool? Minimal { get; set; }
+        public bool? IsSysAdmin { get; set; }
     }
 
     public static class ValidatedSignedJwtTokenExtensions
@@ -46,12 +47,19 @@ namespace Amphibian.Patrol.Api.Dtos
                     minimal = bool.Parse(principal.Claims.Single(x => x.Type == "minimal").Value);
                 }
 
+                bool? isSysAdmin = null;
+                if (principal.Claims.Any(x => x.Type == "isSysAdmin"))
+                {
+                    isSysAdmin = bool.Parse(principal.Claims.Single(x => x.Type == "isSysAdmin").Value);
+                }
+
                 return new ValidatedSignedJwtToken()
                 {
                     User = user,
                     Token = token,
                     Patrols = patrols,
-                    Minimal = minimal
+                    Minimal = minimal,
+                    IsSysAdmin = isSysAdmin
                 };
             }
             else
