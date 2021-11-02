@@ -8,7 +8,6 @@ using System.Data;
 using Dapper;
 using Dommel;
 
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Data.Common;
 
 namespace Amphibian.Patrol.Api.Repositories
