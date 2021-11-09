@@ -11,6 +11,7 @@ using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Dtos;
 using AutoMapper;
 using System.Data.Common;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -32,7 +33,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertPlan(Plan plan)
         {
-            plan.Id = (int)await _connection.InsertAsync(plan).ConfigureAwait(false);
+            plan.Id = (int)await _connection.InsertAsync(plan).ConfigureAwait(false).ToInt32();
         }
         public async Task UpdatePlan(Plan plan)
         {
@@ -145,15 +146,15 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertSection(Section section)
         {
-            section.Id = (int)await _connection.InsertAsync(section).ConfigureAwait(false);
+            section.Id = (int)await _connection.InsertAsync(section).ConfigureAwait(false).ToInt32();
         }
         public async Task InsertPlanSection(PlanSection planSection)
         {
-            planSection.Id = (int)await _connection.InsertAsync(planSection).ConfigureAwait(false);
+            planSection.Id = (int)await _connection.InsertAsync(planSection).ConfigureAwait(false).ToInt32();
         }
         public async Task InsertSectionLevel(SectionLevel sectionLevel)
         {
-            sectionLevel.Id = (int)await _connection.InsertAsync(sectionLevel).ConfigureAwait(false);
+            sectionLevel.Id = (int)await _connection.InsertAsync(sectionLevel).ConfigureAwait(false).ToInt32();
         }
         public async Task InsertSectionSkill(SectionSkill sectionSkill)
         {
@@ -161,11 +162,11 @@ namespace Amphibian.Patrol.Api.Repositories
         }
         public async Task InsertLevel(Level level)
         {
-            level.Id = (int)await _connection.InsertAsync(level).ConfigureAwait(false);
+            level.Id = (int)await _connection.InsertAsync(level).ConfigureAwait(false).ToInt32();
         }
         public async Task InsertSkill(Skill skill)
         {
-            skill.Id = (int)await _connection.InsertAsync(skill).ConfigureAwait(false);
+            skill.Id = (int)await _connection.InsertAsync(skill).ConfigureAwait(false).ToInt32();
         }
 
         public async Task DeleteSection(Section section)
@@ -220,7 +221,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task<SectionGroup> InsertSectionGroup(SectionGroup group)
         {
-            var id = (int)await _connection.InsertAsync(group);
+            var id = (int)await _connection.InsertAsync(group).ConfigureAwait(false).ToInt32();
             group.Id = id;
             return group;
         }

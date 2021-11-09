@@ -9,6 +9,7 @@ using System.Security.Principal;
 using TimeZoneConverter;
 using SendGrid.Helpers.Mail;
 using Amphibian.Patrol.Api.Models;
+using System.Runtime.CompilerServices;
 
 namespace Amphibian.Patrol.Api.Extensions
 {
@@ -112,7 +113,33 @@ namespace Amphibian.Patrol.Api.Extensions
             await diff.Execute();
             return diff;
         }
+
+        public static int ToInt32(this object obj)
+        {
+            if(obj is decimal)
+            {
+                return Decimal.ToInt32((decimal)obj);
+            }
+            else
+            {
+                throw new ArgumentException("Unknown input type");
+            }
+        }
+
+        public static async Task<int> ToInt32(this Task<object> obj)
+        {
+            var result = await obj;
+            return ToInt32(result);
+        }
+
+        public static async Task<int> ToInt32(this ConfiguredTaskAwaitable<object> obj)
+        {
+            var result = await obj;
+            return ToInt32(result);
+        }
     }
+
+   
 
     public class EnumberableDiff<T,K>
     {

@@ -9,6 +9,7 @@ using Dapper;
 using Dommel;
 
 using System.Data.Common;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -23,7 +24,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertToken(Token token)
         {
-            token.Id = (int)await _connection.InsertAsync(token).ConfigureAwait(false);
+            token.Id = (int)await _connection.InsertAsync(token).ConfigureAwait(false).ToInt32();
         }
 
         public async Task UpdateToken(Token token)

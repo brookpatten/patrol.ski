@@ -38,13 +38,13 @@ namespace Amphibian.Patrol.Tests.Infrastructure
         {
             await _unitOfWork.Begin();
 
-            var id = (int)await _connection.InsertAsync(new Token()
+            var id = await _connection.InsertAsync(new Token()
             {
                 TokenGuid = Guid.NewGuid(),
                 CreatedAt = DateTime.Now,
                 LastRequestAt = DateTime.Now,
                 UserId = 1
-            });
+            }).ConfigureAwait(false).ToInt32();
 
             await _unitOfWork.Commit();
 
@@ -64,7 +64,7 @@ namespace Amphibian.Patrol.Tests.Infrastructure
                 CreatedAt = DateTime.Now,
                 LastRequestAt = DateTime.Now,
                 UserId = 1
-            });
+            }).ConfigureAwait(false).ToInt32();
 
             await _unitOfWork.Rollback();
 
@@ -87,7 +87,7 @@ namespace Amphibian.Patrol.Tests.Infrastructure
                 CreatedAt = DateTime.Now,
                 LastRequestAt = DateTime.Now,
                 UserId = 1
-            });
+            }).ConfigureAwait(false).ToInt32();
 
             await _unitOfWork.Commit();
 
@@ -110,7 +110,7 @@ namespace Amphibian.Patrol.Tests.Infrastructure
                 CreatedAt = DateTime.Now,
                 LastRequestAt = DateTime.Now,
                 UserId = 1
-            });
+            }).ConfigureAwait(false).ToInt32();
 
             await _unitOfWork.Rollback();
 

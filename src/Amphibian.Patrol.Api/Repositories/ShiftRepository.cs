@@ -11,6 +11,7 @@ using AutoMapper;
 using Amphibian.Patrol.Api.Dtos;
 using Amphibian.Patrol.Api.Models;
 using System.Data.Common;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -262,8 +263,7 @@ namespace Amphibian.Patrol.Api.Repositories
         }
         public async Task<Trainee> InsertTrainee(Trainee trainee)
         {
-            trainee.Id = (int)await _connection.InsertAsync(trainee)
-                .ConfigureAwait(false);
+            trainee.Id = (int)await _connection.InsertAsync(trainee).ConfigureAwait(false).ToInt32();
             return trainee;
         }
         public Task<IEnumerable<Trainee>> GetTrainees(int scheduledShiftAssignmentId)
@@ -310,7 +310,7 @@ namespace Amphibian.Patrol.Api.Repositories
         }
         public async Task InsertScheduledShift(ScheduledShift shift)
         {
-            var id = (int)await _connection.InsertAsync(shift);
+            var id = (int)await _connection.InsertAsync(shift).ConfigureAwait(false).ToInt32();
             shift.Id = id;
         }
         public Task DeleteScheduledShift(ScheduledShift shift)
@@ -339,7 +339,7 @@ namespace Amphibian.Patrol.Api.Repositories
         }
         public async Task InsertShift(Shift shift)
         {
-            var id = (int)await _connection.InsertAsync(shift);
+            var id = (int)await _connection.InsertAsync(shift).ConfigureAwait(false).ToInt32();
             shift.Id = id;
         }
         public Task UpdateShift(Shift shift)
@@ -353,7 +353,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertScheduledShiftAssignment(ScheduledShiftAssignment shift)
         {
-            var id = (int)await _connection.InsertAsync(shift);
+            var id = (int)await _connection.InsertAsync(shift).ConfigureAwait(false).ToInt32();
             shift.Id = id;
         }
         public Task UpdateScheduledShiftAssignment(ScheduledShiftAssignment shift)

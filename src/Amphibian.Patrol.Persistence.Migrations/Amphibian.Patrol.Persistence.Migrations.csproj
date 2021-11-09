@@ -29,6 +29,7 @@
     <None Remove="Scripts\0021-Jwt.sql" />
     <None Remove="Scripts\0022-ApiLogs.sql" />
     <None Remove="Scripts\0023-PublicPatrolPages.sql" />
+    <None Remove="Scripts\0024-TimeclockNameFix.sql" />
     <None Remove="Scripts\0999-Indexes.sql" />
     <None Remove="Scripts\1001-TestData.sql" />
   </ItemGroup>
@@ -51,6 +52,7 @@
     <EmbeddedResource Include="Scripts\0015-Scheduling.sql" />
     <EmbeddedResource Include="Scripts\0016-EmailAnnouncementsAndEvents.sql" />
     <EmbeddedResource Include="Scripts\0017-AllowAvailableScheduledShiftAssignments.sql" />
+    <EmbeddedResource Include="Scripts\0024-TimeclockNameFix.sql" />
     <EmbeddedResource Include="Scripts\0018-Timeclock.sql" />
     <EmbeddedResource Include="Scripts\0019-AuthProviders.sql" />
     <EmbeddedResource Include="Scripts\0020-WorkItems.sql" />

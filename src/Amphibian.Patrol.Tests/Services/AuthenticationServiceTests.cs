@@ -322,7 +322,7 @@ namespace Amphibian.Patrol.Tests.Services
                 _tokenRepositoryMock.Object, _systemClockMock.Object,_patrolRepository.Object, 
                 new Configuration.AppConfiguration() { JwtKey = "incorrectJwtKeyincorrectJwtKeyincorrectJwtKey", RootUrl = "jwtIssuer" }, _sysAdminService.Object);
 
-            Assert.Throws<SecurityTokenInvalidSignatureException>(() =>
+            Assert.Throws<SecurityTokenSignatureKeyNotFoundException>(() =>
             {
                 var validatedJwt = incorrectAuthenticationService.ValidateSignedJwtToken(jwt);
             });
@@ -359,7 +359,7 @@ namespace Amphibian.Patrol.Tests.Services
             var wrongJwt = jwt.Substring(0, sigIndex) + incorrect;
 
 
-            Assert.Throws<SecurityTokenInvalidSignatureException>(() =>
+            Assert.Throws<SecurityTokenSignatureKeyNotFoundException>(() =>
             {
                 var validatedJwt = _authenticationService.ValidateSignedJwtToken(wrongJwt);
             });

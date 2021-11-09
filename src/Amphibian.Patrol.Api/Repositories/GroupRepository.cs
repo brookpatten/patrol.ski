@@ -11,6 +11,7 @@ using Dommel;
 using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Dtos;
 using System.Data.Common;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -83,8 +84,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task<GroupUser> InsertGroupUser(GroupUser groupUser)
         {
-            groupUser.Id = (int)await _connection.InsertAsync(groupUser)
-                .ConfigureAwait(false);
+            groupUser.Id = (int)await _connection.InsertAsync(groupUser).ConfigureAwait(false).ToInt32();
             return groupUser;
         }
 
@@ -134,7 +134,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task<Group> InsertGroup(Group group)
         {
-            var id = (int)await _connection.InsertAsync(group).ConfigureAwait(false);
+            var id = (int)await _connection.InsertAsync(group).ConfigureAwait(false).ToInt32();
             group.Id = id;
             return group;
         }

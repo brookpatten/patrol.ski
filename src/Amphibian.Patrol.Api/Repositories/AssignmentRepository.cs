@@ -11,6 +11,7 @@ using AutoMapper;
 using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Dtos;
 using System.Data.Common;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -234,7 +235,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertSignature(Signature signature)
         {
-            signature.Id=(int)await _connection.InsertAsync(signature);
+            signature.Id=(int)await _connection.InsertAsync(signature).ConfigureAwait(false).ToInt32();
         }
 
         public async Task UpdateAssignment(Assignment assignment)
@@ -244,7 +245,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertAssignment(Assignment assignment)
         {
-            assignment.Id = (int)await _connection.InsertAsync(assignment);
+            assignment.Id = (int)await _connection.InsertAsync(assignment).ConfigureAwait(false).ToInt32();
         }
 
         public async Task<IEnumerable<AssignmentCountByPlanByDayDto>> GetAssignmentCountsByDay(int patrolId, DateTime start, DateTime end)

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Dommel;
 using Amphibian.Patrol.Api.Dtos;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -33,7 +34,7 @@ namespace Amphibian.Patrol.Api.Repositories
             return _connection.QueryAsync<TimeEntry>(@"
             select 
             *
-            from timeentrys
+            from timeentries
             where clockout is null
             and (
                 @patrolId is null
@@ -69,13 +70,13 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertTimeEntry(TimeEntry entry)
         {
-            var id = (int)(await _connection.InsertAsync(entry));
+            var id = (int)await _connection.InsertAsync(entry).ConfigureAwait(false).ToInt32();
             entry.Id = id;
         }
 
         public async Task InsertTimeEntryScheduledShiftAssignment(TimeEntryScheduledShiftAssignment timeEntryScheduledShiftAssignment)
         {
-            var id = (int)(await _connection.InsertAsync(timeEntryScheduledShiftAssignment));
+            var id = (int)await _connection.InsertAsync(timeEntryScheduledShiftAssignment).ConfigureAwait(false).ToInt32();
             timeEntryScheduledShiftAssignment.Id = id;
         }
 
@@ -111,7 +112,7 @@ namespace Amphibian.Patrol.Api.Repositories
             ,s.name
             ,g.id
             ,g.name
-            from timeentrys te
+            from timeentries te
             inner join users u on u.id=te.userid
             left join timeentryscheduledshiftassignments tessa on tessa.timeentryid=te.id
             left join scheduledshiftassignments ssa on ssa.id=tessa.scheduledshiftassignmentid
@@ -158,7 +159,7 @@ namespace Amphibian.Patrol.Api.Repositories
             from scheduledshifts ss
             inner join scheduledshiftassignments ssa on ssa.scheduledshiftid=ss.id
             inner join users u on u.id=ssa.assigneduserid
-            left join timeentrys te on 
+            left join timeentries te on 
                 te.userid=ssa.assigneduserid 
                 and te.patrolid=@patrolid 
                 and te.clockin<@now 
@@ -204,7 +205,7 @@ namespace Amphibian.Patrol.Api.Repositories
             ,s.name
             ,g.id
             ,g.name
-            from timeentrys te
+            from timeentries te
             inner join users u on u.id=te.userid
             left join timeentryscheduledshiftassignments tessa on tessa.timeentryid=te.id
             left join scheduledshiftassignments ssa on ssa.id=tessa.scheduledshiftassignmentid
@@ -256,7 +257,7 @@ namespace Amphibian.Patrol.Api.Repositories
             inner join users u on u.id=ssa.assigneduserid
             left join timeentryscheduledshiftassignments tessa on
 	            tessa.scheduledshiftassignmentid=ssa.id
-            left join timeentrys te on te.id=tessa.timeentryid
+            left join timeentries te on te.id=tessa.timeentryid
             left join shifts s on s.id=ss.shiftid
             left join groups g on g.id=ss.groupid
             where 

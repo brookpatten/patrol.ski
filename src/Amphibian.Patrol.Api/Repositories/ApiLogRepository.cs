@@ -11,6 +11,7 @@ using AutoMapper;
 using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Dtos;
 using System.Data.Common;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -69,7 +70,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertApiLog(ApiLog log)
         {
-            log.Id = (int)await _connection.InsertAsync(log);
+            log.Id = (int)await _connection.InsertAsync(log).ConfigureAwait(false).ToInt32();
         }
 
         public async Task UpdateApiLog(ApiLog log)

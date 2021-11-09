@@ -11,6 +11,7 @@ using Amphibian.Patrol.Api.Models;
 using System.Data.Common;
 using Amphibian.Patrol.Api.Dtos;
 using TimeZoneConverter;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -43,8 +44,7 @@ namespace Amphibian.Patrol.Api.Repositories
                 patrol.TimeZone = TZConvert.GetTimeZoneInfo(patrol.TimeZone).Id;
             }
 
-            patrol.Id = (int)await _connection.InsertAsync(patrol)
-                .ConfigureAwait(false);
+            patrol.Id = (int)await _connection.InsertAsync(patrol).ConfigureAwait(false).ToInt32();
         }
 
         public async Task UpdatePatrol(Amphibian.Patrol.Api.Models.Patrol patrol)
@@ -150,8 +150,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertPatrolUser(PatrolUser patrolUser)
         {
-            patrolUser.Id = (int)await _connection.InsertAsync(patrolUser)
-                .ConfigureAwait(false);
+            patrolUser.Id = (int)await _connection.InsertAsync(patrolUser).ConfigureAwait(false).ToInt32();
         }
 
         public async Task DeletePatrolUser(int patrolId, int userId)

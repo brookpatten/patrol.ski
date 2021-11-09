@@ -8,6 +8,7 @@ using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Repositories;
 using Dommel;
 using System.Linq;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Tests.Repositories
 {
@@ -30,7 +31,7 @@ namespace Amphibian.Patrol.Tests.Repositories
                 FirstName = "Test",
                 LastName = "Test"
             };
-            _user.Id=(int)_connection.Insert(_user);
+            _user.Id = (int)_connection.Insert(_user).ToInt32();
             _patrol = new Amphibian.Patrol.Api.Models.Patrol()
             {
                 Name="Test",

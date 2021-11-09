@@ -11,6 +11,7 @@ using Dommel;
 using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Dtos;
 using System.Data.Common;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -83,7 +84,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertEvent(Event patrolEvent)
         {
-            var id = (int)await _connection.InsertAsync(patrolEvent).ConfigureAwait(false);
+            var id = (int)await _connection.InsertAsync(patrolEvent).ConfigureAwait(false).ToInt32();
             patrolEvent.Id = id;
         }
 

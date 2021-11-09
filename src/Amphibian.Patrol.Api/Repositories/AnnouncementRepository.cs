@@ -11,6 +11,7 @@ using Dommel;
 using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Dtos;
 using System.Data.Common;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -50,7 +51,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertAnnouncement(Announcement announcement)
         {
-            var id = (int)await _connection.InsertAsync(announcement).ConfigureAwait(false);
+            var id = (int)await _connection.InsertAsync(announcement).ConfigureAwait(false).ToInt32();
             announcement.Id = id;
         }
 

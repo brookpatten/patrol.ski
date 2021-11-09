@@ -14,6 +14,7 @@ using System.Data.Common;
 using Microsoft.AspNetCore.Http;
 using Amphibian.Patrol.Configuration;
 using System.IO;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -29,7 +30,7 @@ namespace Amphibian.Patrol.Api.Repositories
         }
         public async Task InsertImageUpload(FileUpload upload)
         {
-            var id = (int)await _connection.InsertAsync(upload).ConfigureAwait(false);
+            var id = (int)await _connection.InsertAsync(upload).ConfigureAwait(false).ToInt32();
             upload.Id = id;
         }
         public async Task<FileUpload> PersistUpload(IFormFile upload, int userId, int? patrolId)

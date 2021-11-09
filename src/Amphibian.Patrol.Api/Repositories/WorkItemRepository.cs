@@ -11,6 +11,7 @@ using Dommel;
 using Amphibian.Patrol.Api.Models;
 using Amphibian.Patrol.Api.Dtos;
 using System.Data.Common;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -44,25 +45,25 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertRecurringWorkItem(RecurringWorkItem item)
         {
-            int id = (int)await _connection.InsertAsync(item);
+            int id = (int)await _connection.InsertAsync(item).ConfigureAwait(false).ToInt32();
             item.Id = id;
         }
 
         public async Task InsertShiftRecurringWorkItem(ShiftRecurringWorkItem item)
         {
-            int id = (int)await _connection.InsertAsync(item);
+            int id = (int)await _connection.InsertAsync(item).ConfigureAwait(false).ToInt32();
             item.Id = id;
         }
 
         public async Task InsertWorkItem(WorkItem item)
         {
-            int id = (int)await _connection.InsertAsync(item);
+            int id = (int)await _connection.InsertAsync(item).ConfigureAwait(false).ToInt32();
             item.Id = id;
         }
 
         public async Task InsertWorkItemAssignment(WorkItemAssignment item)
         {
-            int id = (int)await _connection.InsertAsync(item);
+            int id = (int)await _connection.InsertAsync(item).ConfigureAwait(false).ToInt32();
             item.Id = id;
         }
 

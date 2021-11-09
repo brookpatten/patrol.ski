@@ -9,6 +9,7 @@ using Dommel;
 
 using Amphibian.Patrol.Api.Models;
 using System.Data.Common;
+using Amphibian.Patrol.Api.Extensions;
 
 namespace Amphibian.Patrol.Api.Repositories
 {
@@ -23,7 +24,7 @@ namespace Amphibian.Patrol.Api.Repositories
 
         public async Task InsertUser(User user)
         {
-            user.Id = (int)await _connection.InsertAsync(user).ConfigureAwait(false);
+            user.Id = (int)await _connection.InsertAsync(user).ConfigureAwait(false).ToInt32();
         }
 
         public async Task UpdateUser(User user)
