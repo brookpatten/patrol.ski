@@ -86,6 +86,7 @@ namespace Amphibian.Patrol.Configuration
                 .AddJsonFile($"appsettings.{environmentName}.json", optional: false)
                 .AddJsonFile($"appsettings.{machineName}.machine.json", optional: true)
                 .AddJsonFile($"appsettings.{environmentName}.{machineName}.machine.json", optional: true)
+                .AddJsonFile($"appsettings.version.json", optional: true)
                 .AddEnvironmentVariables();
 
             IConfiguration config = builder.Build();

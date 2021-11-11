@@ -1,7 +1,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:6.0-alpine as api-build
+ARG VERSION=local-build
 WORKDIR /app
 COPY . .
-RUN dotnet publish -r linux-x64
+RUN echo -n "{\"Depot\":\"" > ./Amphibian.Patrol.Api/appsettings.version.json \
+    && echo -n $VERSION >> ./Amphibian.Patrol.Api/appsettings.version.json \
+	&& echo -n "\"}}" >> ./Amphibian.Patrol.Api/appsettings.version.json
+RUN dotnet publish -r linux-x64 -p:Version=${VERSION:1}.0 -p:AssemblyVersion=${VERSION:1}.0
 
 FROM node AS frontend-build
 WORKDIR /source

@@ -72,6 +72,8 @@ jobs:
         context: ./src
         file: ./src/Dockerfile
         push: true
+        build-args: |
+          VERSION=v2021.1.${{ github.run_number }}
         tags: |
           ghcr.io/brookpatten/patrol.ski:ci
           ghcr.io/brookpatten/patrol.ski:build-${{ github.run_number }}
